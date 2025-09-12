@@ -1,0 +1,16 @@
+Vragen voor de opdrachtgever:
+-	Wanneer kunnen wij u updaten over de voortgang van het project, en wat is uw beschikbaarheid voor eventuele vragen over het project?
+-	Wat is uw technische kennis? (Vragen voor een voorkeur van programmeertaal indien hij technische kennis heeft)
+-	Zal het makkelijker zijn voor ons om op locatie bij jullie aan het project te werken sinds we gaan werken met drones of kunnen wij op school eraan werken? (Als het makkelijker is om bij hun te werken, vragen waar de dan zullen testen)
+-	Waarom gaan we dit doen, wat voor informatie zal u willen zien, wat voor bruikbare informatie zal u willen hebben van de output van de sensoren, aantal drones, hoelang ze op een bepaalde plek zijn, waar ze precies zijn
+-	Welke haven gaan we lokaliseren?
+-	We weten dat tidalis diverse sensoren zoals radar, AIS, dag- en nachtzichtcamera's, radio direction finders, zijn er zulke sensoren die u terug zou wilt zien in het project
+-	Wilt u dat wij een ai opzetten die gemakkelijk drones kan detecteren
+-	Wilt u een GUI hebben zodat u gemakkelijk de gegevens van de sensoren kunt inlezen, heeft u al een idee voor de structuur ervan
+-	Wat voor behuizing heeft u in gedachte?
+-	Hoe groot zal het gebied zijn wat we gaan moeten lokaliseren
+-	Hoe lang moeten we een gebied lokaliseren, specifieke tijdstippen, 24 uur lang, etc.
+-	Hoe moeten wij het onderscheid maken tussen kwaadwillende drones en de eigen drones van de haven, met radio potentieel 
+-	De basis die u heeft van een eerdere afstudeer op het gebied van stereovisie voor de akoestische waarneming, wilt u dat wij die dan gebruiken en door uitbreiden of wilt u iets nieuws zien.
+-	Hoe denkt u dat wij microfoons zullen gaan gebruiken, willen we van uitgaan dat de microfoons de drones horen en dat dan de camera’s aan gaan bijvoorbeeld
+-	Budget vragen na het weten van informatie
