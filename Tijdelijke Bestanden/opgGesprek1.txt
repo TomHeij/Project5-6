@@ -1,1 +1,25 @@
+-	In een ruimte een drone kunnen detecteren
+-	Een drone lees je de hele dag af
+-	Interesse in het detecteren van drones, radars is bekend, met camera’s nog niet
+-	Ruimte ligt aan ons
+-	Positie te bepalen
+-	3 dimensies voor locatie van drone, 2D locatie voor drones, hoogte is niet van belang, alleen x en y
+-	Maandag en dinsdag lastige dagen voor vragen, weekend ook niet
+-	Sturen wat wij elke 2 weken hebben gedaan.
+-	Het afgestudeerde werk kunnen we gebruiken, pdf’je
+-	Uitnodiging voor het kantoor in Rotterdam, Martijn en Renée.
+-	Zelf verzinnen wat we doen
+-	Optische waarneming, 
+-	Iets anders dan drones detecteren kan ook.
+-	Tijd speelt bijna geen rol in hoelang die detecteert.
+-	Het principe van detectie
+-	2D houden
+-	Potentiële drone die we kunnen krijgen
+-	GUI is de bedoeling, x en y grafiek om te zien waar de drone is. Een stipje dat we zien bewegen
+-	Behuizing maakt niet uit
+-	Hij hoeft niet naar buiten
+-	Wanneer is het een succes: In realtime een positie vinden van een object in de GUI laten zien, in het scherm het mee laten bewegen.
+-	In 2D een object te kunnen detecteren, in een gui kunnen zien dat het object er is. Uit 2 camera’s
+-	Budget te representeren
+-	Vragen bij de updates toe te voegen.
 
