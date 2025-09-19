@@ -10,7 +10,7 @@ Door Tom Heijmans, Fabio Wolthuis, Dennis Zejnilović, Ali Haimed.
 
 # Userstories
 
-| | Requirement | Userstory | Taken | Acceptatieciteria | Story points |
+| Status | Requirement | Userstory | Taken | Acceptatieciteria | Story points |
 | :----: | :---- | :---- | :---- | :---- | :----: |
 | [ ] | **Camera-overzicht beschikbaar** | Als opdrachtgever wil ik dat ik op een scherm in realtime kan zien waar een object zich bevindt in het opgenomen beeld, zodat ik een duidelijk overzicht kan hebben van wat het programma doet. | <ul> <li> [ ] In de GUI een grafiek maken waarin de positie van de drone exact wordt weergegeven met beeld van de camera. </li> </ul> | De locatie van de drone wordt correct weergegeven in de GUI in realtime. | **8** |
 | [ ] | **Een grafische gebruikersinterface is beschikbaar** | Als opdrachtgever wil ik dat de uitvoer van het programma en het inlezen van data makkelijk kan zien, zodat ik een overzicht kan hebben van het programma | <ul> <li> [ ] Een onderzoeksverslag voor welke software we gaan gebruiken voor de interface. </li> <li> [ ] Een GUI aanmaken.  </li> </ul> | Een overzichtelijke GUI met duidelijke informatie | **8** |
