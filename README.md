@@ -8,7 +8,7 @@ Door Tom Heijmans, Fabio Wolthuis, Dennis Zejnilović, Ali Haimed.
 
 ---
 
-# Userstories
+# Product Backlog
 
 | Status | Requirement | Userstory | Taken | Acceptatieciteria | Story points |
 | :----: | :---- | :---- | :---- | :---- | :----: |
@@ -21,5 +21,26 @@ Door Tom Heijmans, Fabio Wolthuis, Dennis Zejnilović, Ali Haimed.
 | [ ] | **Akoestische waarneming is beschikbaar** | Als opdrachtgever wil ik dat ik naast het gebruiken van camera’s, ook gebruik kan maken van microfoons om een object kan detecteren, zodat ik op meerdere manieren de drone kan detecteren. | <ul> <li> [ ] Onderzoeken van al gegeven werk van de opdrachtgever </li> <li> [ ] Implementatie van software (microfoon) in het systeem </li> <li> [ ] Implementatie van hardware (microfoon) in het systeem </li> </ul> | De microfoon kan een object/drone detecteren | **2** |
 | [ ] | **Er is een behuizing** | Als opdrachtgever wil ik dat het eindproduct een robuuste behuizing heeft, zodat de microcontrollers en camera's goed beschermd zijn | <ul> <li> [ ] Mechatronisch ontwerp maken </li> <li> [ ] Behuizing Maken </li> </ul> | Er is een behuizing | **6** |
 
-# Sprint planning 1
+## Sprint planning 1
 ---
+
+**Startdatum:** 22-09-2025  
+**Einddatum:** 06-10-2025  
+**Doel:** Onderzoekingen uitvoeren voor elke component in het project en uitwerken hoe het programma eruit gaat zien.
+
+| Status | Prioriteit | Benodigde tijd (uren) | Taken | Wie? |
+| :----: | :---- | :---- | :---- | :----: |
+| [ ] | Hoog | 4 | Software onderzoeksverslag, camera onderzoeksverslag en micro-controller onderzoeksverslag.  |  |
+| [ ] | Hoog | 1 | Mechatronisch ontwerp maken. |  |
+| [ ] | Hoog | 2 | Flowchart maken. |  |
+| [ ] | Medium | 2 | Architectuurontwerp maken. |  |
+
+
+### Changelog
+
+| Versie | Wat/Wie | Datum |
+| :----: | :---- | :----: |
+| 1.0 | Product Backlog aangemaakt – Dennis | 16-09-2025 |
+| 1.1 | Product Backlog uitgebreid – Allen | 19-09-2025 |
+| 1.2 | Product Backlog in Github toegevoegd in markdown – Fabio | 19-09-2025 |
+| 1.3 | Sprint planning 1 aangemaakt – Dennis | 21-09-2025 |
