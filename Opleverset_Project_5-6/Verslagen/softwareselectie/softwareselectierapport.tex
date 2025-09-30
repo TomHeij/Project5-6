@@ -1,0 +1,491 @@
+% !TeX program = pdflatex
+% !TeX encoding = UTF-8
+% Compile with: pdflatex -> bibtex -> pdflatex -> pdflatex
+
+\documentclass[11pt,a4paper]{scrartcl}
+\usepackage[utf8]{inputenc}
+\usepackage[dutch]{babel}
+\usepackage[margin=2.5cm]{geometry}
+\usepackage{microtype}
+\usepackage{fancyhdr}
+\usepackage{hyperref}
+\usepackage{graphicx}
+\usepackage{caption}
+\usepackage{booktabs}
+\usepackage{tabularx}
+\usepackage{longtable}
+\usepackage{enumitem}
+\usepackage{xcolor}
+\usepackage{parskip}
+\usepackage{tcolorbox}
+\usepackage{tikz}
+\usepackage{mathptmx}
+\usepackage[scaled=0.9]{helvet}
+\usepackage{courier}
+\usepackage{colortbl}
+
+% Modern paragraph styling
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{8pt}
+
+% Enhanced color scheme
+\definecolor{primaryblue}{RGB}{0,51,102}
+\definecolor{accentblue}{RGB}{0,102,204}
+\definecolor{lightgray}{RGB}{245,245,245}
+\definecolor{mediumgray}{RGB}{200,200,200}
+\definecolor{darkgray}{RGB}{80,80,80}
+\definecolor{linkblue}{RGB}{0,0,139}
+\definecolor{citegreen}{RGB}{0,100,0}
+
+% Hyperref setup
+\hypersetup{
+    colorlinks=true,
+    linkcolor=accentblue,
+    citecolor=citegreen,
+    urlcolor=accentblue,
+    pdftitle={Technische Keuze Rapport Drone Detectie Systeem},
+    pdfauthor={Technische Informatica Studenten Team}
+}
+
+% Enhanced header and footer
+\pagestyle{fancy}
+\fancyhf{}
+\fancyhead[L]{\sffamily\small\color{primaryblue} Softwareselectie Rapport}
+\fancyhead[R]{\sffamily\small\color{primaryblue} \thepage}
+\renewcommand{\headrulewidth}{0.8pt}
+\renewcommand{\headrule}{\hbox to\headwidth{\color{accentblue}\leaders\hrule height \headrulewidth\hfill}}
+
+% Section formatting
+\addtokomafont{section}{\color{primaryblue}\Large}
+\addtokomafont{subsection}{\color{primaryblue}}
+
+% Custom tcolorbox styles
+\tcbuselibrary{skins,breakable}
+\newtcolorbox{infobox}[1]{
+    colback=lightgray,
+    colframe=accentblue,
+    fonttitle=\bfseries\sffamily,
+    title=#1,
+    arc=3mm,
+    boxrule=1pt,
+    left=5pt,
+    right=5pt,
+    top=5pt,
+    bottom=5pt,
+    breakable
+}
+
+\begin{document}
+
+% Enhanced Title page
+\begin{titlepage}
+    % Background gradient and geometric elements
+    \begin{tikzpicture}[remember picture,overlay]
+        % Main header bar
+        \fill[primaryblue] (current page.north west) rectangle ([yshift=-5cm]current page.north east);
+        
+        % Diagonal accent stripe
+        \fill[accentblue,opacity=0.3] ([yshift=-3.5cm]current page.north west) -- 
+            ([yshift=-3.5cm,xshift=3cm]current page.north west) -- 
+            ([yshift=-5cm,xshift=5cm]current page.north west) -- 
+            ([yshift=-5cm]current page.north west) -- cycle;
+        
+        % Decorative circles
+        \fill[white,opacity=0.1] ([yshift=-2cm,xshift=16cm]current page.north west) circle (1.5cm);
+        \fill[white,opacity=0.05] ([yshift=-3.5cm,xshift=17.5cm]current page.north west) circle (2cm);
+        
+        % Bottom decorative element
+        \fill[lightgray] ([yshift=3cm]current page.south west) rectangle ([yshift=3.2cm]current page.south east);
+    \end{tikzpicture}
+    
+    \vspace*{2.5cm}
+    
+    \begin{center}
+        \color{white}
+        {\sffamily\Huge\bfseries Softwareselectierapport}
+        
+        \vspace{0.8cm}
+        
+        % with specific font size
+        \colorbox{accentblue}{\parbox{0.8\textwidth}{\centering\color{white}\sffamily\bfseries\fontsize{23}{28}\selectfont Onderzoeksrapport Softwareselectie}}
+    \end{center}
+    
+    \vspace{6cm}
+    
+    \begin{center}
+        \begin{tcolorbox}[
+            width=0.8\textwidth,
+            colback=white,
+            colframe=accentblue,
+            arc=5mm,
+            boxrule=2pt,
+            left=15pt,
+            right=15pt,
+            top=15pt,
+            bottom=15pt
+        ]
+            \centering
+            \sffamily\large
+            \textbf{Project:} Lokaliseren van drones met camera's en microfoons\\[8pt]
+            \textbf{Opdrachtgever:} Tidalis\\[8pt]
+            \textbf{Team:} Ali, Dennis, Fabio, Tom\\[10pt]
+            \rule{0.6\textwidth}{0.4pt}\\[8pt]
+            \textbf{Datum:} 30 September 2025\\[4pt]
+            \textbf{Versie:} 0.1
+        \end{tcolorbox}
+    \end{center}
+    
+    \vfill
+    
+    \begin{center}
+        \color{darkgray}
+        \sffamily
+        Hogeschool Rotterdam\\
+        Technische Informatica
+    \end{center}
+\end{titlepage}
+
+% Table of contents with improved styling
+\tableofcontents
+\newpage
+
+% Introduction
+\section{Inleiding en Context}
+
+\subsection{Project Context}
+ Dit project heeft als doel een PoC (proof of concept) systeem te ontwikkelen voor drone detectie en lokalisatie met camera’s. Opdrachtgever Tidalis, specialist in maritieme situational awareness, wil hiermee zijn surveillancemogelijkheden uitbreiden.
+
+
+\begin{infobox}{Projectscope}
+\begin{itemize}[leftmargin=*]
+    \item Real-time detectie van drones/objecten in 2D ruimte
+    \item Lokalisatie met stereoscopische of IP camera setup
+    \item Eenvoudige GUI voor visualisatie
+    \item Proof-of-concept ontwikkeling binnen beperkte tijd
+\end{itemize}
+\end{infobox}
+
+
+\subsection{Onderzoek Scope}
+Dit onderzoeksrapport behandelt het besluitvormingsproces voor de selectie van technologieën en tools die gebruikt worden in het drone detectie systeem. 
+
+\begin{infobox}{Doel van het Onderzoek}
+\begin{itemize}[leftmargin=*]
+    \item Het identificeren van technologieën die aansluiten bij de projectvereisten en de huidige vaardigheden van het team
+    \item Het vergelijken van deze technologieën op basis van objectieve criteria
+    \item Onderbouwen van de gemaakte technische keuzes
+    \item Het aanbevelen van een technologie-stack die de projectdoelen ondersteunt.
+   
+\end{itemize}
+\end{infobox}
+
+\subsection{Belangrijke Randvoorwaarden}
+\begin{itemize}[leftmargin=*]
+    \item \textbf{Tijdsduur:} 5 maanden (september 2025 - januari 2026)
+    \item \textbf{Team expertise:} Java, Python, C++, C, GitHub/GitLab
+    \item \textbf{Hardware:} Raspberry Pi 5, 2K webcams camera, beperkt budget
+    \item \textbf{Focus:} Eenvoud en haalbaarheid
+    
+\end{itemize}
+
+\section{Requirements Analyse}
+
+\subsection{Functionele Requirements}
+\begin{enumerate}[leftmargin=*]
+    \item \textbf{Object Detectie} -- Detecteren van drones/objecten in camera beeld
+    \item \textbf{2D Lokalisatie} -- Bepalen van x,y positie in real-time
+    \item \textbf{GUI Visualisatie} -- Tonen van drone positie in grafische interface
+
+\end{enumerate}
+
+\subsection{Niet-functionele Requirements}
+\begin{enumerate}[leftmargin=*]
+    \item \textbf{Eenvoud} -- Eenvoudige installatie, configuratie en technologieën die aansluiten bij team expertise
+    \item \textbf{Performance} -- Werken op Raspberry Pi 5 met 4GB RAM
+    \item \textbf{Hardware Compatibiliteit} -- Goede samenwerking tussen componenten
+    \item \textbf{Onderhoudbaarheid} -- Duidelijke code en documentatie
+    \item \textbf{Budget}: Gebruik van open-source en gratis beschikbare technologieën waar mogelijk
+    
+\end{enumerate}
+
+\section{Technologie Kandidaten}
+
+\subsection{Computer Vision}
+\begin{itemize}[leftmargin=*]
+    \item \textbf{OpenCV} -- Rijp computer vision framework
+    \item \textbf{MobileNet SSD} -- een efficiënt en lichtgewicht "pre-trained" model voor objectdetectie
+    \item \textbf{YOLO(v5 of v8)} -- Real-time object detectie "pre-trained" model
+\end{itemize}
+
+\subsection{GUI Frameworks}
+\begin{itemize}[leftmargin=*]
+    \item \textbf{Tkinter} -- Standaard Python GUI
+    \item \textbf{OpenCV HighGUI} -- Eenvoudige display functionaliteit
+    \item \textbf{PyQt(v5)} -- Voor rijke desktop applicaties/meer GUI functionaliteit
+    \item \textbf{pyside6} -- pyqt6 en pyside6 zijn hetzelfde in termen van functionaliteit maar pysidey heeft geen Commercial License
+    
+    
+\end{itemize}
+
+
+\subsection{Andere Bibliotheeken}
+\begin{itemize}[leftmargin=*]
+    \item \textbf{NumPy} -- Coördinaten en afstand berekenen (built-in met OpenCV)
+    \item \textbf{Matplotlib} -- Visualisatie van dronepositie
+    \item \textbf{unittest} -- voor unit testen (built-in Python)
+    \item \textbf{pytestn} -- unit testen, krachtiger, gemakkelijkere syntaxis.
+    \item \textbf{logging} -- detectie events opslaan (built-in Python)
+    \item \textbf{CSV/JSON} -- droneposities bewaren (built-in Python)
+\end{itemize}
+
+\section{Evaluatie Methodologie}
+
+\subsection{Beoordelingscriteria}
+Technologieën worden beoordeeld op:
+\begin{enumerate}[leftmargin=*]
+    \item \textbf{Gemak van Leren/Setup} -- Tijd nodig om technologie onder de knie te krijgen
+    \item \textbf{Functionaliteit} -- Geschiktheid voor specifieke taken
+    \item \textbf{Performance} -- Snelheid en geheugengebruik op Raspberry Pi
+    \item \textbf{Integratie} -- Compatibiliteit met andere componenten
+    \item \textbf{Tijdslijn Fit} -- Haalbaarheid binnen projectduur
+\end{enumerate}
+
+\subsection{Weegfactoren}
+\begin{infobox}{Criteria Weging}
+\begin{itemize}[leftmargin=*,nosep]
+    \item Gemak van Leren/configratie: \textbf{25\%}
+    \item Functionaliteit: \textbf{30\%}
+    \item Performance: \textbf{20\%}
+    \item Integratie: \textbf{15\%}
+    \item Tijdslijn Fit: \textbf{10\%}
+\end{itemize}
+\end{infobox}
+
+
+\section{Vergelijkingstabel Technologieën}
+
+\begin{longtable}{p{0.18\textwidth} *{5}{>{\centering\arraybackslash}p{0.14\textwidth}}}
+\caption{Vergelijking Technologie Keuzes (Schaal: 1-5, waarbij 5 = beste)}\\
+\toprule
+\rowcolor{lightgray}
+\textbf{Technologie} & \textbf{Gemak} & \textbf{Functionaliteit} & \textbf{Performance} & \textbf{Integratie} & \textbf{Totaal} \\
+\midrule
+\endfirsthead
+
+\caption[]{Vergelijking Technologie Keuzes (vervolg)}\\
+\toprule
+\rowcolor{lightgray}
+\textbf{Technologie} & \textbf{Gemak} & \textbf{Functionaliteit} & \textbf{Performance} & \textbf{Integratie} & \textbf{Totaal} \\
+\midrule
+\endhead
+
+\bottomrule
+\endfoot
+
+\multicolumn{6}{l}{\textbf{\color{primaryblue} Programmeertaal}} \\
+\midrule
+Python & 5 & 5 & 4 & 5 & \textbf{4.5} \\
+C++ & 3 & 4 & 5 & 4 & 4.0 \\
+
+\bottomrule
+\multicolumn{6}{l}{\textbf{\color{primaryblue}Computer Vision}} \\
+\midrule
+OpenCV & 5 & 5 & 4 & 5 & \textbf{4.8} \\
+YOLO & 3 & 5 & 3 & 4 & 3.8 \\
+MobileNet SSD & 2 & 4 & 3 & 3 & 3.1 \\
+\midrule
+
+\multicolumn{6}{l}{\textbf{\color{primaryblue}GUI Frameworks}} \\
+\midrule
+PyQt/PySide & 3 & 5 & 4 & 5 & \textbf{4.2}\\
+Tkinter & 5 & 3 & 4 & 4 & 4.0 \\
+OpenCV HighGUI & 4 & 2 & 5 & 5 & 4.0 \\
+\midrule
+
+
+\end{longtable}
+
+\section{Discussie: Afwegingen en Risico's}
+
+\subsection{Belangrijkste Afwegingen}
+\begin{itemize}[leftmargin=*]
+    \item \textbf{Eenvoud vs Functionaliteit}: OpenCV kan drones detecteren, maar is minder betrouwbaar bij bewegende achtergrondobjecten,en heeft lagere nauwkeurigheid dan deep learning-methoden zoals YOLO of MobileNet SSD.
+    \newline OpenCV HighGUI is eenvoudig maar beperkt, PyQt is krachtig maar complex
+    
+    \item \textbf{Performance vs Leercurve}: YOLO biedt state-of-the-art detectie maar heeft hogere leercurve en heeft 
+    \item \textbf{Integratie}: Testen op de gekozen hardware is vereist om evaluatie mogelijk te maken
+\end{itemize}
+
+\subsection{Risico's en Beperkingen}
+\begin{infobox}{Belangrijke Risico's}
+\begin{itemize}[leftmargin=*,nosep]
+    \item \textbf{Tijdsdruk:} 5 maanden is beperkt voor complexe computer vision
+    \item \textbf{Hardware Limitaties:} Raspberry Pi 5 heeft beperkte rekenkracht
+    \item \textbf{Team Expertise:} Nieuwe technologieën vereisen leerinvestering
+    \item \textbf{Realtime Eisen:} Latentie moet acceptabel blijven
+\end{itemize}
+\end{infobox}
+
+\subsection{Mitigatie Strategieën}
+\begin{itemize}[leftmargin=*]
+    \item Starten met een eenvoudige implementatie en iteratief verbeteren
+    \item Eerst richten op de kernfunctionaliteit
+    \item Regelmatige testen op target hardware
+    \item Gebruikmaken van bestaande voorbeelden en documentatie
+\end{itemize}
+
+
+\section{Uiteindelijke Keuzes}
+
+\begin{longtable}{l >{\raggedright\arraybackslash}p{0.25\textwidth} >{\raggedright\arraybackslash}p{0.5\textwidth}}
+\caption{Definitieve Technologie Selectie}\\
+\toprule
+\rowcolor{lightgray}
+\textbf{Component} & \textbf{Keuze} & \textbf{Rechtvaardiging} \\
+\midrule
+\endfirsthead
+
+\caption[]{Definitieve Technologie Selectie (vervolg)}\\
+\toprule
+\rowcolor{lightgray}
+\textbf{Component} & \textbf{Keuze} & \textbf{Rechtvaardiging} \\
+\midrule
+\endhead
+
+\bottomrule
+\endfoot
+
+Programmeertaal & Python 3.x & 
+\vspace{-10pt}
+\begin{itemize}[leftmargin=*,nosep,topsep=0pt]
+\item Snelle prototyping mogelijk binnen 5 maanden tijdslijn
+\item Uitstekende OpenCV bindingen beschikbaar
+\item Uitgebreide wetenschappelijke libraries (NumPy, etc.)
+\end{itemize}
+\vspace{4pt} \\
+\midrule
+
+Computer Vision & OpenCV 4.x & 
+\vspace{-10pt}
+\begin{itemize}[leftmargin=*,nosep,topsep=0pt]
+\item Getest met IP-camera: werkt naar behoren
+\item Rijp en stabiel framework met uitgebreide documentatie
+\item Goede performance op Raspberry Pi 5 (score 4)
+\item Ingebouwde stereo vision modules voor 2D lokalisatie
+\item Breed scala aan features voor toekomstige uitbreiding
+\end{itemize}
+\vspace{4pt} \\
+\midrule
+
+Object Detectie &  OpenCV 4.x & 
+\vspace{-10pt}
+\begin{itemize}[leftmargin=*,nosep,topsep=0pt]
+\item Geen training van een neuraal netwerk nodig
+\item Draait eenvoudig op een Raspberry Pi 5 (4GB RAM)
+\item \textbf {Tweede optie}: 
+\item MobileNet SSD: efficiënt en lichtgewicht pre-trained model
+\item Kan worden gebruikt via OpenCV (cv3.dnn)
+\item Geschikt voor resource-beperkte hardware (Raspberry Pi 5)
+\item YOLO (v5/v8): optioneel voor betere detectie na basisimplementatie
+\item Pre-trained modellen beschikbaar voor snelle integratie
+\end{itemize}
+\vspace{4pt} \\
+\midrule
+
+GUI Framework & Tkinter + OpenCV HighGUI &
+\vspace{-10pt}
+\begin{itemize}[leftmargin=*,nosep,topsep=0pt]
+\item Tkinter: standaard Python, eenvoudig te leren
+\item OpenCV HighGUI: directe integratie met computer vision
+\item Goede performance voor real-time display
+\item Minimale setup vereist
+\item \textbf {Tweede optie}: 
+\item PyQt5 
+\item pyside6
+\end{itemize}
+\vspace{4pt} \\
+\midrule
+
+Data Opslag & CSV/JSON & 
+\vspace{-10pt}
+\begin{itemize}[leftmargin=*,nosep,topsep=0pt]
+\item Built-in Python ondersteuning (geen extra dependencies)
+\item Eenvoudig voor opslaan van droneposities en detectie events
+\item Compatibel met logging requirements
+\item Minimale setup vereist
+\end{itemize}
+\vspace{4pt} \\
+\midrule
+
+Testing Framework & pytest & 
+\vspace{-10pt}
+\begin{itemize}[leftmargin=*,nosep,topsep=0pt]
+\item Krachtiger dan unittest met gemakkelijkere syntaxis
+\item Goede ondersteuning voor unit testing
+\item Helpt onderhoudbaarheid van code te waarborgen
+\item Breed gebruikt in Python community
+\end{itemize}
+\vspace{4pt} \\
+\midrule
+
+Hulpbibliotheeken & NumPy + logging & 
+\vspace{-10pt}
+\begin{itemize}[leftmargin=*,nosep,topsep=0pt]
+\item NumPy: coördinaten en afstandsberekeningen (built-in met OpenCV)
+\item logging: detectie events registreren (built-in Python)
+\item Beide minimaliseren externe dependencies
+\item Essentieel voor 2D lokalisatie functionaliteit
+\end{itemize}
+\vspace{4pt} \\
+\bottomrule
+\end{longtable}
+
+\newpage
+\section{Referenties}
+
+\begin{thebibliography}{9}
+
+\bibitem{opencv}
+Bradski, G., \& Kaehler, A. (2008). \emph{Learning OpenCV: Computer Vision with the OpenCV Library}. O'Reilly Media.
+
+\bibitem{yolo}
+Redmon, J., \& Farhadi, A. (2018). \emph{YOLOv3: An Incremental Improvement}. arXiv:1804.02767.
+
+\bibitem{stereo}
+Scharstein, D., \& Szeliski, R. (2002). \emph{A Taxonomy and Evaluation of Dense Two-Frame Stereo Correspondence Algorithms}. International Journal of Computer Vision.
+
+\bibitem{raspberrypi}
+Raspberry Pi Foundation. (2023). \emph{Raspberry Pi 5 Documentation}. \url{https://www.raspberrypi.com/documentation/}
+
+\bibitem{tidalis}
+Tidalis. (2024). \emph{Maritime Situational Awareness Solutions}. \url{https://www.tidalis.com/}
+
+\bibitem{pyqt}
+Summerfield, M. (2007). \emph{Rapid GUI Programming with Python and Qt}. Prentice Hall.
+% ... other references ...
+
+\bibitem{chatgpt}
+OpenAI. (2024). \emph{ChatGPT (GPT-4)}. Retrieved September 30, 2025, from \url{https://chat.openai.com/}
+
+\bibitem{claude}
+Anthropic. (2025). \emph{Claude (Claude Sonnet 4.5)}. Retrieved September 30, 2025, from \url{https://claude.ai/}
+
+\end{thebibliography}
+
+\section{Wijzigingslog}
+
+\begin{table}[h]
+\centering
+\caption{Document Wijzigingsgeschiedenis}
+\begin{tabularx}{\textwidth}{>{\centering\arraybackslash}p{0.12\textwidth} >{\centering\arraybackslash}p{0.1\textwidth} >{\centering\arraybackslash}p{0.15\textwidth} X}
+\toprule
+\rowcolor{lightgray}
+\textbf{Datum} & \textbf{Versie} & \textbf{Wie} & \textbf{Wijzigingen} \\
+\midrule
+26-09-2025 & 1.0 & Ali & Eerste versie - complete technische keuze analyse \\
+30-09-2025 & 0.1 & Ali & Bijwerken van de vergelijkingstabel \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+\end{document}
