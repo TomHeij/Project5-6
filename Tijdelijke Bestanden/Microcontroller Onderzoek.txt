@@ -1,0 +1,47 @@
+Microcontroller Onderzoek
+
+Voor de microcontrollers, zijn er een paar functies die nodig zijn voor het project. De hoeveelheid geheugen, de mogelijkheid van videoprocessing, genoeg aansluitingen (2 USB poorten), of die betaalbaar is (mogelijkheid tot uitbereiding van hardware(als in meer camera's))
+
+ARDUINO UNO R3 van ArduinoShop, Operating V=5/7-12, 2 KB SRAM, 16 MHz kloksnelheid, 30 $
+https://store.arduino.cc/products/arduino-uno-rev3
+
+ESP32-DevKitC van Esperessif, ~520 KB SRAM, 4MB Flashgeheugen, 2 cores, ~240 MHz kloksnelheid, 1 USB-C poort, 11 $
+https://docs.espressif.com/projects/esp-dev-kits/en/latest/esp32/esp32-devkitc/user_guide.html
+
+RASPBERRY PI 5, 8GB RAM, 4 cores, 2.4 GHz Kloksneheid, 2 USB 3.0 2 USB 2.0 poorten, 5.1 V (5A (27W)) 85 $
+https://www.raspberrypi.com/products/raspberry-pi-5/
+
+ASUS NUC 14 Essential RNUC14MNK1500002, 3.6 GHz (Intel-N150), 16GB RAM, 176 $
+https://www.bol.com/nl/nl/p/asus-nuc-14-essential-rnuc14mnk1500002-nuc-n150-zwart/9300000198824114/?Referrer=ADVNLGOO002013-S--9300000198824114-PMAX-C-22290424025&gad_campaignid=22294182184
+
+-------------------------------------------------------
+
+Inleiding:
+Voor het runnen van de code, en het binnen krijgen en verwerken is er een microcontroller nodig. Voor deze microcontroller zijn er een paar minimale specificaties voor nodig, die de microcontroller minimaal nodig heeft. Dit onderzoek is om een selectie van microcontrollers te vergelijken, zodat er gekeken wat de mogelijke beste keuze is.
+
+Middenstuk:
+
+Minimale Specificaties:
+=>4 GB RAM/SRAM, redelijke kloksnelheid, 2 USB poorten, Video Processing, niet te hoge Power gebruik en niet te hoge Prijs.
+Voor de benodigdheden waarvoor wij de microcontroller nodig hebben, zijn er eerst een paar minimale/basis vereisten opgesteld. Hiermee gaat er gekeken worden of de microcontroller goed zou passen bij dit project. Sinds er bij dit project met twee camera's gewerkt moet worden, is het sowieso een vereiste dat de microcontroller iets van Video Processing heeft, daarnaast is het ook belangrijk dat het genoeg RAM/SRAM heeft om mogelijke programma's the kunnen runnen, bijvoorbeeld bewegings-detectie of image recognition. Sinds de eerder benoemde camera's via USB aangesloten moeten worden, en we twee camera's hebben, is het ook een vereiste dat de microcontroller ten minste 2 USB poorten heeft. Naast dit moet de microcontroller ook niet te duur zijn, want er zit een budget verbonden aan dit project. De stroom die de microcontroller gebruikt mag ook natuurlijk niet te hoog zijn, voor het milieu.
+
+Arduino UNO R3:
+SRAM: 2 KB, 16 MHz, Geen USB poorten, Geen Video Processing, 5V Power Supply, 30 euro.
+Voor een basis is er eerst gekeken naar de Arduino UNO, een veel gebruikte microcontroller. Deze viel direct buiten de gegeven minimale eisen, door de veel te lage SRAM, geen USB poorten (buiten programmeren) en dat die geen Video Processing heeft.
+
+ESP32 DevKit: 
+520 KB SRAM, 2 cores x 240 MHz, Geen USB poorten, Basic Video Processing, 5V Power Supply, 11 euro.
+Als tweede wordt er gekeken naar de ESP32, sinds die wel video processing heeft, maar de ESP32 valt ook weer kort bij de hoeveelheid SRAM, waardoor deze ook niet voldoet aan de minimale eisen.
+
+Raspberry PI 5:
+8 GB RAM, 4 cores x 2.4 GHz, 2x USB 3.0, 2x USB 2.0, Goede Video Processing, 5.1V Power Supply, 85 euro.
+De Raspberry PI 5 (8 GB) voldoet aan de minimale eisen en gaat daar zelfs voorbij, met een goede balans tussen prijs, prestaties en energieverbruik. Hij heeft meer dan genoeg RAM, meerdere USB aansluitingen, maar een 5.1V power nodig, en een sterke video processing (met hardware decoding en dual 4k-schermondersteuning). En dat allemaal voor maar 85 euro 
+
+ASUS NUC 14 Essential RNUC14MNK1500002:
+16 GB RAM, 4 cores x 3.6 GHz, 4 x USB 2.0, GPU (Intel Graphics), 19 V Power Supply, 176 euro.
+De NUC is ook een optie, sinds het een goede hoeveelheid RAM heeft (16GB), er zit een Intel-N150 is, die 4 cores heeft met een kloksnelheid van 3.6 GHz. Daarnaast heeft het ook de mogelijkheid tot krachtige video processing. Maar het nadeel van de NUC is dat die 19V gebruikt, en daarnaast 176 euro kost, wat boven het budget zit. Het is wel een interessante optie voor als er budget voor is.
+
+Conclusie:
+
+Voor dit project, is de Raspberry PI 5 de meest geschikte keuze. Naast dat als er budget voor is zou de ASUS NUC ook een mogelijke keuze zijn. De Raspberry PI 5 heeft goede prestatie's voor de prijs.
+
