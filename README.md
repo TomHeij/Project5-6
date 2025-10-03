@@ -12,14 +12,14 @@ Door Tom Heijmans, Fabio Wolthuis, Dennis Zejnilović, Ali Haimed.
 
 | Nr. | Status | Requirement | Userstory | Taken | Acceptatieciteria | Story points |
 | :-: | :----: | :---- | :---- | :---- | :---- | :----: |
-| 1 | [ ] | **1** | Als opdrachtgever wil ik dat ik op een scherm in realtime kan zien waar een object zich bevindt in het opgenomen beeld, zodat ik een duidelijk overzicht kan hebben van wat het programma doet. | <ul> <li> [ ] In de GUI een grafiek maken waarin de positie van de drone exact wordt weergegeven met beeld van de camera. </li> </ul> | Camera-overzicht beschikbaar. | **8** |
+| 1 | [ ] | **1** | Als opdrachtgever wil ik dat ik op een scherm in realtime kan zien waar een object zich bevindt in het opgenomen beeld, zodat ik een duidelijk overzicht kan hebben van wat het programma doet. | <ul> <li> [ ] In de GUI een 2D grafiek maken waarin de positie van de drone exact wordt weergegeven. </li> <li> [ ] In de GUI de live beelden laten zien van de camera's </li> </ul> | Camera-overzicht beschikbaar. | **8** |
 | 2 | [ ] | **2** | Als opdrachtgever wil ik dat de uitvoer van het programma en het inlezen van data makkelijk kan zien, zodat ik een overzicht kan hebben van het programma | <ul> <li> [ ] Een onderzoeksverslag voor welke software we gaan gebruiken voor de interface. </li> <li> [ ] Een GUI aanmaken.  </li> </ul> | Een grafische gebruikersinterface is beschikbaar | **8** |
 | 3 | [ ] | **3** | Als opdrachtgever wil ik dat ik de locatie van de drone in 3 dimensies kan zien, zodat ik kan weten wat de exacte locatie is van de drone. | <ul> <li> [ ] De grafiek van de locatie van de drone in 3 dimensies maken, x/y/z </li> </ul> | Een 3D interface van de locatie van de drone | **2** |
 | 4 | [ ] | **4** | Als opdrachtgever wil ik dat de camera’s 24/7 werken, zodat ik drones in de dag en in de nacht gedetecteerd kunnen worden | <ul> <li> [ ] Onderzoek hoe je nachtzicht kan toevoegen </li> <li> [ ] Integratie van nachtzicht camera’s </li> </ul> | Een 24/7 feed van de drones | **4** |
-| 5 | [ ] | **5** | Als gebruiker wil ik de afstand zien tussen de camera en de drone, zodat ik weet hoe snel ik moet reageren/hoe ver de drone is. | <ul> <li> [ ] Onderzoek doen naar wat de meest efficiënte manier is van afstand detecteren </li> <li> [ ] Het Implementeren van de detectiemethode. </li> </ul> | Een algoritme/programma maken die de afstand kan berekenen. | **6** |
-| 6 | [ ] | **7** | Als opdrachtgever wil ik dat de camera's een object (bewegend of niet) kan detecteren | <ul> <li> [ ] Onderzoek voor welke camera’s we gaan gebruiken. </li> <li> [ ] Onderzoek naar wat voor soort detectie het beste gebruikt kan worden </li> </ul> | Een object kunnen detecteren. | **8** |
-| 7 | [ ] | **8** | Als opdrachtgever wil ik dat ik naast het gebruiken van camera’s, ook gebruik kan maken van microfoons om een object kan detecteren, zodat ik op meerdere manieren de drone kan detecteren. | <ul> <li> [ ] Onderzoeken van al gegeven werk van de opdrachtgever </li> <li> [ ] Implementatie van software (microfoon) in het systeem </li> <li> [ ] Implementatie van hardware (microfoon) in het systeem </li> </ul> | Akoestische waarneming is beschikbaar | **2** |
-| 8 | [ ] | **9** | Als opdrachtgever wil ik dat het eindproduct een robuuste behuizing heeft, zodat de microcontrollers en camera's goed beschermd zijn | <ul> <li> [ ] Mechatronisch ontwerp maken </li> <li> [ ] Behuizing Maken </li> </ul> | Er is een behuizing | **6** |
+| 5 | [ ] | **5** | Als gebruiker wil ik de afstand kunnen zien tussen de camera en de drone, zodat ik kan weten hoe ver de drone is van de camera. | <ul> <li> [ ] Onderzoek doen naar wat de meest efficiënte manier is van afstand detecteren </li> <li> [ ] Het Implementeren van de afstandmethode. </li> <li> [ ] Het weergeven van de afstand in de GUI </li> </ul> | De afstand van de camera tot de drone wordt correct weergegeven. | **6** |
+| 6 | [ ] | **6** | Als opdrachtgever wil ik dat de camera's een object (bewegend of niet) kan detecteren | <ul> <li> [ ] Onderzoek voor welke camera’s we gaan gebruiken. </li> <li> [ ] Onderzoek naar wat voor soort detectie het beste gebruikt kan worden </li> </ul> | Een object kunnen detecteren. | **8** |
+| 7 | [ ] | **7** | Als opdrachtgever wil ik dat ik naast het gebruiken van camera’s, ook gebruik kan maken van microfoons om een object kan detecteren, zodat ik op meerdere manieren de drone kan detecteren. | <ul> <li> [ ] Onderzoeken van al gegeven werk van de opdrachtgever </li> <li> [ ] Implementatie van software (microfoon) in het systeem </li> <li> [ ] Implementatie van hardware (microfoon) in het systeem </li> </ul> | Akoestische waarneming is beschikbaar | **2** |
+| 8 | [ ] | **8** | Als opdrachtgever wil ik dat het eindproduct een robuuste behuizing heeft, zodat de microcontrollers en camera's goed beschermd zijn | <ul> <li> [ ] Mechatronisch ontwerp maken </li> <li> [ ] Behuizing Maken </li> </ul> | Er is een behuizing | **6** |
 
 ## Sprint planning 1
 ---
@@ -46,7 +46,7 @@ Door Tom Heijmans, Fabio Wolthuis, Dennis Zejnilović, Ali Haimed.
 | :----: | :---- | :---- | :---- | :---- | :----: |
 | [ ] | Hoog | 3 | Budget bepalen/pitchen  | Dennis, Ali | - |
 | [ ] | Hoog | 12 | Testen van onderdelen | Tom, Fabio | 5 |
-| [ ] | Hoog | 6 | Mechatronisch ontwerp, Architectuur ontwerp |  | - |
+| [ ] | Hoog | 6 | Mechatronisch ontwerp, Architectuur ontwerp, flow chart |  | - |
 
 
 ### Changelog
@@ -58,4 +58,5 @@ Door Tom Heijmans, Fabio Wolthuis, Dennis Zejnilović, Ali Haimed.
 | 1.2 | Product Backlog in Github toegevoegd in markdown – Fabio | 19-09-2025 |
 | 1.3 | Sprint planning 1 aangemaakt – Dennis | 21-09-2025 |
 | 2.0 | Sprint planning 2 aangemaakt – Dennis | 30-09-2025 |
+| 2.1 | Product backlog sprint planning 2 aangepast – Dennis | 3-10-2025 |
 
