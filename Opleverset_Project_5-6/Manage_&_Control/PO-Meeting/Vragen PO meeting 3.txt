@@ -2,13 +2,39 @@ Opdrachtgever meeting 3
 
 Vragen: (Duidelijkheid over wat de specificaties zijn van het project)
 - Door meeting 1 heen gaan en kijken of Martijn en Maarten hetzelfde beeld hadden.
+kijken wat de afstand is tussen de drone en cameras in 2D.
+
+alleen martijn emailen over technische vragen enz.
+alleen maarten emailen over budget vragen enz.
+dus we hoeven bijde niet in de cc te zetten.
+
+
 - Vertellen wat er tegen ons was gezegd door Maarten
+mhm
+
 - Aantekeningen maken van wat Martijn zegt tijdens de meeting en daarvan een mailtje sturen naar Maarten.
+kijken of het buiten getest kan worden.
+afstand moet bepaald worden van object.
+begin met binnen testen om afstand te bepalen.
+weergeven op plattegrond.
+
+
 
 De vragen hangen af van wat er verteld wordt door Martijn in het begin van de meeting
 - op wat voor afstand moet de drones gedetecteerd worden?
+
+
 - Met betrekking tot de afstand van 500 tot 1000 meter wat jij had genoemd over de camera’s, waar zouden jullie willen dat we gaan testen.
+als we ver genoeg zijn, kijken om die 500m tot 1000m object detectie te laten werken.
+
 - Hoe groot zal het gebied zijn wat we gaan lokaliseren?
+
+
 - Moet de camera bewegen tijdens de detectie?
+beginnen met stilstaand, later kijken of beweging kan.
+
 - Wat voor informatie moet er allemaal staan in de GUI?
+objecten in een kaart laten zien in relatie tot de camera (lijnen voor camera hoek, en een stip voor object(en)).
+
 - Hoe moet een drone/object weergeven worden?
+antwoord boven ^
