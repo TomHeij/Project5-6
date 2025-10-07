@@ -1,0 +1,14 @@
+Opdrachtgever meeting 3
+
+Vragen: (Duidelijkheid over wat de specificaties zijn van het project)
+- Door meeting 1 heen gaan en kijken of Martijn en Maarten hetzelfde beeld hadden.
+- Vertellen wat er tegen ons was gezegd door Maarten
+- Aantekeningen maken van wat Martijn zegt tijdens de meeting en daarvan een mailtje sturen naar Maarten.
+
+De vragen hangen af van wat er verteld wordt door Martijn in het begin van de meeting
+- op wat voor afstand moet de drones gedetecteerd worden?
+- Met betrekking tot de afstand van 500 tot 1000 meter wat jij had genoemd over de camera’s, waar zouden jullie willen dat we gaan testen.
+- Hoe groot zal het gebied zijn wat we gaan lokaliseren?
+- Moet de camera bewegen tijdens de detectie?
+- Wat voor informatie moet er allemaal staan in de GUI?
+- Hoe moet een drone/object weergeven worden?
