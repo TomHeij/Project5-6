@@ -22,9 +22,6 @@ class CameraThread(threading.Thread):
 
     def run(self):
         cap = cv2.VideoCapture(self.cam_index)
-        fgbg = cv2.createBackgroundSubtractorMOG2()
-
-
 
         if not cap.isOpened():
             print(f"Failed to open camera {self.cam_index}")
@@ -35,14 +32,8 @@ class CameraThread(threading.Thread):
             if not ret:
                 break
 
-            # frame, mask = apply_filters(frame, fgbg)
-
-            # resize_frame = cv2.resize(frame, (1280, 720))
-            # resize_mask = cv2.resize(mask, (1280, 720))
-
             # Display result
             cv2.imshow(f"Camera {self.cam_index}", frame)
-            # cv2.imshow("Mask", mask)
 
             # Exit on 'q' key
             if cv2.waitKey(30) & 0xFF == ord('q'):
@@ -51,29 +42,14 @@ class CameraThread(threading.Thread):
         cv2.destroyAllWindows()
 
 
-def apply_filters(frame, fgbg):
-    # Apply background subtraction
-    fgmask = fgbg.apply(frame)
-
-    # Find contours of moving objects
-    contours, _ = cv2.findContours(fgmask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
-
-    for cnt in contours:
-        # Filter small objects by area
-        if cv2.contourArea(cnt) > 500:
-            x, y, w, h = cv2.boundingRect(cnt)
-            cv2.rectangle(frame, (x, y), (x+w, y+h), (0, 255, 0), 2)
-
-    return frame, fgmask
-
-
-
 def main():
-    cams = detect_cameras();
-
+    cams = detect_cameras()
     for cam in cams:
-        CameraThread(cam).start()
+        print(f"Detected camera at index: {cam}")
 
+    camera = input("Enter camera index to use: ")
+    camera = int(camera)
+    CameraThread(camera).start()
 
 
 if __name__ == "__main__":
