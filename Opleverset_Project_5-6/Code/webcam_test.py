@@ -22,6 +22,12 @@ class CameraThread(threading.Thread):
 
     def run(self):
         cap = cv2.VideoCapture(self.cam_index)
+        # cap.set(cv2.CAP_PROP_FRAME_WIDTH, 1280)
+        # cap.set(cv2.CAP_PROP_FRAME_HEIGHT, 720)
+        # cap.set(cv2.CAP_PROP_FPS, 30)
+        print(f"Camera {self.cam_index} opened: {cap.get(cv2.CAP_PROP_FRAME_WIDTH)}x{cap.get(cv2.CAP_PROP_FRAME_HEIGHT)} @ {cap.get(cv2.CAP_PROP_FPS)} FPS")
+        
+
 
         if not cap.isOpened():
             print(f"Failed to open camera {self.cam_index}")
@@ -45,11 +51,7 @@ class CameraThread(threading.Thread):
 def main():
     cams = detect_cameras()
     for cam in cams:
-        print(f"Detected camera at index: {cam}")
-
-    camera = input("Enter camera index to use: ")
-    camera = int(camera)
-    CameraThread(camera).start()
+        CameraThread(cam).start()
 
 
 if __name__ == "__main__":
