@@ -1,0 +1,73 @@
+Experimenteel onderzoek workshop
+
+op de projectcyclus, blokje onderzoek.
+
+3 types. literatuur-, gebruikers-, en experimenteel-onderzoek (over elk moet een document in je opleverset)
+
+waarom is onderzoek handig, tijdens project, zijn er vragen die niet direct beantwoord kunnen worden, 
+daarvoor is onderzoek (die drie types die eerder zijn genoemd)
+
+je stelt een onderzoeks vraag, zoals "hoelang houdt mijn device het vol op 1 batterijlading" + paar andere voorbeelden, zie slides.
+goed de vraag kwantificeren (Fabio is afgeklaagd)
+
+Experimenteel Onderzoek doe je voor proefondervindelijke gegevens vaststellen, voor dit doel kan je dit op 2 manieren doen
+ - Een Hypothese testen
+ - Een bepaalde grootheid meten
+
+Wat is een Hypothese
+ - Een stelling die je d.m.v een experiment kunt bevestigen of niet kunt bevestigen. BV "Deze DC-Motor kan je direct aansturen met een ESP32, zonder een motor driver"
+
+Wat is een Grootheid
+ - Iets met een bepaalde Grootheid. BV Een bepaalde getalswaarde (5 kg) of snelheid (8 m/s)
+
+Een Hypothese kan ook een vergelijking zijn, zoals het vergelijken met een oudere versie/prototype/situatie. BV "werkt mijn code beter na refactoring"
+
+of een vergelijking van opties. BV "is een windmolen een betere energiebron dan een zonnepaneel"
+
+Houdt de situaties en condities (tijd, weer) zo veel mogelijk gelijk.
+
+Je kan ook een onderzoeksvraag stellen, bv "Hoeveel stroom gebruikt mijn prototype"
+Gebruik een testopstelling, zodat je gelijke condities hebt.
+Probeer de omstandigheden zo veel mogelijk te meten/controleren. (zodat de condities gelijk zijn)
+
+EXPERIMENT PROTOCOL (dit is het document wat je moet maken (eigenlijk een testrapport(kekw)))
+ - wat was de vraag die is gesteld
+	de vraagstelling moet Helder, Beknopt, Compleet en Duidelijk zijn. (dus kwantificeerbaar)
+ - waarmee meet ik en hoe meet ik.
+	Geef een beschrijving, of een tekening, of een schets, of een diagram van je testopstelling.
+	Geef aan welke meetinstrumenten je gebruikt.
+	Zorg dat alle gebruikte meetinstrumenten goed gekalibreerd zijn. (voorzien van de juiste schaalverdeling, volgens de producent (meegeleverd boekje))
+	Er staat een heel mooie voorbeeld tekening in de Slides, bekijk het mogelijk voor reference.
+ - Externe condities (weer, tijd)
+	Als het voor het experiment van belang is, leg dan vast wat de externe voorwaarden zijn van dit experiment. Zoals een windmolen bij ongeveer de zelfde windkrachten, of bij verkeer op Maandag 12:00 ofzo.
+ - Te verrichten handelingen.
+	Beschrijf wat er gedaan moet worden tijdens een experiment, bijv wat een assistent moet doen en hoe vaak.
+	Herhaal het experiment meerdere keren, zodat het meer betrouwbaar wordt.
+	Bijv: bij stijfheid van een Materiaal meten: "klem 1 kant stevig vast, en hang gewichten van 100g, 200g, 300g eraan en meet de doorbuiging.
+ - Wat voor data moet ik opschrijven
+	Geef aan welke grootheden, in eenheden, vastgelegd moeten worden tijdens het experiment.
+	Gebeurt dit automatisch (bv met een datalogger)? of gebeurt dit met de hand\
+	Liever teveel data dan te weinig, je kan het nog wegknippen of verkleinen als het teveel is
+ - Hoe ga je die data verwerken
+	Als het experiment is gedaan en de data is opgeschreven, kan je die analyseren (data-reductie (van 10 metingen naar 1 gemiddelde))
+
+er staat een voorbeeld van een experiment-protocol in de slides, i aint typing all of that.
+
+Experiment uitvoeren
+ - Houd een logboek (niet een schrijfwerk (Fabio is afgeklaagd)) van de experimenten bij. (blijkbaar is dit heel belangrijk, want het staat er fucking 5x)
+ - Bouw een opstelling.
+ - Volg Protocol
+ - Sla je resultaten bij
+ - Voer analyse uit
+ - Trek conclusie
+
+Rapport
+ - Maak een samenvatting van je onderzoek, zodat iemand niet helemaal door je hele onderzoek heen moet gaan, inculief je vraag en antwoord.
+ - Maak een inleiding van de vraag en context.
+ - Schrijf op wat er al is gedaan, bijv naar een literatuur onderzoek, (Theoretisch kader)
+ - Methode (experiment protocol)
+ - Resultaten
+ - Conclusie (geen nieuwe info, gewoon de data die je al hebt
+
+Quiz
+Opdracht (ze rennen weg (i feel like a prediction man))
