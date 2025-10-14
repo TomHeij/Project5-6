@@ -49,6 +49,22 @@ Door Tom Heijmans, Fabio Wolthuis, Dennis Zejnilović, Ali Haimed.
 | [ ] | Hoog | 6 | Mechatronisch ontwerp, Architectuur ontwerp, flow chart |  | - |
 
 
+
+## Sprint planning 3
+---
+
+**Startdatum:** 14-10-2025  
+**Einddatum:** 18-11-2025  
+**Doel:** Ontwerpfase afronden en het implementeren de detectie functinaliteit.
+
+| Status | Prioriteit | Benodigde tijd (uren) | Taken | Wie? | User story |
+| :----: | :---- | :---- | :---- | :---- | :----: |
+| [ ] | leeg | 3 | literatuur onderzoek | Dennis, Ali | - |
+| [ ] | Hoog | 8 | Mechatronisch ontwerp uitbreiden | Fabio | 3 |
+| [ ] | Hoog | 5 | Eerste versie van de GUI maken |alle  | 3 |
+| [ ] | Hoog | 6 | Detectie functionaliteit implementeren | Fabio, Tom | 8 |
+
+
 ### Changelog
 
 | Versie | Wat/Wie | Datum |
