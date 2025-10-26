@@ -5,7 +5,7 @@
 # 2d punt krijgen
 # 2d punt op "map" projecteren
 # GUI
-# verschil tussen cpu en gpu verwerking meten
+# verschil tussen cpu en gpu verwerking meten (?)
 # kijken naar resoluties,fps waardes en compressie
 # configuratie bestand voor instellingen
 # synchronisatie tussen twee camera's
