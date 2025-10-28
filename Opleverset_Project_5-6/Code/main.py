@@ -59,7 +59,7 @@ class DebugWindow(QtWidgets.QMainWindow):
         bytes_per_line = 3 * width
         q_img = QtGui.QImage(cv_img.data, width, height, bytes_per_line, QtGui.QImage.Format.Format_BGR888)
         pixmap = QtGui.QPixmap.fromImage(q_img)
-        scaled_pixmap = pixmap.scaled(self.cameraResolution, QtCore.Qt.AspectRatioMode.KeepAspectRatio)
+        scaled_pixmap = pixmap.scaled(self.cameraResolution[0], self.cameraResolution[1], QtCore.Qt.AspectRatioMode.KeepAspectRatio)
         return scaled_pixmap
         
         
