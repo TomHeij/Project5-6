@@ -39,6 +39,9 @@ class DebugWindow(QtWidgets.QMainWindow):
         self.setWindowTitle("Debug Window")
 
         self.cameraResolution = (1280, 720)
+        
+        self.camL.setMinimumSize(self.cameraResolution[0], self.cameraResolution[1])
+        self.camR.setMinimumSize(self.cameraResolution[0], self.cameraResolution[1])
 
         self.camera1 = StereoCamera(0, self.cameraResolution)
         self.camera2 = StereoCamera(1, self.cameraResolution)
