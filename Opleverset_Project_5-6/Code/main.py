@@ -38,7 +38,7 @@ class DebugWindow(QtWidgets.QMainWindow):
         uic.loadUi(os.path.join("elements", "DebugWindow.ui"), self)
         self.setWindowTitle("Debug Window")
 
-        self.cameraResolution = (1280, 720)
+        self.cameraResolution = (640, 380)
         
         self.camL.setMinimumSize(self.cameraResolution[0], self.cameraResolution[1])
         self.camR.setMinimumSize(self.cameraResolution[0], self.cameraResolution[1])
