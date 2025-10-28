@@ -16,7 +16,7 @@ class StereoCameraThread(threading.Thread):
             
             # Configure camera
             config = picam.create_preview_configuration(
-                main={"format": "RGB888", "size": (1280, 720)}
+                main={"format": "RGB888", "size": (1280, 720), }
             )
             picam.configure(config)
             picam.start()
