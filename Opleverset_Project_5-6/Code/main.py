@@ -55,12 +55,6 @@ class DebugWindow(QtWidgets.QMainWindow):
         self.camR.setPixmap(QtGui.QPixmap.fromImage(
             QtGui.QImage(capture2.data, capture2.shape[1], capture2.shape[0], capture2.strides[0], QtGui.QImage.Format.Format_BGR888)
         ))
-        
-        if self.closeButton.clicked:
-            self.camera1.stop()
-            self.camera2.stop()
-            
-
 
 
 # main application class
