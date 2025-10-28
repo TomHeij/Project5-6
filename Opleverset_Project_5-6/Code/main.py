@@ -38,9 +38,11 @@ class DebugWindow(QtWidgets.QMainWindow):
         uic.loadUi(os.path.join("elements", "DebugWindow.ui"), self)
         self.setWindowTitle("Debug Window")
 
-        self.camera1 = StereoCamera(0)
-        self.camera2 = StereoCamera(1)
-        
+        self.cameraResolution = (1280, 720)
+
+        self.camera1 = StereoCamera(0, self.cameraResolution)
+        self.camera2 = StereoCamera(1, self.cameraResolution)
+
         self.timer = QTimer()
         self.timer.timeout.connect(self.start_capture)
         self.timer.start(1)  # Update every 1 ms
@@ -49,12 +51,20 @@ class DebugWindow(QtWidgets.QMainWindow):
         capture1 = self.camera1.get_frame()
         capture2 = self.camera2.get_frame()
         
-        self.camL.setPixmap(QtGui.QPixmap.fromImage(
-            QtGui.QImage(capture1.data, capture1.shape[1], capture1.shape[0], capture1.strides[0], QtGui.QImage.Format.Format_BGR888)
-        ))
-        self.camR.setPixmap(QtGui.QPixmap.fromImage(
-            QtGui.QImage(capture2.data, capture2.shape[1], capture2.shape[0], capture2.strides[0], QtGui.QImage.Format.Format_BGR888)
-        ))
+        self.camL.setPixmap(self.cv2_to_qt(capture1))
+        self.camR.setPixmap(self.cv2_to_qt(capture2))
+        
+    def cv2_to_qt(self, cv_img):
+        height, width, channel = cv_img.shape
+        bytes_per_line = 3 * width
+        q_img = QtGui.QImage(cv_img.data, width, height, bytes_per_line, QtGui.QImage.Format.Format_BGR888)
+        pixmap = QtGui.QPixmap.fromImage(q_img)
+        scaled_pixmap = pixmap.scaled(self.cameraResolution, QtCore.Qt.AspectRatioMode.KeepAspectRatio)
+        return scaled_pixmap
+        
+        
+        
+        
 
 
 # main application class
@@ -62,7 +72,7 @@ class DebugWindow(QtWidgets.QMainWindow):
 # sterio camera class
 
 class StereoCamera:
-    def __init__(self, index, resolution=(1280, 720)):
+    def __init__(self, index, resolution):
         self.index = index
         self.camera = Picamera2(self.index)
         self.config = self.camera.create_preview_configuration(
@@ -74,7 +84,7 @@ class StereoCamera:
         
     def get_frame(self):
         frame = self.camera.capture_array()
-        # frame = cv2.cvtColor(frame, cv2.COLOR_RGB2BGR)
+        frame = cv2.cvtColor(frame, cv2.COLOR_RGB2BGR)
         # frame = cv2.applyColorMap(frame, cv2.COLORMAP_JET)
         return frame
         
