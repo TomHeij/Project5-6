@@ -43,8 +43,8 @@ class DebugWindow(QtWidgets.QWidget):
         self.camL.setMinimumSize(self.cameraResolution[0], self.cameraResolution[1])
         self.camR.setMinimumSize(self.cameraResolution[0], self.cameraResolution[1])
 
-        self.camera1 = StereoCamera(0, self.cameraResolution)
-        self.camera2 = StereoCamera(1, self.cameraResolution)
+        self.camera1 = StereoCamera(1, self.cameraResolution)
+        self.camera2 = StereoCamera(0, self.cameraResolution)
 
         self.timer = QTimer()
         self.timer.timeout.connect(self.start_capture)
