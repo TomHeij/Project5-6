@@ -16,7 +16,6 @@
 
 # toggle debug cameras on/off
 
-from cv2_enumerate_cameras import enumerate_cameras
 from picamera2 import Picamera2
 import numpy as np
 import threading
