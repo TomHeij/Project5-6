@@ -1,11 +1,11 @@
 from ultralytics import YOLO
 import cv2
 
-model = YOLO("yolov8n.pt")  # of jouw gekozen model
+model = YOLO("yolov8m.pt")  # of jouw gekozen model
 
 cap = cv2.VideoCapture(0)  # gebruik index 0 (of pas aan naar jouw camera)
-cap.set(cv2.CAP_PROP_FRAME_WIDTH, 640)
-cap.set(cv2.CAP_PROP_FRAME_HEIGHT, 480)
+cap.set(cv2.CAP_PROP_FRAME_WIDTH, 1280)
+cap.set(cv2.CAP_PROP_FRAME_HEIGHT, 720)
 
 while True:
     ret, frame = cap.read()
