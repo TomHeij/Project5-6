@@ -32,7 +32,7 @@ from PyQt6.QtCore import QTimer
 
 # debug window class
 
-class DebugWindow(QtWidgets.QMainWindow):
+class DebugWindow(QtWidgets.QWidget):
     def __init__(self):
         super(DebugWindow, self).__init__()
         uic.loadUi(os.path.join("elements", "DebugWindow.ui"), self)
@@ -79,7 +79,7 @@ class StereoCamera:
         self.index = index
         self.camera = Picamera2(self.index)
         self.config = self.camera.create_preview_configuration(
-            main={"format": "RGB888", "size": resolution}
+            main={"format": "BGR888", "size": resolution}
         )
         self.camera.configure(self.config)
         self.camera.start()
@@ -87,6 +87,7 @@ class StereoCamera:
         
     def get_frame(self):
         frame = self.camera.capture_array()
+        frame = cv2.flip(frame, -1)
         frame = cv2.cvtColor(frame, cv2.COLOR_RGB2BGR)
         # frame = cv2.applyColorMap(frame, cv2.COLORMAP_JET)
         return frame
