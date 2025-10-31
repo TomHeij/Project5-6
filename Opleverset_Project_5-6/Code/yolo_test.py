@@ -17,16 +17,21 @@ while True:
         print("Geen beeld van de camera!")
         break
 
-    if time % 30 == 0:  # Verwerk elke 30e frame
-        results = model(frame, stream=True)
-        
-        for r in results:
+    # if time % 30 == 0:  # Verwerk elke 30e frame
+    #     results = model(frame, stream=True)
+
+    #     for r in results:
+    #         annotated_frame = r.plot()
+    #         cv2.imshow("YOLO Detectie USB-Camera", annotated_frame)
+    # else:
+    #     cv2.imshow("YOLO Detectie USB-Camera", frame)
+
+    # time += 1
+    results = model(frame, stream=True)
+    
+    for r in results:
             annotated_frame = r.plot()
             cv2.imshow("YOLO Detectie USB-Camera", annotated_frame)
-    else:
-        cv2.imshow("YOLO Detectie USB-Camera", frame)
-
-    time += 1
 
     if cv2.waitKey(1) & 0xFF == ord('q'):
         break
