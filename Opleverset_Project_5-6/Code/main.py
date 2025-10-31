@@ -1,7 +1,7 @@
 # TODO:
 # multi-threading
 # diepte kaart
-# stereo camera support
+#! stereo camera support 
 # 2d punt krijgen
 # 2d punt op "map" projecteren
 # GUI
@@ -81,7 +81,7 @@ class StereoCamera:
         self.camera = Picamera2(self.index)
         self.model = YOLO("yolo11n_ncnn_model")
         self.config = self.camera.create_preview_configuration(
-            main={"format": "BGR888", "size": resolution}
+            main={"format": "BGR888", "size": (resolution[0], resolution[1])}
         )
         self.camera.configure(self.config)
         self.camera.start()
@@ -91,10 +91,10 @@ class StereoCamera:
         frame = self.camera.capture_array()
         frame = cv2.flip(frame, -1)
         frame = cv2.cvtColor(frame, cv2.COLOR_RGB2BGR)
+        # frame = cv2.applyColorMap(frame, cv2.COLORMAP_JET)
         results = self.model(frame, stream=True)
         for r in results:
             frame = r.plot()
-        # frame = cv2.applyColorMap(frame, cv2.COLORMAP_JET)
         return frame
         
             
