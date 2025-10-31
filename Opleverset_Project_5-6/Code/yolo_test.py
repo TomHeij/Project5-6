@@ -1,7 +1,7 @@
 from ultralytics import YOLO
 import cv2
 
-model = YOLO("yolo11n.pt")  # of jouw gekozen model
+model = YOLO("yolo11n_ncnn_model")  # of jouw gekozen model
 # Export to NCNN format
 # model.export(format="ncnn")  # creates '/yolo11n_ncnn_model'
 
