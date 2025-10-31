@@ -3,7 +3,7 @@ import cv2
 
 model = YOLO("yolo11n.pt")  # of jouw gekozen model
 # Export to NCNN format
-model.export(format="ncnn")  # creates '/yolo11n_ncnn_model'
+# model.export(format="ncnn")  # creates '/yolo11n_ncnn_model'
 
 cap = cv2.VideoCapture(0)  # gebruik index 0 (of pas aan naar jouw camera)
 cap.set(cv2.CAP_PROP_FRAME_WIDTH, 1280)
