@@ -1,6 +1,5 @@
 import cv2 
 from cv2_enumerate_cameras import enumerate_cameras
-from picamera2 import Picamera2
 
 
 def get_available_cameras():
