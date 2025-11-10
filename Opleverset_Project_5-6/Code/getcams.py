@@ -15,7 +15,11 @@ def main():
     cams = get_available_cameras()
     for cam in cams:
         print(f"Detected camera at index: {cam}")
-    
-    
+        try:
+            cv2.VideoCapture(cam).release()
+        except Exception as e:
+            print(f"Error releasing camera {cam}: {e}")
+
+
 if __name__ == "__main__":
     main()
