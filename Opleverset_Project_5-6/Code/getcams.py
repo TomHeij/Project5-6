@@ -1,5 +1,6 @@
 import cv2 
 from cv2_enumerate_cameras import enumerate_cameras
+from picamera2 import Picamera2
 
 
 def get_available_cameras():
@@ -23,4 +24,6 @@ def main():
 
 
 if __name__ == "__main__":
-    main()
+    # main()
+    picam = Picamera2(0)
+    picam.start()
