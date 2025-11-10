@@ -16,7 +16,7 @@ def main():
     cams = get_available_cameras()
     for cam in cams:
         print(f"Detected camera at index: {cam}")
-        cap = cv2.VideoCapture(cam)
+        cap = cv2.VideoCapture(cam, cv2.CAP_V4L2)
         
         if not cap.isOpened():
             print(f"Failed to open camera {cam}")
@@ -24,6 +24,4 @@ def main():
 
 
 if __name__ == "__main__":
-    # main()
-    picam = Picamera2(0)
-    picam.start()
+    main()
