@@ -107,7 +107,7 @@ class MainApp(QtWidgets.QMainWindow):
 class StereoCamera:
     def __init__(self, index, resolution):
         self.index = index
-        self.model = YOLO("yolo11_ncnn_model")  # load a model
+        self.model = YOLO("./yolo11_ncnn_model")  # load a model
         self.camera = Picamera2(self.index)
         self.config = self.camera.create_preview_configuration(
             main={"format": "BGR888", "size": (resolution[0], resolution[1])}
