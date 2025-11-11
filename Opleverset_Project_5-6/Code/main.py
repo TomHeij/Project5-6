@@ -153,7 +153,7 @@ class StereoCamera:
             
             frame = r.plot()
         
-        return frame, [cx, cy]
+        return frame
     
     
 
