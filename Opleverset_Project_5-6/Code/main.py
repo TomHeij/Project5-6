@@ -103,12 +103,10 @@ class DebugWindow(QtWidgets.QWidget):
             # 73 horizontal
             # 50 vertical
             
-            # theda_rad = math.radians(83)
+            theda_rad = math.radians(101.3721)
             disparity = (x1 - x2)
-            if disparity == 0:
-                continue  # avoid division by zero
-            # D = (0.06 * self.cameraResolution[0]) / (2 * math.tan(theda_rad / 2) * disparity)
-            D = (9.8267716535 * 0.06) / disparity
+            D = (0.06 * self.cameraResolution[0]) / (2 * math.tan(theda_rad / 2) * disparity)
+            # D = (9.8267716535 * 0.06) / disparity
             
             print(f"Distance between points ({x1}, {y1}) and ({x2}, {y2}): {D:.2f} meters")
 
