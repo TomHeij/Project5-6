@@ -88,6 +88,22 @@ class DebugWindow(QtWidgets.QWidget):
         display_width = int(self.cameraResolution[0] * self.cameraDisplayScale)
         scaled_pixmap = pixmap.scaled(display_width, display_height, QtCore.Qt.AspectRatioMode.KeepAspectRatio)
         return scaled_pixmap
+    
+    def get_distance(self, point_left, point_right):
+        
+        # model een center punt geven in obejct box
+        # center punt naar 2d coördinaten omzetten 
+        
+        
+        # Placeholder function for distance calculation
+        # Implement stereo vision depth calculation here
+        disparity = abs(point_left[0] - point_right[0])
+        if disparity == 0:
+            return float('inf')  # Avoid division by zero
+        focal_length = 1.0  # Example focal length in pixels
+        baseline = 0.1      # Example baseline in meters
+        distance = (focal_length * baseline) / disparity
+        return distance
         
         
         
@@ -126,27 +142,14 @@ class StereoCamera:
         
         # results returnen ?
         results = self.model(frame, stream=True, verbose=False)
+        print("Results:", results.xyxy[0])
         # 1 frame returnen ?
         for r in results:
             frame = r.plot()
         
-        return results.plot()
+        return frame
     
-    def get_distance(self, point_left, point_right):
-        
-        # model een center punt geven in obejct box
-        # center punt naar 2d coördinaten omzetten 
-        
-        
-        # Placeholder function for distance calculation
-        # Implement stereo vision depth calculation here
-        disparity = abs(point_left[0] - point_right[0])
-        if disparity == 0:
-            return float('inf')  # Avoid division by zero
-        focal_length = 1.0  # Example focal length in pixels
-        baseline = 0.1      # Example baseline in meters
-        distance = (focal_length * baseline) / disparity
-        return distance
+    
 
 
 # resolution options helper function (moet nog verder uitgewekt worden)
