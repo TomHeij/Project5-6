@@ -139,7 +139,7 @@ class StereoCamera:
         # frame = cv2.applyColorMap(frame, cv2.COLORMAP_JET)
         
         # results returnen ?
-        results = self.model(frame, stream=True, verbose=False, conf=0.2)
+        results = self.model(frame, stream=True, verbose=False, conf=0.31)
         # 1 frame returnen ?
         for r in results:
             boxes = r.boxes
