@@ -103,7 +103,7 @@ class DebugWindow(QtWidgets.QWidget):
             # 73 horizontal
             # 50 vertical
             
-            distance = 0.06 * self.cameraResolution[0] / ( 2*np.tan(np.radians(83)/2) * (x1 - x2) )
+            distance = 0.06 * self.cameraResolution[0] / ( 2*(np.tan(np.degrees(101)/2)) * (x1 - x2) )
             print(f"Distance between points ({x1}, {y1}) and ({x2}, {y2}): {distance:.2f} meters")
 
 
