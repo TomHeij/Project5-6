@@ -97,13 +97,12 @@ class DebugWindow(QtWidgets.QWidget):
         # center punt naar 2d coördinaten omzetten
         for (x1, y1), (x2, y2) in zip(coords_left, coords_right):
             
-            # angle of view is 83 degrees horizontal for picamera v2
             # 101.3721 uit online calc
             # 83 diagonaal
             # 73 horizontal
             # 50 vertical
             
-            distance = 0.06 * self.cameraResolution[0] / ( 2*(np.tan(np.degrees(101)/2)) * (x1 - x2) )
+            distance = (0.06 * self.cameraResolution[0]) / ( 2*(np.tan(np.degrees(83)/2)) * (x1 - x2) )
             print(f"Distance between points ({x1}, {y1}) and ({x2}, {y2}): {distance:.2f} meters")
 
 
