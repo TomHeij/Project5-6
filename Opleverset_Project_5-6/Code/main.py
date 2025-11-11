@@ -16,6 +16,13 @@
 # first time install script
 # toggle debug cameras on/off
 
+
+# ncnn
+# vulkan
+# yolo model door ncnn converteren
+# onnx
+# yolo11n
+
 from picamera2 import Picamera2
 from ultralytics import YOLO
 import numpy as np
@@ -77,7 +84,7 @@ class DebugWindow(QtWidgets.QWidget):
         bytes_per_line = 3 * width
         q_img = QtGui.QImage(cv_img.data, width, height, bytes_per_line, QtGui.QImage.Format.Format_BGR888)
         pixmap = QtGui.QPixmap.fromImage(q_img)
-        scaled_pixmap = pixmap.scaled(self.cameraResolution[0] * self.cameraDisplaySize, self.cameraResolution[1] * self.cameraDisplaySize, QtCore.Qt.AspectRatioMode.KeepAspectRatio)
+        scaled_pixmap = pixmap.scaled((self.cameraResolution[0] * self.cameraDisplaySize), (self.cameraResolution[1] * self.cameraDisplaySize), QtCore.Qt.AspectRatioMode.KeepAspectRatio)
         return scaled_pixmap
         
         
@@ -101,7 +108,6 @@ class StereoCamera:
     def __init__(self, index, resolution):
         self.index = index
         self.camera = Picamera2(self.index)
-        self.model = YOLO("yolo11n_ncnn_model")
         self.config = self.camera.create_preview_configuration(
             main={"format": "BGR888", "size": (resolution[0], resolution[1])}
         )
