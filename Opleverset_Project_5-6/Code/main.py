@@ -45,7 +45,7 @@ class DebugWindow(QtWidgets.QWidget):
         self.setWindowTitle("Debug Window")
 
         self.cameraDisplayScale = 1  # scaling factor for camera display size
-        self.cameraResolution = (640, 480)
+        self.cameraResolution = (1280, 720)
         self.camIds = (0, 1)
         
         self.camL.setMinimumSize(self.cameraResolution[0], self.cameraResolution[1])
@@ -60,12 +60,12 @@ class DebugWindow(QtWidgets.QWidget):
 
     def start_capture(self):
         time_start = time.time()
-        capture1 = self.camera1.get_frame()
-        capture2 = self.camera2.get_frame()
+        capture1, coords1 = self.camera1.get_frame()
+        capture2, coords2 = self.camera2.get_frame()
         time_end = time.time()
 
         self.update_metrics(time_start, time_end)
-        # self.get_distance(center1, center2)
+        self.get_distance(coords1, coords2)
         
 
         self.camL.setPixmap(self.cv2_to_qt(capture1))
@@ -90,22 +90,23 @@ class DebugWindow(QtWidgets.QWidget):
         display_width = int(self.cameraResolution[0] * self.cameraDisplayScale)
         scaled_pixmap = pixmap.scaled(display_width, display_height, QtCore.Qt.AspectRatioMode.KeepAspectRatio)
         return scaled_pixmap
-    
-    def get_distance(self, point_left, point_right):
-        
-        # model een center punt geven in obejct box
-        # center punt naar 2d coördinaten omzetten 
-        center_left = (point_left[0], point_left[1])
-        center_right = (point_right[0], point_right[1])
-        
-        # distance tussen die 2 punten berekenen
-        
 
-        
-        
-        
-        
-        
+    def get_distance(self, coords_left, coords_right):
+
+        # model een center punt geven in obejct box
+        # center punt naar 2d coördinaten omzetten
+        for (x1, y1), (x2, y2) in zip(coords_left, coords_right):
+            center_left = (x1, y1)
+            center_right = (x2, y2)
+            
+            baseline = 0.06
+            focal_length = 3.04  # in mm
+            pixel_size = 0.00112  # in mm/pixel
+            disparity = abs(x1 - x2)
+            if disparity == 0:
+                continue  # voorkom deling door nul
+            distance = (focal_length * baseline) / (disparity * pixel_size)  # in mm
+            print(f"Distance between points {center_left} and {center_right}: {distance:.2f} mm")
 
 
 # main application class
@@ -139,21 +140,24 @@ class StereoCamera:
         # frame = cv2.applyColorMap(frame, cv2.COLORMAP_JET)
         
         # results returnen ?
-        results = self.model(frame, stream=True, verbose=False, conf=0.31)
+        results = self.model(frame, stream=True, verbose=False, conf=0.5)
         # 1 frame returnen ?
+        coords = []
+        
         for r in results:
             boxes = r.boxes
             for box in boxes:
                 x1, y1, x2, y2 = box.xyxy[0].cpu().numpy()
                 cx = int((x1 + x2) / 2)
                 cy = int((y1 + y2) / 2)
+                coords.append((cx, cy))
                 # print(f"Camera {self.index} detected object at ({cx}, {cy})")
                 
                 cv2.circle(frame, (cx, cy), 5, (0, 255, 0), -1)
             
             frame = r.plot()
         
-        return frame
+        return frame, coords
     
     
 
