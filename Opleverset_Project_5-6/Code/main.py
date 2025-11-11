@@ -44,7 +44,7 @@ class DebugWindow(QtWidgets.QWidget):
         uic.loadUi(os.path.join("elements", "DebugWindow.ui"), self)
         self.setWindowTitle("Debug Window")
 
-        self.cameraDisplaySize = 0.5  # 50% van de originele resolutie
+        self.cameraDisplayScale = 0.5  # 50% van de originele resolutie
         self.cameraResolution = (640, 380)
         self.camIds = (0, 1)
         
@@ -84,7 +84,9 @@ class DebugWindow(QtWidgets.QWidget):
         bytes_per_line = 3 * width
         q_img = QtGui.QImage(cv_img.data, width, height, bytes_per_line, QtGui.QImage.Format.Format_BGR888)
         pixmap = QtGui.QPixmap.fromImage(q_img)
-        scaled_pixmap = pixmap.scaled((self.cameraResolution[0] * self.cameraDisplaySize), (self.cameraResolution[1] * self.cameraDisplaySize), QtCore.Qt.AspectRatioMode.KeepAspectRatio)
+        display_height = int(self.cameraResolution[0] * self.cameraDisplayScale)
+        display_width = int(self.cameraResolution[1] * self.cameraDisplayScale)
+        scaled_pixmap = pixmap.scaled(display_width, display_height, QtCore.Qt.AspectRatioMode.KeepAspectRatio)
         return scaled_pixmap
         
         
@@ -107,7 +109,7 @@ class MainApp(QtWidgets.QMainWindow):
 class StereoCamera:
     def __init__(self, index, resolution):
         self.index = index
-        self.model = YOLO("./yolo11_ncnn_model")  # load a model
+        self.model = YOLO("./yolo11n_ncnn_model")  # load a model
         self.camera = Picamera2(self.index)
         self.config = self.camera.create_preview_configuration(
             main={"format": "BGR888", "size": (resolution[0], resolution[1])}
