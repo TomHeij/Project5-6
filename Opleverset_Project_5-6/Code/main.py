@@ -45,14 +45,14 @@ class DebugWindow(QtWidgets.QWidget):
         self.setWindowTitle("Debug Window")
 
         self.cameraDisplayScale = 1  # scaling factor for camera display size
-        self.cameraResolution = (640, 380)
+        self.cameraResolution = (1280, 720)
         self.camIds = (0, 1)
         
         self.camL.setMinimumSize(self.cameraResolution[0], self.cameraResolution[1])
         self.camR.setMinimumSize(self.cameraResolution[0], self.cameraResolution[1])
 
-        self.camera1 = StereoCamera(self.camIds[1], self.cameraResolution)
-        self.camera2 = StereoCamera(self.camIds[0], self.cameraResolution)
+        self.camera1 = StereoCamera(self.camIds[0], self.cameraResolution)
+        self.camera2 = StereoCamera(self.camIds[1], self.cameraResolution)
 
         self.timer = QTimer()
         self.timer.timeout.connect(self.start_capture)
@@ -141,7 +141,7 @@ class StereoCamera:
         # frame = cv2.applyColorMap(frame, cv2.COLORMAP_JET)
         
         # results returnen ?
-        results = self.model(frame, stream=True, verbose=False, conf=0.4)
+        results = self.model(frame, stream=True, verbose=False, conf=0.6)
         # 1 frame returnen ?
         for r in results:
             boxes = r.boxes
