@@ -96,17 +96,15 @@ class DebugWindow(QtWidgets.QWidget):
         # model een center punt geven in obejct box
         # center punt naar 2d coördinaten omzetten
         for (x1, y1), (x2, y2) in zip(coords_left, coords_right):
-            center_left = (x1, y1)
-            center_right = (x2, y2)
-
-            baseline = 60  # in mm
-            focal_length = 2.6  # in mm
-            pixel_size = 0.00112  # in mm/pixel
-            disparity = abs(x1 - x2)
-            if disparity == 0:
-                continue  # voorkom deling door nul
-            distance = (focal_length * baseline) / (disparity * pixel_size)  # in mm
-            print(f"Distance between points {center_left} and {center_right}: {distance / 10:.2f} cm")
+            
+            # angle of view is 83 degrees horizontal for picamera v2
+            # 101.3721 uit online calc
+            # 83 diagonaal
+            # 73 horizontal
+            # 50 vertical
+            
+            distance = 0.06 * self.cameraResolution[0] / ( 2*np.tan(np.radians(101)/2) * (x1 - x2) )
+            print(f"Distance between points ({x1}, {y1}) and ({x2}, {y2}): {distance:.2f} meters")
 
 
 # main application class
