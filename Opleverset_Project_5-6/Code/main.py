@@ -45,7 +45,7 @@ class DebugWindow(QtWidgets.QWidget):
         self.setWindowTitle("Debug Window")
 
         self.cameraDisplayScale = 1  # scaling factor for camera display size
-        self.cameraResolution = (1280, 720)
+        self.cameraResolution = (1920, 1080)
         self.camIds = (0, 1)
         
         self.camL.setMinimumSize(self.cameraResolution[0], self.cameraResolution[1])
