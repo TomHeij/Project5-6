@@ -45,7 +45,7 @@ class DebugWindow(QtWidgets.QWidget):
         self.setWindowTitle("Debug Window")
 
         self.cameraDisplayScale = 1  # scaling factor for camera display size
-        self.cameraResolution = getResolution(0)
+        self.cameraResolution = (640, 380)
         self.camIds = (0, 1)
         
         self.camL.setMinimumSize(self.cameraResolution[0], self.cameraResolution[1])
@@ -122,7 +122,7 @@ class StereoCamera:
         frame = self.camera.capture_array()    
         frame = cv2.flip(frame, -1)
         frame = cv2.cvtColor(frame, cv2.COLOR_RGB2BGR)
-        # frame = cv2.applyColorMap(frame, cv2.COLORMAP_JET)    
+        # frame = cv2.applyColorMap(frame, cv2.COLORMAP_JET)
         
         # results returnen ?
         results = self.model(frame, stream=True, verbose=False)
@@ -130,10 +130,27 @@ class StereoCamera:
         for r in results:
             frame = r.plot()
         
-        return frame
+        return results
     
-def getResolution(resolution):
+    def get_distance(self, point_left, point_right):
+        
+        # model een center punt geven in obejct box
+        # center punt naar 2d coördinaten omzetten 
+        
+        
+        # Placeholder function for distance calculation
+        # Implement stereo vision depth calculation here
+        disparity = abs(point_left[0] - point_right[0])
+        if disparity == 0:
+            return float('inf')  # Avoid division by zero
+        focal_length = 1.0  # Example focal length in pixels
+        baseline = 0.1      # Example baseline in meters
+        distance = (focal_length * baseline) / disparity
+        return distance
 
+
+# resolution options helper function (moet nog verder uitgewekt worden)
+def getResolution(resolution):
     options = [
         (640, 480),
         (1280, 720),
@@ -141,11 +158,9 @@ def getResolution(resolution):
         (2560, 1440),
         (3840, 2160)
     ]
-    
     if resolution not in options:
         options.insert(0, resolution)
         return options
-    
     return options[resolution]
 
 
