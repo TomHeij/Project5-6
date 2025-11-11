@@ -130,7 +130,7 @@ class StereoCamera:
         for r in results:
             frame = r.plot()
         
-        return results
+        return results[0].orig_img
     
     def get_distance(self, point_left, point_right):
         
