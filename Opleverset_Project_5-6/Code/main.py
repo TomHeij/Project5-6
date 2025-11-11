@@ -27,6 +27,7 @@ from picamera2 import Picamera2
 from ultralytics import YOLO
 import numpy as np
 import threading
+import math
 import time
 import cv2
 import sys
@@ -102,8 +103,13 @@ class DebugWindow(QtWidgets.QWidget):
             # 73 horizontal
             # 50 vertical
             
-            distance = (0.06 * self.cameraResolution[0]) / ( 2*(np.tan(np.degrees(83)/2)) * (x1 - x2) )
-            print(f"Distance between points ({x1}, {y1}) and ({x2}, {y2}): {distance:.2f} meters")
+            theda_rad = math.radians(73)
+            disparity = (x1 - x2)
+            if disparity == 0:
+                continue  # avoid division by zero
+            D = (0.06 * self.screenResolution[0]) / (2 * math.tan(theda_rad / 2) * disparity)
+            
+            print(f"Distance between points ({x1}, {y1}) and ({x2}, {y2}): {D:.2f} meters")
 
 
 # main application class
