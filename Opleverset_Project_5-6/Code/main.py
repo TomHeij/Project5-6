@@ -98,8 +98,8 @@ class DebugWindow(QtWidgets.QWidget):
         for (x1, y1), (x2, y2) in zip(coords_left, coords_right):
             center_left = (x1, y1)
             center_right = (x2, y2)
-            
-            baseline = 0.06
+
+            baseline = 60  # in mm
             focal_length = 3.04  # in mm
             pixel_size = 0.00112  # in mm/pixel
             disparity = abs(x1 - x2)
