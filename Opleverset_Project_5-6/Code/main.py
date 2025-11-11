@@ -103,7 +103,7 @@ class DebugWindow(QtWidgets.QWidget):
             # 73 horizontal
             # 50 vertical
             
-            theda_rad = math.radians(73)
+            theda_rad = math.radians(101.3721)
             disparity = (x1 - x2)
             if disparity == 0:
                 continue  # avoid division by zero
