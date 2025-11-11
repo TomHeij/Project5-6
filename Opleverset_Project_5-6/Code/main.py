@@ -44,15 +44,15 @@ class DebugWindow(QtWidgets.QWidget):
         uic.loadUi(os.path.join("elements", "DebugWindow.ui"), self)
         self.setWindowTitle("Debug Window")
 
-        self.cameraDisplaySize = 0.5  # 50% van de originele resolutie
-        self.cameraResolution = (640, 380)
+        self.cameraDisplayScale = 1  # scaling factor for camera display size
+        self.cameraResolution = (1280, 720)
         self.camIds = (0, 1)
         
         self.camL.setMinimumSize(self.cameraResolution[0], self.cameraResolution[1])
         self.camR.setMinimumSize(self.cameraResolution[0], self.cameraResolution[1])
 
-        self.camera1 = StereoCamera(self.camIds[1], self.cameraResolution)
-        self.camera2 = StereoCamera(self.camIds[0], self.cameraResolution)
+        self.camera1 = StereoCamera(self.camIds[0], self.cameraResolution)
+        self.camera2 = StereoCamera(self.camIds[1], self.cameraResolution)
 
         self.timer = QTimer()
         self.timer.timeout.connect(self.start_capture)
@@ -60,11 +60,13 @@ class DebugWindow(QtWidgets.QWidget):
 
     def start_capture(self):
         time_start = time.time()
-        capture1 = self.camera1.get_frame()
-        capture2 = self.camera2.get_frame()
+        capture1, coords1 = self.camera1.get_frame()
+        capture2, coords2 = self.camera2.get_frame()
         time_end = time.time()
 
         self.update_metrics(time_start, time_end)
+        self.get_distance(coords1, coords2)
+        
 
         self.camL.setPixmap(self.cv2_to_qt(capture1))
         self.camR.setPixmap(self.cv2_to_qt(capture2))
@@ -84,12 +86,27 @@ class DebugWindow(QtWidgets.QWidget):
         bytes_per_line = 3 * width
         q_img = QtGui.QImage(cv_img.data, width, height, bytes_per_line, QtGui.QImage.Format.Format_BGR888)
         pixmap = QtGui.QPixmap.fromImage(q_img)
-        scaled_pixmap = pixmap.scaled((self.cameraResolution[0] * self.cameraDisplaySize), (self.cameraResolution[1] * self.cameraDisplaySize), QtCore.Qt.AspectRatioMode.KeepAspectRatio)
+        display_height = int(self.cameraResolution[1] * self.cameraDisplayScale)
+        display_width = int(self.cameraResolution[0] * self.cameraDisplayScale)
+        scaled_pixmap = pixmap.scaled(display_width, display_height, QtCore.Qt.AspectRatioMode.KeepAspectRatio)
         return scaled_pixmap
-        
-        
-        
-        
+
+    def get_distance(self, coords_left, coords_right):
+
+        # model een center punt geven in obejct box
+        # center punt naar 2d coördinaten omzetten
+        for (x1, y1), (x2, y2) in zip(coords_left, coords_right):
+            center_left = (x1, y1)
+            center_right = (x2, y2)
+
+            baseline = 60  # in mm
+            focal_length = 2.6  # in mm
+            pixel_size = 0.00112  # in mm/pixel
+            disparity = abs(x1 - x2)
+            if disparity == 0:
+                continue  # voorkom deling door nul
+            distance = (focal_length * baseline) / (disparity * pixel_size)  # in mm
+            print(f"Distance between points {center_left} and {center_right}: {distance / 10:.2f} cm")
 
 
 # main application class
@@ -107,6 +124,7 @@ class MainApp(QtWidgets.QMainWindow):
 class StereoCamera:
     def __init__(self, index, resolution):
         self.index = index
+        self.model = YOLO("./yolo11n_ncnn_model")  # load a model
         self.camera = Picamera2(self.index)
         self.config = self.camera.create_preview_configuration(
             main={"format": "BGR888", "size": (resolution[0], resolution[1])}
@@ -119,18 +137,46 @@ class StereoCamera:
         frame = self.camera.capture_array()    
         frame = cv2.flip(frame, -1)
         frame = cv2.cvtColor(frame, cv2.COLOR_RGB2BGR)
-        # frame = cv2.applyColorMap(frame, cv2.COLORMAP_JET)    
+        # frame = cv2.applyColorMap(frame, cv2.COLORMAP_JET)
         
         # results returnen ?
-        results = self.model(frame, stream=True)
+        results = self.model(frame, stream=True, verbose=False, conf=0.5)
         # 1 frame returnen ?
+        coords = []
+        
         for r in results:
+            boxes = r.boxes
+            for box in boxes:
+                x1, y1, x2, y2 = box.xyxy[0].cpu().numpy()
+                cx = int((x1 + x2) / 2)
+                cy = int((y1 + y2) / 2)
+                coords.append((cx, cy))
+                # print(f"Camera {self.index} detected object at ({cx}, {cy})")
+                
+                cv2.circle(frame, (cx, cy), 5, (0, 255, 0), -1)
+            
             frame = r.plot()
         
-        return frame
-        
-            
-            
+        return frame, coords
+    
+    
+
+
+# resolution options helper function (moet nog verder uitgewekt worden)
+def getResolution(resolution):
+    options = [
+        (640, 480),
+        (1280, 720),
+        (1920, 1080),
+        (2560, 1440),
+        (3840, 2160)
+    ]
+    if resolution not in options:
+        options.insert(0, resolution)
+        return options
+    return options[resolution]
+
+
 if __name__ == "__main__":
     app = QtWidgets.QApplication(sys.argv)
     window = DebugWindow()
