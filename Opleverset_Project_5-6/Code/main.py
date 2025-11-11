@@ -44,7 +44,7 @@ class DebugWindow(QtWidgets.QWidget):
         uic.loadUi(os.path.join("elements", "DebugWindow.ui"), self)
         self.setWindowTitle("Debug Window")
 
-        self.cameraDisplayScale = 0.5  # 50% van de originele resolutie
+        self.cameraDisplayScale = 1  # scaling factor for camera display size
         self.cameraResolution = (640, 380)
         self.camIds = (0, 1)
         
@@ -125,7 +125,7 @@ class StereoCamera:
         # frame = cv2.applyColorMap(frame, cv2.COLORMAP_JET)    
         
         # results returnen ?
-        results = self.model(frame, stream=True)
+        results = self.model(frame, stream=True, verbose=False)
         # 1 frame returnen ?
         for r in results:
             frame = r.plot()
