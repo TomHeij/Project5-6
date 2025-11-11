@@ -60,12 +60,12 @@ class DebugWindow(QtWidgets.QWidget):
 
     def start_capture(self):
         time_start = time.time()
-        capture1, center1 = self.camera1.get_frame()
-        capture2, center2 = self.camera2.get_frame()
+        capture1 = self.camera1.get_frame()
+        capture2 = self.camera2.get_frame()
         time_end = time.time()
 
         self.update_metrics(time_start, time_end)
-        self.get_distance(center1, center2)
+        # self.get_distance(center1, center2)
         
 
         self.camL.setPixmap(self.cv2_to_qt(capture1))
