@@ -45,7 +45,7 @@ class DebugWindow(QtWidgets.QWidget):
         self.setWindowTitle("Debug Window")
 
         self.cameraDisplayScale = 1  # scaling factor for camera display size
-        self.cameraResolution = (640, 380)
+        self.cameraResolution = getResolution(0)
         self.camIds = (0, 1)
         
         self.camL.setMinimumSize(self.cameraResolution[0], self.cameraResolution[1])
@@ -131,9 +131,24 @@ class StereoCamera:
             frame = r.plot()
         
         return frame
-        
-            
-            
+    
+def getResolution(resolution):
+
+    options = [
+        (640, 480),
+        (1280, 720),
+        (1920, 1080),
+        (2560, 1440),
+        (3840, 2160)
+    ]
+    
+    if resolution not in options:
+        options.insert(0, resolution)
+        return options
+    
+    return options[resolution]
+
+
 if __name__ == "__main__":
     app = QtWidgets.QApplication(sys.argv)
     window = DebugWindow()
