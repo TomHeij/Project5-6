@@ -45,7 +45,7 @@ class DebugWindow(QtWidgets.QWidget):
         self.setWindowTitle("Debug Window")
 
         self.cameraDisplayScale = 1  # scaling factor for camera display size
-        self.cameraResolution = (1920, 1080)
+        self.cameraResolution = (640, 480)
         self.camIds = (0, 1)
         
         self.camL.setMinimumSize(self.cameraResolution[0], self.cameraResolution[1])
@@ -60,11 +60,13 @@ class DebugWindow(QtWidgets.QWidget):
 
     def start_capture(self):
         time_start = time.time()
-        capture1 = self.camera1.get_frame()
-        capture2 = self.camera2.get_frame()
+        capture1, center1 = self.camera1.get_frame()
+        capture2, center2 = self.camera2.get_frame()
         time_end = time.time()
 
         self.update_metrics(time_start, time_end)
+        self.get_distance(center1, center2)
+        
 
         self.camL.setPixmap(self.cv2_to_qt(capture1))
         self.camR.setPixmap(self.cv2_to_qt(capture2))
@@ -93,17 +95,13 @@ class DebugWindow(QtWidgets.QWidget):
         
         # model een center punt geven in obejct box
         # center punt naar 2d coördinaten omzetten 
+        center_left = (point_left[0], point_left[1])
+        center_right = (point_right[0], point_right[1])
         
+        # distance tussen die 2 punten berekenen
         
-        # Placeholder function for distance calculation
-        # Implement stereo vision depth calculation here
-        disparity = abs(point_left[0] - point_right[0])
-        if disparity == 0:
-            return float('inf')  # Avoid division by zero
-        focal_length = 1.0  # Example focal length in pixels
-        baseline = 0.1      # Example baseline in meters
-        distance = (focal_length * baseline) / disparity
-        return distance
+
+        
         
         
         
@@ -155,7 +153,7 @@ class StereoCamera:
             
             frame = r.plot()
         
-        return frame
+        return frame, [cx, cy]
     
     
 
