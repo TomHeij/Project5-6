@@ -100,13 +100,13 @@ class DebugWindow(QtWidgets.QWidget):
             center_right = (x2, y2)
 
             baseline = 60  # in mm
-            focal_length = 3.04  # in mm
+            focal_length = 2.6  # in mm
             pixel_size = 0.00112  # in mm/pixel
             disparity = abs(x1 - x2)
             if disparity == 0:
                 continue  # voorkom deling door nul
             distance = (focal_length * baseline) / (disparity * pixel_size)  # in mm
-            print(f"Distance between points {center_left} and {center_right}: {distance:.2f} mm")
+            print(f"Distance between points {center_left} and {center_right}: {distance / 100:.2f} cm")
 
 
 # main application class
