@@ -592,7 +592,7 @@ if __name__ == '__main__':
 
 
     """Step3. Save calibration frames for both cameras simultaneously"""
-    save_frames_two_cams('camera0', 'camera1') #save simultaneous frames
+    save_frames_two_cams('0', '1') #save simultaneous frames
 
 
     """Step4. Use paired calibration pattern frames to obtain camera0 to camera1 rotation and translation"""
@@ -611,7 +611,7 @@ if __name__ == '__main__':
     #check your calibration makes sense
     camera0_data = [cmtx0, dist0, R0, T0]
     camera1_data = [cmtx1, dist1, R1, T1]
-    check_calibration('camera0', camera0_data, 'camera1', camera1_data, _zshift = 60.)
+    check_calibration('0', camera0_data, '1', camera1_data, _zshift = 60.)
 
 
     """Optional. Define a different origin point and save the calibration data"""
