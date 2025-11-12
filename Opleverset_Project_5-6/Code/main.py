@@ -125,7 +125,6 @@ class StereoCamera:
         # results returnen ?
         results = self.model(frame, stream=True, verbose=False, conf=0.5)
         # 1 frame returnen ?
-        coords = []
         
         for r in results:
             boxes = r.boxes
@@ -133,7 +132,6 @@ class StereoCamera:
                 x1, y1, x2, y2 = box.xyxy[0].cpu().numpy()
                 cx = int((x1 + x2) / 2)
                 cy = int((y1 + y2) / 2)
-                coords.append((cx, cy))
                 
                 cv2.circle(frame, (cx, cy), 4, (0, 255, 0), -1)
                 self.get_distance(x1, x2)
@@ -141,7 +139,7 @@ class StereoCamera:
             
             frame = r.plot()
         
-        return frame, coords
+        return frame
     
     def get_distance(self, x1, x2):
         
