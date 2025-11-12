@@ -113,6 +113,7 @@ def save_frames_single_camera(camera_name):
         if saved_count == number_to_save: break
 
     cap.stop()
+    cap.close()
     cv.destroyAllWindows()
 
 
@@ -283,6 +284,8 @@ def save_frames_two_cams(camera0_name, camera1_name):
 
     cap0.stop()
     cap1.stop()
+    cap0.close()
+    cap1.close()
     cv.destroyAllWindows()
 
 
@@ -458,6 +461,8 @@ def check_calibration(camera0_name, camera0_data, camera1_name, camera1_data, _z
 
     cap0.stop()
     cap1.stop()
+    cap0.close()
+    cap1.close()
     cv.destroyAllWindows()
 
 def get_world_space_origin(cmtx, dist, img_path):
