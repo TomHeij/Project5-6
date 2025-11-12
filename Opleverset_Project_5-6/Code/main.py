@@ -152,7 +152,7 @@ class StereoCamera:
         
         theda_rad = math.radians(101.3721)
         disparity = (x1 - x2)
-        distance = (0.06 * self.cameraResolution[0]) / (2 * math.tan(theda_rad / 2) * disparity)
+        distance = (0.06 * 1280) / (2 * math.tan(theda_rad / 2) * disparity)
         # D = (9.8267716535 * 0.06) / disparity
 
         return distance
