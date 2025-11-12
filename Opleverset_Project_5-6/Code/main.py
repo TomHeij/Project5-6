@@ -61,13 +61,11 @@ class DebugWindow(QtWidgets.QWidget):
 
     def start_capture(self):
         time_start = time.time()
-        capture1, coords1 = self.camera1.get_frame()
-        capture2, coords2 = self.camera2.get_frame()
+        capture1 = self.camera1.get_frame()
+        capture2 = self.camera2.get_frame()
         time_end = time.time()
 
         self.update_metrics(time_start, time_end)
-        self.get_distance(coords1, coords2)
-        
 
         self.camL.setPixmap(self.cv2_to_qt(capture1))
         self.camR.setPixmap(self.cv2_to_qt(capture2))
@@ -91,25 +89,8 @@ class DebugWindow(QtWidgets.QWidget):
         display_width = int(self.cameraResolution[0] * self.cameraDisplayScale)
         scaled_pixmap = pixmap.scaled(display_width, display_height, QtCore.Qt.AspectRatioMode.KeepAspectRatio)
         return scaled_pixmap
-
-    def get_distance(self, coords_left, coords_right):
-
-        # model een center punt geven in obejct box
-        # center punt naar 2d coördinaten omzetten
-        for (x1, y1), (x2, y2) in zip(coords_left, coords_right):
-            
-            # 101.3721 uit online calc
-            # 83 diagonaal
-            # 73 horizontal
-            # 50 vertical
-            
-            theda_rad = math.radians(101.3721)
-            disparity = (x1 - x2)
-            D = (0.06 * self.cameraResolution[0]) / (2 * math.tan(theda_rad / 2) * disparity)
-            # D = (9.8267716535 * 0.06) / disparity
-            
-            print(f"Distance between points ({x1}, {y1}) and ({x2}, {y2}): {D:.2f} meters")
-
+    
+    
 
 # main application class
 
@@ -153,14 +134,29 @@ class StereoCamera:
                 cx = int((x1 + x2) / 2)
                 cy = int((y1 + y2) / 2)
                 coords.append((cx, cy))
-                # print(f"Camera {self.index} detected object at ({cx}, {cy})")
                 
-                cv2.circle(frame, (cx, cy), 5, (0, 255, 0), -1)
+                cv2.circle(frame, (cx, cy), 4, (0, 255, 0), -1)
+                self.get_distance(x1, x2)
+                cv2.putText(frame, f"D: {self.get_distance(x1, x2):.2f}m", (cx + 10, cy - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 0), 2)
             
             frame = r.plot()
         
         return frame, coords
     
+    def get_distance(self, x1, x2):
+        
+        # 101.3721 uit online calc
+        # 83 diagonaal
+        # 73 horizontal
+        # 50 vertical
+        
+        theda_rad = math.radians(101.3721)
+        disparity = (x1 - x2)
+        distance = (0.06 * self.cameraResolution[0]) / (2 * math.tan(theda_rad / 2) * disparity)
+        # D = (9.8267716535 * 0.06) / disparity
+
+        return distance
+
     
 
 
