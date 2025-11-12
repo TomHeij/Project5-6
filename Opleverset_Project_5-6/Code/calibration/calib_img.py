@@ -2,21 +2,27 @@ from picamera2 import Picamera2
 import cv2
 import os
 
-picam2 = Picamera2()
-picam2.configure(picam2.create_still_configuration(main={"format": "RGB888", "size": (2560, 720)}))
-picam2.start()
+camL = Picamera2(0)
+camL.configure(camL.create_still_configuration(main={"format": "RGB888", "size": (1280, 720)}))
+camL.start()
+
+camR = Picamera2(1)
+camR.configure(camR.create_still_configuration(main={"format": "RGB888", "size": (1280, 720)}))
+camR.start()
 
 save_dir = "calib_images"
 os.makedirs(save_dir, exist_ok=True)
 count = 0
 
 while True:
-    frame = picam2.capture_array()
-    frame = cv2.flip(frame, -1)
+    frameL = camL.capture_array()
+    frameR = camR.capture_array()
+    frameL = cv2.flip(frameL, -1)
+    frameR = cv2.flip(frameR, -1)
 
-    width = frame.shape[1]
-    left = frame[:, :width//2]
-    right = frame[:, width//2:]
+    width = frameL.shape[1]
+    left = frameL[:, :width//2]
+    right = frameR[:, width//2:]
 
     cv2.imshow("Left", left)
     cv2.imshow("Right", right)
