@@ -14,8 +14,8 @@ objpoints = []
 imgpointsL = []
 imgpointsR = []
 
-images_left = sorted(glob.glob("calib_images/left_*.png"))
-images_right = sorted(glob.glob("calib_images/right_*.png"))
+images_left = sorted(glob.glob("../calib_images/left_*.png"))
+images_right = sorted(glob.glob("../calib_images/right_*.png"))
 
 for left_file, right_file in zip(images_left, images_right):
     imgL = cv2.imread(left_file)
