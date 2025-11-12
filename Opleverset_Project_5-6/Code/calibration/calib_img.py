@@ -12,6 +12,7 @@ count = 0
 
 while True:
     frame = picam2.capture_array()
+    frame = cv2.flip(frame, -1)
 
     width = frame.shape[1]
     left = frame[:, :width//2]
