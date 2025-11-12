@@ -592,7 +592,7 @@ if __name__ == '__main__':
 
 
     """Step3. Save calibration frames for both cameras simultaneously"""
-    save_frames_two_cams('0', '1') #save simultaneous frames
+    save_frames_two_cams(0, 1) #save simultaneous frames
 
 
     """Step4. Use paired calibration pattern frames to obtain camera0 to camera1 rotation and translation"""
