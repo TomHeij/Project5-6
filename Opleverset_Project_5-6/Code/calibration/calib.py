@@ -3,8 +3,8 @@ import numpy as np
 import glob
 import os
 
-CHECKERBOARD = (9, 6)
-SQUARE_SIZE = 0.025  # 25 mm = 0.025 m
+CHECKERBOARD = (10, 7)
+SQUARE_SIZE = 0.15  # 150 mm = 0.15 m
 
 criteria = (cv2.TERM_CRITERIA_EPS + cv2.TERM_CRITERIA_MAX_ITER, 30, 0.001)
 
