@@ -21,8 +21,8 @@ while True:
     frameR = cv2.flip(frameR, -1)
 
     width = frameL.shape[1]
-    left = frameL[:, :width//2]
-    right = frameR[:, width//2:]
+    left = frameL
+    right = frameR
 
     cv2.imshow("Left", left)
     cv2.imshow("Right", right)
