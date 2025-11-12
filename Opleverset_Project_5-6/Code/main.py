@@ -134,8 +134,8 @@ class StereoCamera:
                 cy = int((y1 + y2) / 2)
                 
                 cv2.circle(frame, (cx, cy), 4, (0, 255, 0), -1)
-                self.get_distance(x1, x2)
-                cv2.putText(frame, f"D: {self.get_distance(x1, x2):.2f}m", (cx + 10, cy - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 0), 2)
+                distance = self.get_distance(x1, x2)
+                cv2.putText(frame, f"D: {distance:.2f}m", (cx + 10, cy - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 0), 2)
             
             frame = r.plot()
         
@@ -149,7 +149,7 @@ class StereoCamera:
         # 50 vertical
         
         theda_rad = math.radians(101.3721)
-        disparity = (x1 - x2)
+        disparity = (x1 - x2) if (x1 - x2) != 0 else 0.01  # prevent division by zero
         distance = (0.06 * 1280) / (2 * math.tan(theda_rad / 2) * disparity)
         # D = (9.8267716535 * 0.06) / disparity
 
