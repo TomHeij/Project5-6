@@ -117,7 +117,7 @@ class StereoCamera:
         frame = self.camera.capture_array()    
         frame = cv2.flip(frame, -1)
         frame = frame[:, :, [1, 2, 0]]
-        frame = cv2.cvtColor(frame, cv2.COLOR_RGB2BGR)
+        # frame = cv2.cvtColor(frame, cv2.COLOR_RGB2BGR)
         # frame = cv2.applyColorMap(frame, cv2.COLORMAP_JET)
         
         # results returnen ?
