@@ -423,8 +423,8 @@ def check_calibration(camera0_name, camera0_data, camera1_name, camera1_data, _z
     pixel_points_camera1 = np.array(pixel_points_camera1)
 
     #open the video streams
-    cap0 = Picamera2(camera0_name)
-    cap1 = Picamera2(camera1_name)
+    cap0 = Picamera2(int(camera0_name))
+    cap1 = Picamera2(int(camera1_name))
 
     #set camera resolutions
     width = calibration_settings['frame_width']
