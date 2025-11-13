@@ -107,7 +107,7 @@ class StereoCamera:
         self.model = YOLO("./yolo11n_ncnn_model")  # load a model
         self.camera = Picamera2(self.index)
         self.config = self.camera.create_preview_configuration(
-            main={"format": "RGB888", "size": (resolution[0], resolution[1])}
+            main={"format": "BGR888", "size": (resolution[0], resolution[1])}
         )
         self.camera.configure(self.config)
         self.camera.start()
