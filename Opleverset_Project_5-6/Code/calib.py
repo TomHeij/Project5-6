@@ -260,10 +260,10 @@ def save_frames_two_cams(camera0_name, camera1_name):
 
             #save the frame when cooldown reaches 0.
             if cooldown <= 0:
-                savename = os.path.join('frames_pair', camera0_name + '_' + str(saved_count) + '.png')
+                savename = os.path.join('frames_pair', str(camera0_name) + '_' + str(saved_count) + '.png')
                 cv.imwrite(savename, frame0)
 
-                savename = os.path.join('frames_pair', camera1_name + '_' + str(saved_count) + '.png')
+                savename = os.path.join('frames_pair', str(camera1_name) + '_' + str(saved_count) + '.png')
                 cv.imwrite(savename, frame1)
 
                 saved_count += 1
