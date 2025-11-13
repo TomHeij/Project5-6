@@ -105,7 +105,8 @@ class StereoCamera:
     def __init__(self, index, resolution):
         self.index = index
         self.model = YOLO("./yolo11n_ncnn_model")  # load a model
-        self.camera = Picamera2(self.index)
+        tuning_file = "./pi5_imx219_200d.json"
+        self.camera = Picamera2(self.index, tuning=tuning_file)
         self.config = self.camera.create_preview_configuration(
             main={"format": "BGR888", "size": (resolution[0], resolution[1])}
         )
