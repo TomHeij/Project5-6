@@ -431,6 +431,8 @@ def check_calibration(camera0_name, camera0_data, camera1_name, camera1_data, _z
     height = calibration_settings['frame_height']
     cap0.configure(cap0.create_still_configuration(main={"format": "RGB888", "size": (width, height)}))
     cap1.configure(cap1.create_still_configuration(main={"format": "RGB888", "size": (width, height)}))
+    cap0.start()
+    cap1.start()
 
     while True:
 
