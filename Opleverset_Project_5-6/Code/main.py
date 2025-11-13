@@ -110,15 +110,21 @@ class StereoCamera:
         self.model = YOLO("./yolo11n_ncnn_model")  # load a model
         self.camera = Picamera2(self.index)
         self.config = self.camera.create_preview_configuration(
-            main={"format": "BGR888", "size": (resolution[0], resolution[1])}
-        )
+    main={"format": "BGR888", "size": resolution},
+    transform=Picamera2.Transform(hflip=1, vflip=1),
+    controls={
+        "AwbEnable": True,
+        "AwbMode": 0,
+        "ColourCorrectionMatrix": None
+    }
+)
         self.camera.configure(self.config)
         self.camera.start()
         print(f"Stereo Camera {self.index} initialized.")
         
     def get_frame(self):
         frame = self.camera.capture_array()    
-        frame = cv2.flip(frame, -1)
+        # frame = cv2.flip(frame, -1)
         frame = cv2.cvtColor(frame, cv2.COLOR_RGB2BGR)
         # frame = cv2.applyColorMap(frame, cv2.COLORMAP_JET)
         
