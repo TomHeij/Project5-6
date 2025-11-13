@@ -16,7 +16,6 @@
 # first time install script
 # toggle debug cameras on/off
 
-
 # ncnn
 # vulkan
 # yolo model door ncnn converteren
@@ -35,7 +34,6 @@ import os
 
 from PyQt6 import QtCore, QtWidgets, QtGui, uic
 from PyQt6.QtCore import QTimer
-
 
 # debug window class
 
@@ -101,7 +99,6 @@ class MainApp(QtWidgets.QMainWindow):
         self.setGeometry(100, 100, 800, 600)
         # hier komt alleen die map met punten
 
-
 # stereo camera class
 
 class StereoCamera:
@@ -110,12 +107,7 @@ class StereoCamera:
         self.model = YOLO("./yolo11n_ncnn_model")  # load a model
         self.camera = Picamera2(self.index)
         self.config = self.camera.create_preview_configuration(
-            main={"format": "BGR888", "size": (resolution[0], resolution[1])},
-            controls={
-                "AwbEnable": True,              # automatische white balance
-                "AwbMode": 0,                  # auto mode
-                "ColourCorrectionMatrix": None # ISP mag zelf kleurmatrix kiezen
-            }
+            main={"format": "BGR888", "size": (resolution[0], resolution[1])}
         )
         self.camera.configure(self.config)
         self.camera.start()
@@ -162,7 +154,6 @@ class StereoCamera:
 
     
 
-
 # resolution options helper function (moet nog verder uitgewekt worden)
 def getResolution(resolution):
     options = [
@@ -176,7 +167,6 @@ def getResolution(resolution):
         options.insert(0, resolution)
         return options
     return options[resolution]
-
 
 if __name__ == "__main__":
     app = QtWidgets.QApplication(sys.argv)
