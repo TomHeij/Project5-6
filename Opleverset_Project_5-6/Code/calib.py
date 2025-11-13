@@ -614,8 +614,8 @@ if __name__ == '__main__':
 
     """Step4. Use paired calibration pattern frames to obtain camera0 to camera1 rotation and translation"""
     print('Calibrating stereo cameras for extrinsic parameters (R and T from camera0 to camera1)')
-    frames_prefix_c0 = os.path.join('frames_pair', 'camera0*')
-    frames_prefix_c1 = os.path.join('frames_pair', 'camera1*')
+    frames_prefix_c0 = os.path.join('frames_pair', '0*')
+    frames_prefix_c1 = os.path.join('frames_pair', '1*')
     R, T = stereo_calibrate(cmtx0, dist0, cmtx1, dist1, frames_prefix_c0, frames_prefix_c1)
     print('-------------------------------------')
 
