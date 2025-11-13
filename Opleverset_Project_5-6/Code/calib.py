@@ -228,6 +228,8 @@ def save_frames_two_cams(camera0_name, camera1_name):
     height = calibration_settings['frame_height']
     cap0.configure(cap0.create_still_configuration(main={"format": "RGB888", "size": (width, height)}))
     cap1.configure(cap1.create_still_configuration(main={"format": "RGB888", "size": (width, height)}))
+    cap0.start()
+    cap1.start()
 
     cooldown = cooldown_time
     start = False
