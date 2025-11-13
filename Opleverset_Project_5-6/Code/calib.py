@@ -581,33 +581,43 @@ if __name__ == '__main__':
 
 
     """Step1. Save calibration frames for single cameras"""
+    print('Saving calibration frames for camera0 and camera1 separately')
     save_frames_single_camera('camera0') #save frames for camera0
     save_frames_single_camera('camera1') #save frames for camera1
-
+    print('Calibration frames for camera0 and camera1 saved')
+    print('-------------------------------------')
 
     """Step2. Obtain camera intrinsic matrices and save them"""
+    print('Calibrating camera0 for intrinsic parameters')
     #camera0 intrinsics
     images_prefix = os.path.join('frames', 'camera0*')
     cmtx0, dist0 = calibrate_camera_for_intrinsic_parameters(images_prefix) 
     save_camera_intrinsics(cmtx0, dist0, 'camera0') #this will write cmtx and dist to disk
+    print('-------------------------------------')
+    print('Calibrating camera1 for intrinsic parameters')
     #camera1 intrinsics
     images_prefix = os.path.join('frames', 'camera1*')
     cmtx1, dist1 = calibrate_camera_for_intrinsic_parameters(images_prefix)
     save_camera_intrinsics(cmtx1, dist1, 'camera1') #this will write cmtx and dist to disk
-
+    print('-------------------------------------')
 
     """Step3. Save calibration frames for both cameras simultaneously"""
+    print('Saving paired calibration frames for camera0 and camera1 simultaneously')
     save_frames_two_cams(0, 1) #save simultaneous frames
+    print('Paired calibration frames for camera0 and camera1 saved')
+    print('-------------------------------------')
 
 
     """Step4. Use paired calibration pattern frames to obtain camera0 to camera1 rotation and translation"""
+    print('Calibrating stereo cameras for extrinsic parameters (R and T from camera0 to camera1)')
     frames_prefix_c0 = os.path.join('frames_pair', 'camera0*')
     frames_prefix_c1 = os.path.join('frames_pair', 'camera1*')
     R, T = stereo_calibrate(cmtx0, dist0, cmtx1, dist1, frames_prefix_c0, frames_prefix_c1)
-
+    print('-------------------------------------')
 
     """Step5. Save calibration data where camera0 defines the world space origin."""
     #camera0 rotation and translation is identity matrix and zeros vector
+    print('Saving extrinsic calibration parameters to disk')
     R0 = np.eye(3, dtype=np.float32)
     T0 = np.array([0., 0., 0.]).reshape((3, 1))
 
@@ -617,6 +627,7 @@ if __name__ == '__main__':
     camera0_data = [cmtx0, dist0, R0, T0]
     camera1_data = [cmtx1, dist1, R1, T1]
     check_calibration('0', camera0_data, '1', camera1_data, _zshift = 60.)
+    print('-------------------------------------')
 
 
     """Optional. Define a different origin point and save the calibration data"""
