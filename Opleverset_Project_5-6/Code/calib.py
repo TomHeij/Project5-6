@@ -65,7 +65,8 @@ def save_frames_single_camera(camera_name):
 
     #open video stream and change resolution.
     #Note: if unsupported resolution is used, this does NOT raise an error.
-    cap = Picamera2(camera_device_id)
+    tuning_file = "./pi5_imx219_200d.json"
+    cap = Picamera2(camera_device_id, tuning=tuning_file)
     cap.configure(cap.create_still_configuration(main={"format": "RGB888", "size": (width, height)}))
     cap.start()
 
@@ -220,8 +221,9 @@ def save_frames_two_cams(camera0_name, camera1_name):
     number_to_save = calibration_settings['stereo_calibration_frames']
 
     #open the video streams
-    cap0 = Picamera2(camera0_name)
-    cap1 = Picamera2(camera1_name)
+    tuning_file = "./pi5_imx219_200d.json"
+    cap0 = Picamera2(camera0_name, tuning=tuning_file)
+    cap1 = Picamera2(camera1_name, tuning=tuning_file)
 
     #set camera resolutions
     width = calibration_settings['frame_width']
@@ -423,8 +425,9 @@ def check_calibration(camera0_name, camera0_data, camera1_name, camera1_data, _z
     pixel_points_camera1 = np.array(pixel_points_camera1)
 
     #open the video streams
-    cap0 = Picamera2(int(camera0_name))
-    cap1 = Picamera2(int(camera1_name))
+    tuning_file = "./pi5_imx219_200d.json"
+    cap0 = Picamera2(int(camera0_name), tuning=tuning_file)
+    cap1 = Picamera2(int(camera1_name), tuning=tuning_file)
 
     #set camera resolutions
     width = calibration_settings['frame_width']
