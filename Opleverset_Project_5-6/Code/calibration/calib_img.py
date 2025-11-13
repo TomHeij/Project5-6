@@ -19,6 +19,7 @@ while True:
     frameR = camR.capture_array()
     frameL = cv2.flip(frameL, -1)
     frameR = cv2.flip(frameR, -1)
+    
 
     width = frameL.shape[1]
     left = frameL
