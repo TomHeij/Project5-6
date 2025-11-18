@@ -120,13 +120,6 @@ class StereoCamera:
         frame = cv2.cvtColor(frame, cv2.COLOR_RGB2BGR)
         # frame = cv2.applyColorMap(frame, cv2.COLORMAP_JET)
         
-        # results returnen ?
-        results = self.model(frame, stream=True, verbose=False, conf=0.5)
-        # 1 frame returnen ?
-        
-        for r in results:
-            boxes = r.boxes
-            for box in boxes:
                 x1, y1, x2, y2 = box.xyxy[0].cpu().numpy()
                 cx = int((x1 + x2) / 2)
                 cy = int((y1 + y2) / 2)
@@ -139,19 +132,34 @@ class StereoCamera:
         
         return frame
     
-    def get_distance(self, x1, x2):
+    # def get_distance(self, x1, x2):
         
         # 101.3721 uit online calc
         # 83 diagonaal
         # 73 horizontal
         # 50 vertical
         
-        theda_rad = math.radians(101.3721)
-        disparity = (x1 - x2) if (x1 - x2) != 0 else 0.01  # prevent division by zero
-        distance = (0.06 * 1280) / (2 * math.tan(theda_rad / 2) * disparity)
+        # theda_rad = math.radians(101.3721)
+        # disparity = (x1 - x2) if (x1 - x2) != 0 else 0.01  # prevent division by zero
+        # distance = (0.06 * 1280) / (2 * math.tan(theda_rad / 2) * disparity)
         # D = (9.8267716535 * 0.06) / disparity
 
-        return distance
+        # return distance
+
+    def get_distance(self, x1, x2):
+        baseline = 0.06
+        width_px = 1280
+        fov_deg = 73
+
+        theta_rad = math.radians(fov_deg)
+        f = width_px / (2 * math.tan(theta_rad / 2))
+
+        disparity = x1 - x2
+        if abs(disparity) < 0.001:
+            return float('inf')
+        
+        distance = (f * baseline) / disparity
+        return abs(distance)
 
     
 
