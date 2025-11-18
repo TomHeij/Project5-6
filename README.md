@@ -79,7 +79,7 @@ Door Tom Heijmans, Fabio Wolthuis, Dennis Zejnilović, Ali Haimed.
 
 **Startdatum:** 18-11-2025  
 **Einddatum:** 02-12-2025  
-**Doel:** Ontwerpfase afronden en het implementeren de detectie functinaliteit.
+**Doel:** Functionaliteit compleet maken en meer documentatie af hebben.
 
 | Status | Prioriteit |  Taken | Wie? | User story |
 | :----: | :---- | :---- | :---- | :----: |
