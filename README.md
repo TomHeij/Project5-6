@@ -74,6 +74,26 @@ Door Tom Heijmans, Fabio Wolthuis, Dennis Zejnilović, Ali Haimed.
 
 
 
+## Sprint planning 4
+---
+
+**Startdatum:** 18-11-2025  
+**Einddatum:** 02-12-2025  
+**Doel:** Ontwerpfase afronden en het implementeren de detectie functinaliteit.
+
+| Status | Prioriteit |  Taken | Wie? | User story |
+| :----: | :---- | :---- | :---- | :----: |
+| [ ] | Hoog | Raspberry Pi AI HAT+ toevoegen voor optimalisatie | Fabio | 1 |
+| [ ] | Hoog | Verder kalibreren, implementeren en testen van de afstandsmethode | Dennis, Tom | 3 |
+| [ ] | Hoog |  Punt van een object inzien in een 2D grafiek | Ali, Fabio | 4 |
+| [ ] | Midden |  Literatuuronderzoek maken | Dennis | - |
+| [ ] | Midden |  Gebruikersonderzoek maken | Tom | - |
+| [ ] | Hoog |  Verder Test-rapport | Tom | - |
+| [ ] | Hoog |  Elektrisch schema maken | Ali | 7 |
+
+
+
+
 ### Changelog
 
 | Versie | Wat/Wie | Datum |
@@ -86,3 +106,4 @@ Door Tom Heijmans, Fabio Wolthuis, Dennis Zejnilović, Ali Haimed.
 | 2.1 | Product backlog sprint planning 2 aangepast – Dennis | 3-10-2025 |
 | 3.0 | Product backlog sprint planning 3 aangemaakt – Ali | 13-10-2025 |
 | 3.1 | Product backlog sprint planning 3 aangepast – Dennis | 11-11-2025 |
+| 4.0 | Product backlog sprint planning 4 aangemaakt – Dennis | 18-12-2025 |
