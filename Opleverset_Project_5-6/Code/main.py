@@ -119,17 +119,17 @@ class StereoCamera:
         frame = cv2.flip(frame, -1)
         frame = cv2.cvtColor(frame, cv2.COLOR_RGB2BGR)
         # frame = cv2.applyColorMap(frame, cv2.COLORMAP_JET)
+
+        x1, y1, x2, y2 = box.xyxy[0].cpu().numpy()
+        cx = int((x1 + x2) / 2)
+        cy = int((y1 + y2) / 2)
         
-                x1, y1, x2, y2 = box.xyxy[0].cpu().numpy()
-                cx = int((x1 + x2) / 2)
-                cy = int((y1 + y2) / 2)
-                
-                cv2.circle(frame, (cx, cy), 4, (0, 255, 0), -1)
-                distance = self.get_distance(x1, x2)
-                cv2.putText(frame, f"D: {distance:.2f}m", (cx + 10, cy - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 0), 2)
+        cv2.circle(frame, (cx, cy), 4, (0, 255, 0), -1)
+        distance = self.get_distance(x1, x2)
+        cv2.putText(frame, f"D: {distance:.2f}m", (cx + 10, cy - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 0), 2)
             
-            frame = r.plot()
-        
+        frame = r.plot()
+    
         return frame
     
     # def get_distance(self, x1, x2):
