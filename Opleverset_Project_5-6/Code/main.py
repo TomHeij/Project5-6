@@ -139,7 +139,7 @@ class StereoCamera:
         
         return frame
     
-    def get_distance(self, x1, x2):
+    def get_distance_2(self, x1, x2):
         
         # 101.3721 uit online calc
         # 83 diagonaal
@@ -153,7 +153,7 @@ class StereoCamera:
 
         return distance
     
-    def get_distance_2(self, x1, x2):
+    def get_distance(self, x1, x2):
         baseline = 0.06
         width_px = 1280
         fov_deg = 73
