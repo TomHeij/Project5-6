@@ -152,6 +152,21 @@ class StereoCamera:
         # D = (9.8267716535 * 0.06) / disparity
 
         return distance
+    
+    def get_distance_2(self, x1, x2):
+        baseline = 0.06
+        width_px = 1280
+        fov_deg = 73
+
+        theta_rad = math.radians(fov_deg)
+        f = width_px / (2 * math.tan(theta_rad / 2))
+
+        disparity = x1 - x2
+        if abs(disparity) < 0.001:
+            return float('inf')
+        
+        distance = (f * baseline) / disparity
+        return abs(distance)
 
     
 
