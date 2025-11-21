@@ -154,7 +154,7 @@ class StereoCamera:
     
     def get_distance(self, x1, x2):
         baseline = 0.06
-        width_px = 1280
+        width_px = 1920
         fov_deg = 73
 
         theta_rad = math.radians(fov_deg)
