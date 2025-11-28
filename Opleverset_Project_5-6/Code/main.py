@@ -22,13 +22,13 @@
 # onnx
 # yolo11n
 
-from picamera2 import Picamera2
 from ultralytics import YOLO
 import numpy as np
 import threading
 import math
 import time
 import cv2
+from cv2_enumerate_cameras import enumerate_cameras
 import sys
 import os
 
@@ -44,7 +44,7 @@ class DebugWindow(QtWidgets.QWidget):
         self.setWindowTitle("Debug Window")
 
         self.cameraDisplayScale = 1  # scaling factor for camera display size
-        self.cameraResolution = (1280, 720)
+        self.cameraResolution = (1920, 1080)
         self.camIds = (0, 1)
         
         self.camL.setMinimumSize(self.cameraResolution[0], self.cameraResolution[1])
@@ -103,16 +103,15 @@ class MainApp(QtWidgets.QMainWindow):
 
 class StereoCamera:
     def __init__(self, index, resolution):
-        self.index = index
+        self.cam = cv2.VideoCapture(index)
+        if not self.cam.isOpened():
+            print(f"Camera {self.index} failed to open")
+            return None
         self.model = YOLO("./yolo11n_ncnn_model")  # load a model
-        tuning_file = "./pi5_imx219_200d.json"
-        self.camera = Picamera2(self.index, tuning=tuning_file)
-        self.config = self.camera.create_preview_configuration(
-            main={"format": "BGR888", "size": (resolution[0], resolution[1])}
-        )
-        self.camera.configure(self.config)
-        self.camera.start()
+        self.cam.set(cv2.CAP_PROP_FRAME_WIDTH, resolution[0])
+        self.cam.set(cv2.CAP_PROP_FRAME_HEIGHT, resolution[1])
         print(f"Stereo Camera {self.index} initialized.")
+        return self.cam
         
     def get_frame(self):
         frame = self.camera.capture_array()    
