@@ -69,7 +69,7 @@ class DebugWindow(QtWidgets.QWidget):
 
         self.cameraDisplayScale = 1  # scaling factor for camera display size
         self.cameraResolution = (1920, 1080)
-        self.camIds = (0, 1)
+        self.camIds = (0, 2)
         
         if self.camL:
             self.camL.setMinimumSize(self.cameraResolution[0], self.cameraResolution[1])
@@ -139,35 +139,37 @@ class StereoCamera:
     def __init__(self, index, resolution):
         self.cam = cv2.VideoCapture(index)
         if not self.cam.isOpened():
-            print(f"Camera {+index} failed to open")
+            print(f"Camera {index} failed to open")
             return None
         # self.model = YOLO("./yolo11n_ncnn_model")  # load a model
         self.cam.set(cv2.CAP_PROP_FRAME_WIDTH, resolution[0])
         self.cam.set(cv2.CAP_PROP_FRAME_HEIGHT, resolution[1])
         print(f"Stereo Camera {index} initialized.")
-        return self.cam
         
     def get_frame(self):
-        frame = self.camera.capture_array()    
+        ret, frame = self.cam.read()
+        if not ret:
+            print("Failed to grab frame")
+            return None
         frame = cv2.cvtColor(frame, cv2.COLOR_RGB2BGR)
         # frame = cv2.applyColorMap(frame, cv2.COLORMAP_JET)
         
-        # results returnen ?
-        results = self.model(frame, stream=True, verbose=False, conf=0.5)
-        # 1 frame returnen ?
+        # # results returnen ?
+        # results = self.model(frame, stream=True, verbose=False, conf=0.5)
+        # # 1 frame returnen ?
         
-        for r in results:
-            boxes = r.boxes
-            for box in boxes:
-                x1, y1, x2, y2 = box.xyxy[0].cpu().numpy()
-                cx = int((x1 + x2) / 2)
-                cy = int((y1 + y2) / 2)
+        # for r in results:
+        #     boxes = r.boxes
+        #     for box in boxes:
+        #         x1, y1, x2, y2 = box.xyxy[0].cpu().numpy()
+        #         cx = int((x1 + x2) / 2)
+        #         cy = int((y1 + y2) / 2)
                 
-                cv2.circle(frame, (cx, cy), 4, (0, 255, 0), -1)
-                distance = self.get_distance(x1, x2)
-                cv2.putText(frame, f"D: {distance:.2f}m", (cx + 10, cy - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 0), 2)
+        #         cv2.circle(frame, (cx, cy), 4, (0, 255, 0), -1)
+        #         distance = self.get_distance(x1, x2)
+        #         cv2.putText(frame, f"D: {distance:.2f}m", (cx + 10, cy - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 0), 2)
             
-            frame = r.plot()
+        #     frame = r.plot()
         
         return frame
     
