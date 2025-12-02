@@ -69,7 +69,8 @@ class DebugWindow(QtWidgets.QWidget):
 
         self.cameraDisplayScale = 1  # scaling factor for camera display size
         self.cameraResolution = (1920, 1080)
-        self.camIds = (0, 2)
+        # self.camIds = (0, 2) # raspberry pi
+        self.camIds = (4, 2) # laptop
         
         if self.camL:
             self.camL.setMinimumSize(self.cameraResolution[0], self.cameraResolution[1])
@@ -144,6 +145,8 @@ class StereoCamera:
         # self.model = YOLO("./yolo11n_ncnn_model")  # load a model
         self.cam.set(cv2.CAP_PROP_FRAME_WIDTH, resolution[0])
         self.cam.set(cv2.CAP_PROP_FRAME_HEIGHT, resolution[1])
+        self.cam.set(cv2.CAP_PROP_FOURCC, cv2.VideoWriter_fourcc(*'MJPG'))
+        self.cam.set(cv2.CAP_PROP_FPS, 20.0)
         print(f"Stereo Camera {index} initialized.")
         
     def get_frame(self):
@@ -151,7 +154,6 @@ class StereoCamera:
         if not ret:
             print("Failed to grab frame")
             return None
-        frame = cv2.cvtColor(frame, cv2.COLOR_RGB2BGR)
         # frame = cv2.applyColorMap(frame, cv2.COLORMAP_JET)
         
         # # results returnen ?
