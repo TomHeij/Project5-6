@@ -32,28 +32,54 @@ from cv2_enumerate_cameras import enumerate_cameras
 import sys
 import os
 
-from PyQt6 import QtCore, QtWidgets, QtGui, uic
-from PyQt6.QtCore import QTimer
+# PySide6 replacements for PyQt6
+from PySide6 import QtCore, QtWidgets, QtGui
+from PySide6.QtUiTools import QUiLoader
+from PySide6.QtCore import QFile
 
 # debug window class
 
 class DebugWindow(QtWidgets.QWidget):
     def __init__(self):
         super(DebugWindow, self).__init__()
-        uic.loadUi(os.path.join("elements", "DebugWindow.ui"), self)
+
+        ui_path = os.path.join("elements", "DebugWindow.ui")
+        loader = QUiLoader()
+        ui_file = QFile(ui_path)
+        if not ui_file.open(QFile.ReadOnly):
+            raise RuntimeError(f"Failed to open UI file: {ui_path}")
+        self.ui = loader.load(ui_file, None)
+        ui_file.close()
+        if self.ui is None:
+            raise RuntimeError(f"Failed to load UI from: {ui_path}")
+
+        # adopt loaded UI into this widget
+        self.ui.setParent(self)
+        layout = QtWidgets.QVBoxLayout(self)
+        layout.setContentsMargins(0, 0, 0, 0)
+        layout.addWidget(self.ui)
+
         self.setWindowTitle("Debug Window")
+
+        # find widgets from loaded UI (names must match your .ui)
+        self.camL = self.ui.findChild(QtWidgets.QLabel, "camL")
+        self.camR = self.ui.findChild(QtWidgets.QLabel, "camR")
+        self.fpsLabel = self.ui.findChild(QtWidgets.QLabel, "fpsLabel")
+        self.frameTimeLabel = self.ui.findChild(QtWidgets.QLabel, "frameTimeLabel")
 
         self.cameraDisplayScale = 1  # scaling factor for camera display size
         self.cameraResolution = (1920, 1080)
         self.camIds = (0, 1)
         
-        self.camL.setMinimumSize(self.cameraResolution[0], self.cameraResolution[1])
-        self.camR.setMinimumSize(self.cameraResolution[0], self.cameraResolution[1])
+        if self.camL:
+            self.camL.setMinimumSize(self.cameraResolution[0], self.cameraResolution[1])
+        if self.camR:
+            self.camR.setMinimumSize(self.cameraResolution[0], self.cameraResolution[1])
 
         self.camera1 = StereoCamera(self.camIds[0], self.cameraResolution)
         self.camera2 = StereoCamera(self.camIds[1], self.cameraResolution)
 
-        self.timer = QTimer()
+        self.timer = QtCore.QTimer(self)
         self.timer.timeout.connect(self.start_capture)
         self.timer.start(1)  # Update every 1 ms
 
@@ -65,20 +91,28 @@ class DebugWindow(QtWidgets.QWidget):
 
         self.update_metrics(time_start, time_end)
 
-        self.camL.setPixmap(self.cv2_to_qt(capture1))
-        self.camR.setPixmap(self.cv2_to_qt(capture2))
+        if self.camL and capture1 is not None:
+            self.camL.setPixmap(self.cv2_to_qt(capture1))
+        if self.camR and capture2 is not None:
+            self.camR.setPixmap(self.cv2_to_qt(capture2))
         
     def update_metrics(self, time_start=None, time_end=None):
         if time_start is not None and time_end is not None:
             frame_time = (time_end - time_start) * 1000  # in milliseconds
             fps = 1000 / frame_time if frame_time > 0 else 0
-            self.fpsLabel.setText(f"FPS: {fps:.2f}")
-            self.frameTimeLabel.setText(f"Frame Time: {frame_time:.2f} ms")
+            if self.fpsLabel:
+                self.fpsLabel.setText(f"FPS: {fps:.2f}")
+            if self.frameTimeLabel:
+                self.frameTimeLabel.setText(f"Frame Time: {frame_time:.2f} ms")
         else:
-            self.fpsLabel.setText("FPS: N/A")
-            self.frameTimeLabel.setText("Frame Time: N/A")
+            if self.fpsLabel:
+                self.fpsLabel.setText("FPS: N/A")
+            if self.frameTimeLabel:
+                self.frameTimeLabel.setText("Frame Time: N/A")
 
     def cv2_to_qt(self, cv_img):
+        if cv_img is None:
+            return QtGui.QPixmap()
         height, width, channel = cv_img.shape
         bytes_per_line = 3 * width
         q_img = QtGui.QImage(cv_img.data, width, height, bytes_per_line, QtGui.QImage.Format.Format_BGR888)
@@ -105,12 +139,12 @@ class StereoCamera:
     def __init__(self, index, resolution):
         self.cam = cv2.VideoCapture(index)
         if not self.cam.isOpened():
-            print(f"Camera {self.index} failed to open")
+            print(f"Camera {+index} failed to open")
             return None
-        self.model = YOLO("./yolo11n_ncnn_model")  # load a model
+        # self.model = YOLO("./yolo11n_ncnn_model")  # load a model
         self.cam.set(cv2.CAP_PROP_FRAME_WIDTH, resolution[0])
         self.cam.set(cv2.CAP_PROP_FRAME_HEIGHT, resolution[1])
-        print(f"Stereo Camera {self.index} initialized.")
+        print(f"Stereo Camera {index} initialized.")
         return self.cam
         
     def get_frame(self):
