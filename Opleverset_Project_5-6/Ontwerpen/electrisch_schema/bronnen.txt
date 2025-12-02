@@ -1,0 +1,75 @@
+Electrisch Schema Project 5/6
+
+ 
+Componenten:
+	1. Raspberry Pi 5 (Link: https://www.raspberrypi.com/products/raspberry-pi-5/)
+	2. IMX219-83 Stereo Camera(Link: https://www.waveshare.com/wiki/IMX219-83_Stereo_Camera)
+	3. Ai Hat+ 13 tops (Link: https://www.raspberrypi.com/products/ai-hat/)
+	4. Armor Lite V5 active cooler
+	5. Arducam Autofocus USB Camera
+	
+	
+
+1. Raspberry Pi 5:
+    https://datasheets.raspberrypi.com/
+	https://vilros.com/pages/raspberry-pi-5-pinout
+	https://datasheets.raspberrypi.com/pcie/pcie-connector-standard.pdf
+	https://pinout.ai/raspberry-pi-5
+	https://forums.raspberrypi.com/viewtopic.php?t=369157
+	https://www.raspberrypi.com/documentation/accessories/camera.html
+	
+meer:
+https://easyeda.com/modules/Raspberry-Pi-5_dd43a5d02c8f437080bd9a354b409f5f
+https://www.raspberrypi.com/documentation/computers/processors.html#bcm2712
+https://www.elektormagazine.com/news/up-close-raspberry-pi-5-video
+
+
+
+2. IMX219-83_Stereo_Camera:
+	https://www.waveshare.com/wiki/IMX219-83_Stereo_Camera
+
+	
+	
+3. Raspberry Pi AI HAT+ 13 TOPS:
+	https://www.raspberrypi.com/documentation/accessories/ai-hat-plus.html
+	https://datasheets.raspberrypi.com/hat/hat-plus-specification.pdf
+	
+4. Armor Lite V5 active cooler:
+https://thepihut.com/products/armor-lite-v5-heatsink-with-3510-fan-for-raspberry-pi-5
+
+
+5. Arducam Autofocus USB Camera:
+https://www.arducam.com/4k-8mp-imx219-autofocus-usb-camera-module-with-metal-case-1080p-mini-uvc-usb2-0-video-webcam-with-microphone-3-3ft-1m-cable-for-computer-laptop-raspberry-pi-jetson-nano-arducam-standard-module.html
+https://www.amazon.nl/-/en/Arducam-Autofocus-Microphones-Computer-Raspberry/dp/B09BR1RNSN
+https://www.pi-shop.ch/arducam-16mp-autofocus-usb-camera-with-mini-metal-case
+
+
+
+Andere bronene:
+	https://www.raspberrypi.com/documentation/accessories/camera.html#hardware-specification
+	https://petitstudio.blogspot.com/2015/04/the-raspberry-pi-camera-extension-cable.html
+	https://github.com/mikeWShef/Kicad_FPC_board_ends
+	https://datasheets.raspberrypi.com/pcie/pcie-connector-standard.pdf
+	https://www.jeffgeerling.com/blog/2023/testing-pcie-on-raspberry-pi-5
+	https://www.pi-shop.ch/raspberry-pi-5-pcie-adapter-pcie-to-4-ch-usb3-2
+	https://www.reddit.com/r/KiCad/comments/1n7ofc8/open_source_pcie_adapter_for_raspberry_pi_5/
+	
+	https://forums.raspberrypi.com/viewtopic.php?t=156098
+	https://auvidea.eu/product/38237/
+	https://www.geeky-gadgets.com/raspberry-pi-5-desktop-pc/
+	https://piaustralia.com.au/blogs/getting-started-with-raspberry-pi-5/is-my-camera-display-csi-dsi-cable-compatible-with-the-raspberry-pi-5
+	https://www.waveshare.com/img/devkit/accBoard/IMX219-83-Stereo-Camera/IMX219-83-Stereo-Camera-FFC2.jpg
+	https://www.amazon.in/IMX219-83-Stereo-Camera-Compatible-Applications/dp/B088RFT412
+	https://www.altronics.com.au/p/z6302k-raspberry-pi-5-single-board-computer-8gb-ram/
+
+
+
+
+
+Tools:
+Kicad, version 9.0.5: https://docs.kicad.org/
+Affinity canva voor de hardware overzicht
+
+
+KiCad documentatie:
+https://docs.kicad.org/
