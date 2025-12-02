@@ -73,3 +73,6 @@ Affinity canva voor de hardware overzicht
 
 KiCad documentatie:
 https://docs.kicad.org/
+
+
+Schema KiCad hoofdbestand: pi5_imx219_schematic.kicad_sch
