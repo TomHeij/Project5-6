@@ -12,7 +12,7 @@ Door Tom Heijmans, Fabio Wolthuis, Dennis Zejnilović, Ali Haimed.
 
 | Nr. | Status | Requirement | User Story | Taken | Acceptatieciteria | Story points |
 | :-: | :----: | :---- | :---- | :---- | :---- | :----: |
-| 1  | [ ] | **RQ01: Objectdetectie** | Als opdrachtgever wil ik dat de camera's een object (bewegend of niet) kan detecteren | <ul> <li> [ ] Een onderzoeksverslag voor welke camera’s we gaan gebruiken. </li><li> [ ] Een onderzoeksverslag voor welke microcontroller we gaan gebruiken. </li> <li> [ ] Onderzoek naar wat voor soort detectie het beste gebruikt kan worden. </li> <li> [ ] Implementeren van de detectiesysteem. </li> <li> [ ] Testen of het detectiesysteem correct werkt. </li></ul> | Een object wordt correct gedetecteerd. | **8** |
+| 1  | [ ] | **RQ01: Objectdetectie** | Als opdrachtgever wil ik dat de camera's een object (bewegend of niet) kan detecteren | <ul> <li> [ ] Een onderzoeksverslag voor welke camera’s we gaan gebruiken. </li><li> [ ] Een onderzoeksverslag voor welke microcontroller we gaan gebruiken. </li><li> [ ] Een onderzoeksverslag voor hoe het systeem geoptimalisserd kan worden. </li> <li> [ ] Onderzoek naar wat voor soort detectie het beste gebruikt kan worden. </li> <li> [ ] Implementeren van de detectiesysteem. </li> <li> [ ] Testen of het detectiesysteem correct werkt. </li></ul> | Een object wordt correct gedetecteerd. | **8** |
 | 2 | [ ] | **RQ02: Gebruikersinterface** | Als opdrachtgever wil ik dat de uitvoer van het programma en het inlezen van de data makkelijk in te zien is, zodat ik een overzicht kan hebben van het gehele programma. | <ul> <li> [ ] Een onderzoeksverslag voor welke software we gaan gebruiken. </li> <li> [ ] Een GUI aanmaken.  </li> <li> [ ] Testen of data vanuit de microcontroller te zien is op de GUI </li></ul> | Een grafische gebruikersinterface met data is beschikbaar. | **8** |
 | 3 | [ ] | **RQ03: Afstandsmeting** | Als gebruiker wil ik de afstand kunnen zien tussen de camera en de drone, zodat ik kan weten hoe ver de drone is van de camera. | <ul> <li> [ ] Onderzoek doen naar wat de meest precieze manier is van afstand bepalen met gebruik van camera's. </li><li> [ ] Het Implementeren van de afstandmethode. </li><li> [ ] Het testen van de afstandmethode. </li><li> [ ] Het weergeven van de afstand in de GUI </li></ul> | De afstand van de camera tot de drone wordt correct weergegeven. | **8** |
 | 4 | [ ] | **RQ04: Locatie-weergave in 2D** | Als gebruiker wil ik dat ik de locatie van de drone in 2 dimensies kan zien, zodat ik de locatie van de drone duidelijk kan zien. | <ul> <li> [ ] Een grafiek aanmaken van de locatie van de drone in 2 dimensies, x en y. </li><li> [ ] Testen of de grafiek correct werkt. </li> <li> [ ] De grafiek implementeren in de GUI. </li> </ul> | Een 2D interface van de locatie van de drone is beschikbaar. | **6** |
@@ -92,18 +92,35 @@ Door Tom Heijmans, Fabio Wolthuis, Dennis Zejnilović, Ali Haimed.
 | [ ] | Hoog |  Elektrisch schema maken | Ali | 7 |
 
 
+## Sprint planning 5
+---
+
+**Startdatum:** 2-12-2025  
+**Einddatum:** 16-12-2025  
+**Doel:** Verder met functionaliteit compleet maken en meer documentatie af hebben.
+
+| Status | Prioriteit |  Taken | Wie? | User story |
+| :----: | :---- | :---- | :---- | :----: |
+| [ ] | Hoog | Raspberry Pi AI HAT+ toevoegen voor optimalisatie | Fabio, Tom | 1 |
+| [ ] | Hoog | Verder kalibreren, implementeren en testen van de afstandsmethode | Dennis, Tom | 3 |
+| [ ] | Hoog |  Punt van een object inzien in een 2D grafiek | Ali, Fabio | 4 |
+| [ ] | Midden |  stereo-visie onderzoeksverslag | Dennis | 3 |
+| [ ] | Midden |  optimalisatie onderzoeksverslag | Ali | 1 |
+| [ ] | Midden |  Literatuuronderzoek toevoegen aan onderzoeksverslagen | Dennis | 1,3 |
+| [ ] | Hoog |  Detectie en afstands testen toevoegen aan het test-rapport| Tom | 1,2 |
+
 
 
 ### Changelog
 
-| Versie | Wat/Wie | Datum |
+| Versie | Wat | Datum |
 | :----: | :---- | :----: |
-| 1.0 | Product Backlog aangemaakt – Dennis | 16-09-2025 |
-| 1.1 | Product Backlog uitgebreid – Allen | 19-09-2025 |
-| 1.2 | Product Backlog in Github toegevoegd in markdown – Fabio | 19-09-2025 |
-| 1.3 | Sprint planning 1 aangemaakt – Dennis | 21-09-2025 |
-| 2.0 | Sprint planning 2 aangemaakt – Dennis | 30-09-2025 |
-| 2.1 | Product backlog sprint planning 2 aangepast – Dennis | 3-10-2025 |
-| 3.0 | Product backlog sprint planning 3 aangemaakt – Ali | 13-10-2025 |
-| 3.1 | Product backlog sprint planning 3 aangepast – Dennis | 11-11-2025 |
-| 4.0 | Product backlog sprint planning 4 aangemaakt – Dennis | 18-12-2025 |
+| 1.0 | Product Backlog aangemaakt | 16-09-2025 |
+| 1.1 | Product Backlog uitgebreid | 19-09-2025 |
+| 1.2 | Product Backlog in Github toegevoegd in markdown | 19-09-2025 |
+| 1.3 | Sprint planning 1 aangemaakt | 21-09-2025 |
+| 2.0 | Sprint planning 2 aangemaakt | 30-09-2025 |
+| 2.1 | Product backlog sprint planning 2 aangepast | 3-10-2025 |
+| 3.0 | Product backlog sprint planning 3 aangemaakt | 13-10-2025 |
+| 3.1 | Product backlog sprint planning 3 aangepast | 11-11-2025 |
+| 4.0 | Product backlog sprint planning 4 aangemaakt  | 18-12-2025 |
