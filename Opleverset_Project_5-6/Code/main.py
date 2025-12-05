@@ -55,9 +55,6 @@ class DebugWindow(QtWidgets.QWidget):
 
         # adopt loaded UI into this widget
         self.ui.setParent(self)
-        layout = QtWidgets.QVBoxLayout(self)
-        layout.setContentsMargins(0, 0, 0, 0)
-        layout.addWidget(self.ui)
 
         self.setWindowTitle("Debug Window")
 
@@ -66,13 +63,11 @@ class DebugWindow(QtWidgets.QWidget):
         self.camR = self.ui.findChild(QtWidgets.QLabel, "camR")
         self.fpsLabel = self.ui.findChild(QtWidgets.QLabel, "fpsLabel")
         self.frameTimeLabel = self.ui.findChild(QtWidgets.QLabel, "frameTimeLabel")
-        self.debugWindow = self.ui.findChild(QtWidgets.QWidget, "Form")
-            
+
+
         self.cameraResolution = (1920, 1080)
         self.camIds = (0, 2) # raspberry pi
         # self.camIds = (4, 2) # laptop
-        
-        self.debugWindow.setMinimumSize(self.cameraResolution[0]*2, self.cameraResolution[1])
         
         self.camL.setMinimumSize(self.cameraResolution[0], self.cameraResolution[1])
         self.camR.setMinimumSize(self.cameraResolution[0], self.cameraResolution[1])
