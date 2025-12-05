@@ -79,7 +79,7 @@ class DebugWindow(QtWidgets.QWidget):
         self.camR.setMaximumSize(self.cameraResolution[0], self.cameraResolution[1])
 
         self.camera1 = StereoCamera(self.camIds[1], self.cameraResolution)
-        self.camera2 = StereoCamera(self.camIds[0], self.cameraResolution)
+        # self.camera2 = StereoCamera(self.camIds[0], self.cameraResolution)
 
         self.timer = QtCore.QTimer(self)
         self.timer.timeout.connect(self.start_capture)
@@ -88,13 +88,13 @@ class DebugWindow(QtWidgets.QWidget):
     def start_capture(self):
         time_start = time.time()
         capture1 = self.camera1.get_frame()
-        capture2 = self.camera2.get_frame()
+        # capture2 = self.camera2.get_frame()
         time_end = time.time()
 
         self.update_metrics(time_start, time_end)
 
         self.camL.setPixmap(self.cv2_to_qt(capture1))
-        self.camR.setPixmap(self.cv2_to_qt(capture2))
+        # self.camR.setPixmap(self.cv2_to_qt(capture2))
         
     def update_metrics(self, time_start=None, time_end=None):
         if time_start is not None and time_end is not None:
