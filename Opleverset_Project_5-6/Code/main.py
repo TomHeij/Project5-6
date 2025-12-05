@@ -52,9 +52,15 @@ class DebugWindow(QtWidgets.QWidget):
         ui_file.close()
         if self.ui is None:
             raise RuntimeError(f"Failed to load UI from: {ui_path}")
+        
+        self.cameraResolution = (1920, 1080)
+        self.camIds = (0, 2) # raspberry pi
+        # self.camIds = (4, 2) # laptop
 
         # adopt loaded UI into this widget
         self.ui.setParent(self)
+        self.ui.setMinimumWidth(self.cameraResolution[0] * 2 + 50)
+        self.ui.setMinimumHeight(self.cameraResolution[1] + 50)
         layout = QtWidgets.QVBoxLayout(self)
         layout.setContentsMargins(0, 0, 0, 0)
         layout.addWidget(self.ui)
@@ -66,20 +72,17 @@ class DebugWindow(QtWidgets.QWidget):
         self.camR = self.ui.findChild(QtWidgets.QLabel, "camR")
         self.fpsLabel = self.ui.findChild(QtWidgets.QLabel, "fpsLabel")
         self.frameTimeLabel = self.ui.findChild(QtWidgets.QLabel, "frameTimeLabel")
-
-
-        self.cameraResolution = (1920, 1080)
-        self.camIds = (0, 2) # raspberry pi
-        # self.camIds = (4, 2) # laptop
         
         self.camL.setMinimumSize(self.cameraResolution[0], self.cameraResolution[1])
-        self.camL.setMaximumSize(self.cameraResolution[0], self.cameraResolution[1])
+        self.camL.setSizePolicy(QtWidgets.QSizePolicy.Policy.Fixed, QtWidgets.QSizePolicy.Policy.Fixed)
+        self.camL.setScaledContents(True)
         
         self.camR.setMinimumSize(self.cameraResolution[0], self.cameraResolution[1])
-        self.camR.setMaximumSize(self.cameraResolution[0], self.cameraResolution[1])
+        self.camR.setSizePolicy(QtWidgets.QSizePolicy.Policy.Fixed, QtWidgets.QSizePolicy.Policy.Fixed)
+        self.camR.setScaledContents(True)
 
         self.camera1 = StereoCamera(self.camIds[1], self.cameraResolution)
-        # self.camera2 = StereoCamera(self.camIds[0], self.cameraResolution)
+        self.camera2 = StereoCamera(self.camIds[0], self.cameraResolution)
 
         self.timer = QtCore.QTimer(self)
         self.timer.timeout.connect(self.start_capture)
@@ -88,13 +91,13 @@ class DebugWindow(QtWidgets.QWidget):
     def start_capture(self):
         time_start = time.time()
         capture1 = self.camera1.get_frame()
-        # capture2 = self.camera2.get_frame()
+        capture2 = self.camera2.get_frame()
         time_end = time.time()
 
         self.update_metrics(time_start, time_end)
 
         self.camL.setPixmap(self.cv2_to_qt(capture1))
-        # self.camR.setPixmap(self.cv2_to_qt(capture2))
+        self.camR.setPixmap(self.cv2_to_qt(capture2))
         
     def update_metrics(self, time_start=None, time_end=None):
         if time_start is not None and time_end is not None:
