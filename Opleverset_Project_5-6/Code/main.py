@@ -72,10 +72,8 @@ class DebugWindow(QtWidgets.QWidget):
         self.camIds = (0, 2) # raspberry pi
         # self.camIds = (4, 2) # laptop
         
-        if self.camL:
-            self.camL.setMinimumSize(self.cameraResolution[0], self.cameraResolution[1])
-        if self.camR:
-            self.camR.setMinimumSize(self.cameraResolution[0], self.cameraResolution[1])
+        self.camL.setMinimumSize(self.cameraResolution[0], self.cameraResolution[1])
+        self.camR.setMinimumSize(self.cameraResolution[0], self.cameraResolution[1])
 
         self.camera1 = StereoCamera(self.camIds[0], self.cameraResolution)
         self.camera2 = StereoCamera(self.camIds[1], self.cameraResolution)
@@ -92,24 +90,18 @@ class DebugWindow(QtWidgets.QWidget):
 
         self.update_metrics(time_start, time_end)
 
-        if self.camL and capture1 is not None:
-            self.camL.setPixmap(self.cv2_to_qt(capture1))
-        if self.camR and capture2 is not None:
-            self.camR.setPixmap(self.cv2_to_qt(capture2))
+        self.camL.setPixmap(self.cv2_to_qt(capture1))
+        self.camR.setPixmap(self.cv2_to_qt(capture2))
         
     def update_metrics(self, time_start=None, time_end=None):
         if time_start is not None and time_end is not None:
             frame_time = (time_end - time_start) * 1000  # in milliseconds
             fps = 1000 / frame_time if frame_time > 0 else 0
-            if self.fpsLabel:
-                self.fpsLabel.setText(f"FPS: {fps:.2f}")
-            if self.frameTimeLabel:
-                self.frameTimeLabel.setText(f"Frame Time: {frame_time:.2f} ms")
+            self.fpsLabel.setText(f"FPS: {fps:.2f}")
+            self.frameTimeLabel.setText(f"Frame Time: {frame_time:.2f} ms")
         else:
-            if self.fpsLabel:
-                self.fpsLabel.setText("FPS: N/A")
-            if self.frameTimeLabel:
-                self.frameTimeLabel.setText("Frame Time: N/A")
+            self.fpsLabel.setText("FPS: N/A")
+            self.frameTimeLabel.setText("Frame Time: N/A")
 
     def cv2_to_qt(self, cv_img):
         if cv_img is None:
@@ -154,9 +146,7 @@ class StereoCamera:
         if not ret:
             print("Failed to grab frame")
             return None
-        # frame = cv2.applyColorMap(frame, cv2.COLORMAP_JET)
         
-        # results returnen ?
         results = self.model(frame, stream=True, verbose=False, conf=0.5)
         # 1 frame returnen ?
         
@@ -206,7 +196,7 @@ class StereoCamera:
 
     
 
-# resolution options helper function (moet nog verder uitgewekt worden)
+# resolution options helper function (moet nog verder uitgewerkt worden)
 def getResolution(resolution):
     options = [
         (640, 480),
