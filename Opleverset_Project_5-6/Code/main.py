@@ -66,17 +66,19 @@ class DebugWindow(QtWidgets.QWidget):
         self.camR = self.ui.findChild(QtWidgets.QLabel, "camR")
         self.fpsLabel = self.ui.findChild(QtWidgets.QLabel, "fpsLabel")
         self.frameTimeLabel = self.ui.findChild(QtWidgets.QLabel, "frameTimeLabel")
-
-        self.cameraDisplayScale = 1  # scaling factor for camera display size
+        self.debugWindow = self.ui.findChild(QtWidgets.QWidget, "Form")
+            
         self.cameraResolution = (1920, 1080)
         self.camIds = (0, 2) # raspberry pi
         # self.camIds = (4, 2) # laptop
         
+        self.debugWindow.setMinimumSize(self.cameraResolution[0]*2, self.cameraResolution[1])
+        
         self.camL.setMinimumSize(self.cameraResolution[0], self.cameraResolution[1])
-        # self.camR.setMinimumSize(self.cameraResolution[0], self.cameraResolution[1])
+        self.camR.setMinimumSize(self.cameraResolution[0], self.cameraResolution[1])
 
         self.camera1 = StereoCamera(self.camIds[0], self.cameraResolution)
-        # self.camera2 = StereoCamera(self.camIds[1], self.cameraResolution)
+        self.camera2 = StereoCamera(self.camIds[1], self.cameraResolution)
 
         self.timer = QtCore.QTimer(self)
         self.timer.timeout.connect(self.start_capture)
@@ -85,13 +87,13 @@ class DebugWindow(QtWidgets.QWidget):
     def start_capture(self):
         time_start = time.time()
         capture1 = self.camera1.get_frame()
-        # capture2 = self.camera2.get_frame()
+        capture2 = self.camera2.get_frame()
         time_end = time.time()
 
         self.update_metrics(time_start, time_end)
 
         self.camL.setPixmap(self.cv2_to_qt(capture1))
-        # self.camR.setPixmap(self.cv2_to_qt(capture2))
+        self.camR.setPixmap(self.cv2_to_qt(capture2))
         
     def update_metrics(self, time_start=None, time_end=None):
         if time_start is not None and time_end is not None:
@@ -110,9 +112,7 @@ class DebugWindow(QtWidgets.QWidget):
         bytes_per_line = 3 * width
         q_img = QtGui.QImage(cv_img.data, width, height, bytes_per_line, QtGui.QImage.Format.Format_BGR888)
         pixmap = QtGui.QPixmap.fromImage(q_img)
-        display_height = int(self.cameraResolution[1] * self.cameraDisplayScale)
-        display_width = int(self.cameraResolution[0] * self.cameraDisplayScale)
-        scaled_pixmap = pixmap.scaled(display_width, display_height, QtCore.Qt.AspectRatioMode.KeepAspectRatio)
+        scaled_pixmap = pixmap.scaled(self.cameraResolution[0], self.cameraResolution[1], QtCore.Qt.AspectRatioMode.KeepAspectRatio)
         return scaled_pixmap
     
     
