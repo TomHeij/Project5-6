@@ -55,6 +55,9 @@ class DebugWindow(QtWidgets.QWidget):
 
         # adopt loaded UI into this widget
         self.ui.setParent(self)
+        layout = QtWidgets.QVBoxLayout(self)
+        layout.setContentsMargins(0, 0, 0, 0)
+        layout.addWidget(self.ui)
 
         self.setWindowTitle("Debug Window")
 
@@ -72,8 +75,8 @@ class DebugWindow(QtWidgets.QWidget):
         self.camL.setMinimumSize(self.cameraResolution[0], self.cameraResolution[1])
         self.camR.setMinimumSize(self.cameraResolution[0], self.cameraResolution[1])
 
-        self.camera1 = StereoCamera(self.camIds[0], self.cameraResolution)
-        self.camera2 = StereoCamera(self.camIds[1], self.cameraResolution)
+        self.camera1 = StereoCamera(self.camIds[1], self.cameraResolution)
+        self.camera2 = StereoCamera(self.camIds[0], self.cameraResolution)
 
         self.timer = QtCore.QTimer(self)
         self.timer.timeout.connect(self.start_capture)
