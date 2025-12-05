@@ -156,22 +156,22 @@ class StereoCamera:
             return None
         # frame = cv2.applyColorMap(frame, cv2.COLORMAP_JET)
         
-        # # results returnen ?
-        # results = self.model(frame, stream=True, verbose=False, conf=0.5)
-        # # 1 frame returnen ?
+        # results returnen ?
+        results = self.model(frame, stream=True, verbose=False, conf=0.5)
+        # 1 frame returnen ?
         
-        # for r in results:
-        #     boxes = r.boxes
-        #     for box in boxes:
-        #         x1, y1, x2, y2 = box.xyxy[0].cpu().numpy()
-        #         cx = int((x1 + x2) / 2)
-        #         cy = int((y1 + y2) / 2)
+        for r in results:
+            boxes = r.boxes
+            for box in boxes:
+                x1, y1, x2, y2 = box.xyxy[0].cpu().numpy()
+                cx = int((x1 + x2) / 2)
+                cy = int((y1 + y2) / 2)
                 
-        #         cv2.circle(frame, (cx, cy), 4, (0, 255, 0), -1)
-        #         distance = self.get_distance(x1, x2)
-        #         cv2.putText(frame, f"D: {distance:.2f}m", (cx + 10, cy - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 0), 2)
+                cv2.circle(frame, (cx, cy), 4, (0, 255, 0), -1)
+                distance = self.get_distance(x1, x2)
+                cv2.putText(frame, f"D: {distance:.2f}m", (cx + 10, cy - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 0), 2)
             
-        #     frame = r.plot()
+            frame = r.plot()
         
         return frame
     
