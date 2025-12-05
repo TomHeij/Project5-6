@@ -142,7 +142,7 @@ class StereoCamera:
         if not self.cam.isOpened():
             print(f"Camera {index} failed to open")
             return None
-        # self.model = YOLO("./yolo11n_ncnn_model")  # load a model
+        self.model = YOLO("./yolo11n_ncnn_model")  # load a model
         self.cam.set(cv2.CAP_PROP_FRAME_WIDTH, resolution[0])
         self.cam.set(cv2.CAP_PROP_FRAME_HEIGHT, resolution[1])
         self.cam.set(cv2.CAP_PROP_FOURCC, cv2.VideoWriter_fourcc(*'MJPG'))
