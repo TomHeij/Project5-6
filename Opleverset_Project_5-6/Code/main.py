@@ -73,7 +73,10 @@ class DebugWindow(QtWidgets.QWidget):
         # self.camIds = (4, 2) # laptop
         
         self.camL.setMinimumSize(self.cameraResolution[0], self.cameraResolution[1])
+        self.camL.setMaximumSize(self.cameraResolution[0], self.cameraResolution[1])
+        
         self.camR.setMinimumSize(self.cameraResolution[0], self.cameraResolution[1])
+        self.camR.setMaximumSize(self.cameraResolution[0], self.cameraResolution[1])
 
         self.camera1 = StereoCamera(self.camIds[1], self.cameraResolution)
         self.camera2 = StereoCamera(self.camIds[0], self.cameraResolution)
