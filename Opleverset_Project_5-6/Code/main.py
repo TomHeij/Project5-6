@@ -138,7 +138,7 @@ class StereoCamera:
         self.cam.set(cv2.CAP_PROP_FOURCC, cv2.VideoWriter_fourcc(*'MJPG'))
         self.cam.set(cv2.CAP_PROP_FPS, 20.0)
         self.cam.set(cv2.CAP_PROP_AUTOFOCUS, 0)
-        self.cam.set(cv2.CAP_PROP_FOCUS, 100)
+        self.cam.set(cv2.CAP_PROP_FOCUS, 200)
         print(f"Stereo Camera {index} initialized.")
         
     def get_frame(self):
