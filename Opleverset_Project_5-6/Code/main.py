@@ -157,26 +157,51 @@ class AIModel:
     # veranderen zodat het de middelpunten van die boxes pakt van beide cameras
     def predict(self, capture):  
         results = self.model(capture, verbose=False, conf=0.9)
+        detections = results[0].boxes
         
-        for r in results:
-            # voor elk gedetecteerd object wordt er een vierkant omheen getekend
-            boxes = r.boxes
-            for box in boxes:
-                # dit geeft dus de x,y van de ene hoek en de x,y van de andere hoek van dat vierkant
-                x1, y1, x2, y2 = box.xyxy[0].cpu().numpy()
-                # dit geeft dus het midden van dat vierkant
-                cx = int((x1 + x2) / 2)
-                cy = int((y1 + y2) / 2)
-                
-                # en dit tekent dat stipje
-                cv2.circle(capture, (cx, cy), 4, (0, 255, 0), -1)
-                # DIT pakt de hoeken van dat vierkant, en dus NIET van bijde cameras maar van 1 camera
-                distance = self.get_distance(x1, x2)
-                cv2.putText(capture, f"D: {distance:.2f}m", (cx + 10, cy - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 0), 2)
+        for i in range(len(detections)):
             
-            capture = r.plot()
+            # Get bounding box coordinates
+            # Ultralytics returns results in Tensor format, which have to be converted to a regular Python array
+            xyxy_tensor = detections[i].xyxy.cpu() # Detections in Tensor format in CPU memory
+            xyxy = xyxy_tensor.numpy().squeeze() # Convert tensors to Numpy array
+            xmin, ymin, xmax, ymax = xyxy.astype(int) # Extract individual coordinates and convert to int
+
+            # Get bounding box class ID and name
+            classidx = int(detections[i].cls.item())
+            classname = self.model.names[classidx]
+
+            # Get bounding box confidence
+            conf = detections[i].conf.item()
+            color = (0, 255, 0)
+            cv2.rectangle(capture, (xmin,ymin), (xmax,ymax), color, 2)
+            label = f'{classname}: {int(conf*100)}%'
+            cv2.putText(capture, label, (xmin, ymin - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.5, color, 2)
+            
+            capture = results[0].plot()
             
         return capture
+        
+        ## oude code
+        # for r in results:
+        #     # voor elk gedetecteerd object wordt er een vierkant omheen getekend
+        #     boxes = r.boxes
+        #     for box in boxes:
+        #         # dit geeft dus de x,y van de ene hoek en de x,y van de andere hoek van dat vierkant
+        #         x1, y1, x2, y2 = box.xyxy[0].cpu().numpy()
+        #         # dit geeft dus het midden van dat vierkant
+        #         cx = int((x1 + x2) / 2)
+        #         cy = int((y1 + y2) / 2)
+                
+        #         # en dit tekent dat stipje
+        #         cv2.circle(capture, (cx, cy), 4, (0, 255, 0), -1)
+        #         # DIT pakt de hoeken van dat vierkant, en dus NIET van bijde cameras maar van 1 camera
+        #         distance = self.get_distance(x1, x2)
+        #         cv2.putText(capture, f"D: {distance:.2f}m", (cx + 10, cy - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 0), 2)
+            
+        #     capture = r.plot()
+            
+        # return capture
     
     # werkt blijkbaar
     def get_distance(self, x1, x2):
