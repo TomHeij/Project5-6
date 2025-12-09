@@ -90,12 +90,9 @@ class DebugWindow(QtWidgets.QWidget):
 
     def start_capture(self):
         time_start = time.time()
-        capture1 = self.camera1.get_frame()
-        capture2 = self.camera2.get_frame()
+        capture1 = self.model.predict(self.camera1.get_frame())
+        capture2 = self.model.predict(self.camera2.get_frame())
         time_end = time.time()
-        
-        capture1 = self.model.predict(capture1)
-        capture2 = self.model.predict(capture2)
 
         self.update_metrics(time_start, time_end)
 
@@ -153,8 +150,7 @@ class StereoCamera:
             print("Failed to grab frame")
             return None
         return frame
-    
-    
+
    
     
 class AIModel:
