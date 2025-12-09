@@ -31,6 +31,7 @@ import cv2
 from cv2_enumerate_cameras import enumerate_cameras
 import sys
 import os
+from concurrent.futures import ThreadPoolExecutor
 
 # PySide6 replacements for PyQt6
 from PySide6 import QtCore, QtWidgets, QtGui
@@ -40,6 +41,7 @@ from PySide6.QtCore import QFile
 # debug window class
 
 class DebugWindow(QtWidgets.QWidget):
+    frameReady = QtCore.Signal(int, object)
     def __init__(self):
         super(DebugWindow, self).__init__()
 
@@ -87,17 +89,28 @@ class DebugWindow(QtWidgets.QWidget):
         self.timer = QtCore.QTimer(self)
         self.timer.timeout.connect(self.start_capture)
         self.timer.start(1)  # Update every 1 ms
+        
+        self.frameReady.connect(self.on_frame_ready)
 
     def start_capture(self):
         time_start = time.time()
-        capture1 = self.model.predict(self.camera1.get_frame())
-        capture2 = self.model.predict(self.camera2.get_frame())
+        self.model.predict_async(0, self.camera1.get_frame(), self.frameReady)
+        self.model.predict_async(1, self.camera2.get_frame(), self.frameReady)
         time_end = time.time()
 
         self.update_metrics(time_start, time_end)
 
-        self.camL.setPixmap(self.cv2_to_qt(capture1))
-        self.camR.setPixmap(self.cv2_to_qt(capture2))
+        # self.camL.setPixmap(self.cv2_to_qt(capture1))
+        # self.camR.setPixmap(self.cv2_to_qt(capture2))
+        
+    @QtCore.Slot(int, object)
+    def on_frame_ready(self, cam_idx: int, processed):
+        if processed is None:
+            return
+        if cam_idx == 0:
+            self.camL.setPixmap(self.cv2_to_qt(processed))
+        elif cam_idx == 1:
+            self.camR.setPixmap(self.cv2_to_qt(processed))
         
     def update_metrics(self, time_start=None, time_end=None):
         if time_start is not None and time_end is not None:
@@ -155,55 +168,66 @@ class StereoCamera:
     
 class AIModel:
     def __init__(self):
-        self.model = YOLO(model="./yolo11n_ncnn_model", task="detect")  # load a model
+        self.model = YOLO(model="./yolo11n_ncnn_model", task="detect")
+        # two workers (one per camera); adjust if needed
+        self.executor = ThreadPoolExecutor(max_workers=2)
 
-    def predict(self, capture): 
-                   
+    def __del__(self):
+        try:
+            self.executor.shutdown(wait=False)
+        except Exception:
+            pass
+
+    def predict_async(self, cam_idx: int, frame, signal: QtCore.Signal):
+        # copy frame to avoid reuse while processing
+        if frame is None:
+            return
+        frame_copy = frame.copy()
+        future = self.executor.submit(self._predict_internal, frame_copy)
+        # when done, emit signal back to UI thread
+        future.add_done_callback(lambda f: signal.emit(cam_idx, f.result()))
+
+    def _predict_internal(self, capture):
+        # same logic as previous predict, but in worker thread
         results = self.model(capture, stream=True, verbose=False, conf=0.5)
-        
         for r in results:
             boxes = r.boxes
             for box in boxes:
                 x1, y1, x2, y2 = box.xyxy[0].cpu().numpy()
                 cx = int((x1 + x2) / 2)
                 cy = int((y1 + y2) / 2)
-                
+
                 cv2.circle(capture, (cx, cy), 4, (0, 255, 0), -1)
                 distance = self.get_distance(x1, x2)
-                cv2.putText(capture, f"D: {distance:.2f}m", (cx + 10, cy - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 0), 2)
-            
+                cv2.putText(
+                    capture,
+                    f"D: {distance:.2f}m",
+                    (cx + 10, cy - 10),
+                    cv2.FONT_HERSHEY_SIMPLEX,
+                    0.5,
+                    (0, 255, 0),
+                    2,
+                )
             capture = r.plot()
-            
         return capture
-    
-    def get_distance_2(self, x1, x2):
-        
-        # 101.3721 uit online calc
-        # 83 diagonaal
-        # 73 horizontal
-        # 50 vertical
-        
-        theda_rad = math.radians(101.3721)
-        disparity = (x1 - x2) if (x1 - x2) != 0 else 0.01  # prevent division by zero
-        distance = (0.06 * 1280) / (2 * math.tan(theda_rad / 2) * disparity)
-        # D = (9.8267716535 * 0.06) / disparity
 
-        return distance
-    
     def get_distance(self, x1, x2):
         baseline = 0.06
         width_px = 1920
         fov_deg = 73
-
         theta_rad = math.radians(fov_deg)
         f = width_px / (2 * math.tan(theta_rad / 2))
-
         disparity = x1 - x2
         if abs(disparity) < 0.001:
-            return float('inf')
-        
+            return float("inf")
         distance = (f * baseline) / disparity
         return abs(distance)
+
+    def get_distance_2(self, x1, x2):
+        theda_rad = math.radians(101.3721)
+        disparity = (x1 - x2) if (x1 - x2) != 0 else 0.01
+        distance = (0.06 * 1280) / (2 * math.tan(theda_rad / 2) * disparity)
+        return distance
 
     
 
