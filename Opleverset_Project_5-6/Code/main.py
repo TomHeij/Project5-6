@@ -154,7 +154,7 @@ class AIModel:
 
     def predict(self, capture): 
                    
-        results = self.model(capture, stream=True, verbose=False, conf=0.5)
+        results = self.model(capture, verbose=False, conf=0.5)
         
         for r in results:
             boxes = r.boxes
