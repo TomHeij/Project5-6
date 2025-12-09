@@ -52,6 +52,7 @@ class DebugWindow(QtWidgets.QWidget):
         ui_file.close()
         if self.ui is None:
             raise RuntimeError(f"Failed to load UI from: {ui_path}")
+        self.model = AIModel()
         
         self.cameraResolution = (1920, 1080)
         self.camIds = (0, 2) # raspberry pi
@@ -93,9 +94,8 @@ class DebugWindow(QtWidgets.QWidget):
         capture2 = self.camera2.get_frame()
         time_end = time.time()
         
-        model = AIModel()
-        capture1 = model.predict(capture1)
-        capture2 = model.predict(capture2)
+        capture1 = self.model.predict(capture1)
+        capture2 = self.model.predict(capture2)
 
         self.update_metrics(time_start, time_end)
 
@@ -161,11 +161,9 @@ class AIModel:
     def __init__(self):
         self.model = YOLO(model="./yolo11n_ncnn_model", task="detect")  # load a model
 
-    
     def predict(self, capture): 
                    
         results = self.model(capture, stream=True, verbose=False, conf=0.5)
-        # 1 frame returnen ?
         
         for r in results:
             boxes = r.boxes
