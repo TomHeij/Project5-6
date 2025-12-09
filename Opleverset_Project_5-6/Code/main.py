@@ -81,7 +81,7 @@ class DebugWindow(QtWidgets.QWidget):
 
         self.timer = QtCore.QTimer(self)
         self.timer.timeout.connect(self.start_capture)
-        self.timer.start(10)  # Update every X ms
+        self.timer.start(100)  # Update every X ms
 
     def start_capture(self):
         time_start = time.time()
