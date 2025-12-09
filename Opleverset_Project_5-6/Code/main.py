@@ -51,7 +51,7 @@ class DebugWindow(QtWidgets.QWidget):
             raise RuntimeError(f"Failed to load UI from: {ui_path}")
         self.model = AIModel()
         
-        self.cameraResolution = (1920, 1080)
+        self.cameraResolution = (1280, 720)
         self.camIds = (0, 2) # raspberry pi
         # self.camIds = (4, 2) # laptop
 
