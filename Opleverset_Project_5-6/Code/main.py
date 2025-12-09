@@ -188,9 +188,9 @@ class AIModel:
         return distance
     
     def get_distance(self, x1, x2):
-        baseline = 0.06
-        width_px = 1920
-        fov_deg = 73
+        baseline = 0.099    # distance between the two cameras in meters
+        width_px = 1920     # camera resolution width in pixels
+        fov_deg = 60        # camera field of view in degrees
 
         theta_rad = math.radians(fov_deg)
         f = width_px / (2 * math.tan(theta_rad / 2))
