@@ -154,18 +154,23 @@ class AIModel:
     def __init__(self):
         self.model = YOLO(model="./yolo11n_ncnn_model", task="detect")  # load a model
 
-    def predict(self, capture): 
-                   
+    # veranderen zodat het de middelpunten van die boxes pakt van beide cameras
+    def predict(self, capture):  
         results = self.model(capture, verbose=False, conf=0.9)
         
         for r in results:
+            # voor elk gedetecteerd object wordt er een vierkant omheen getekend
             boxes = r.boxes
             for box in boxes:
+                # dit geeft dus de x,y van de ene hoek en de x,y van de andere hoek van dat vierkant
                 x1, y1, x2, y2 = box.xyxy[0].cpu().numpy()
+                # dit geeft dus het midden van dat vierkant
                 cx = int((x1 + x2) / 2)
                 cy = int((y1 + y2) / 2)
                 
+                # en dit tekent dat stipje
                 cv2.circle(capture, (cx, cy), 4, (0, 255, 0), -1)
+                # DIT pakt de hoeken van dat vierkant, en dus NIET van bijde cameras maar van 1 camera
                 distance = self.get_distance(x1, x2)
                 cv2.putText(capture, f"D: {distance:.2f}m", (cx + 10, cy - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 0), 2)
             
@@ -173,20 +178,7 @@ class AIModel:
             
         return capture
     
-    def get_distance_2(self, x1, x2):
-        
-        # 101.3721 uit online calc
-        # 83 diagonaal
-        # 73 horizontal
-        # 50 vertical
-        
-        theda_rad = math.radians(101.3721)
-        disparity = (x1 - x2) if (x1 - x2) != 0 else 0.01  # prevent division by zero
-        distance = (0.06 * 1280) / (2 * math.tan(theda_rad / 2) * disparity)
-        # D = (9.8267716535 * 0.06) / disparity
-
-        return distance
-    
+    # werkt blijkbaar
     def get_distance(self, x1, x2):
         baseline = 0.099    # distance between the two cameras in meters
         width_px = 1920     # camera resolution width in pixels
