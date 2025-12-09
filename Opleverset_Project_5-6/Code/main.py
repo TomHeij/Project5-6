@@ -92,6 +92,10 @@ class DebugWindow(QtWidgets.QWidget):
         capture1 = self.camera1.get_frame()
         capture2 = self.camera2.get_frame()
         time_end = time.time()
+        
+        model = AIModel()
+        capture1 = model.predict(capture1)
+        capture2 = model.predict(capture2)
 
         self.update_metrics(time_start, time_end)
 
@@ -137,7 +141,6 @@ class StereoCamera:
         if not self.cam.isOpened():
             print(f"Camera {index} failed to open")
             return None
-        self.model = YOLO("./yolo11n_ncnn_model")  # load a model
         self.cam.set(cv2.CAP_PROP_FRAME_WIDTH, resolution[0])
         self.cam.set(cv2.CAP_PROP_FRAME_HEIGHT, resolution[1])
         self.cam.set(cv2.CAP_PROP_FOURCC, cv2.VideoWriter_fourcc(*'MJPG'))
@@ -149,8 +152,19 @@ class StereoCamera:
         if not ret:
             print("Failed to grab frame")
             return None
-        
-        results = self.model(frame, stream=True, verbose=False, conf=0.5)
+        return frame
+    
+    
+   
+    
+class AIModel:
+    def __init__(self):
+        self.model = YOLO(model="./yolo11n_ncnn_model", task="detect")  # load a model
+
+    
+    def predict(self, capture): 
+                   
+        results = self.model(capture, stream=True, verbose=False, conf=0.5)
         # 1 frame returnen ?
         
         for r in results:
@@ -160,13 +174,13 @@ class StereoCamera:
                 cx = int((x1 + x2) / 2)
                 cy = int((y1 + y2) / 2)
                 
-                cv2.circle(frame, (cx, cy), 4, (0, 255, 0), -1)
+                cv2.circle(capture, (cx, cy), 4, (0, 255, 0), -1)
                 distance = self.get_distance(x1, x2)
-                cv2.putText(frame, f"D: {distance:.2f}m", (cx + 10, cy - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 0), 2)
+                cv2.putText(capture, f"D: {distance:.2f}m", (cx + 10, cy - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 0), 2)
             
-            frame = r.plot()
-        
-        return frame
+            capture = r.plot()
+            
+        return capture
     
     def get_distance_2(self, x1, x2):
         
