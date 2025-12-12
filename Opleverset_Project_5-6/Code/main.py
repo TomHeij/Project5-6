@@ -170,6 +170,8 @@ class AIModel:
             classidx = int(detections[i].cls.item())
             classname = self.model.names[classidx]
             classnum = classidx + 1
+            
+            print(f"Detected {classname} with class number {classnum}")
 
             # Get bounding box confidence
             conf = detections[i].conf.item()
