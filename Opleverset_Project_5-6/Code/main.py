@@ -85,8 +85,7 @@ class DebugWindow(QtWidgets.QWidget):
 
     def start_capture(self):
         time_start = time.time()
-        capture1 = self.model.predict(self.camera1.get_frame())
-        capture2 = self.model.predict(self.camera2.get_frame())
+        capture1, capture2 = self.model.predict([self.camera1.get_frame(), self.camera2.get_frame()])
         time_end = time.time()
 
         self.update_metrics(time_start, time_end)
@@ -154,59 +153,54 @@ class AIModel:
         self.model = YOLO(model="./yolo11n_ncnn_model", task="detect")  # load a model
 
     # veranderen zodat het de middelpunten van die boxes pakt van beide cameras
-    def predict(self, capture):  
-        results = self.model(capture, verbose=False, conf=0.8)
-        detections = results[0].boxes
-        
-        for i in range(len(detections)):
-            
-            # Get bounding box coordinates
-            # Ultralytics returns results in Tensor format, which have to be converted to a regular Python array
-            xyxy_tensor = detections[i].xyxy.cpu() # Detections in Tensor format in CPU memory
-            xyxy = xyxy_tensor.numpy().squeeze() # Convert tensors to Numpy array
-            xmin, ymin, xmax, ymax = xyxy.astype(int) # Extract individual coordinates and convert to int
-
-            # Get bounding box class ID and name and number            
-            # classidx = int(detections[i].cls.item())
-            # classname = self.model.names[classidx]
-            # conf = detections[i].conf.item()
-
-            # Get bounding box confidence
-            color = (0, 255, 0)
-            cv2.rectangle(capture, (xmin,ymin), (xmax,ymax), color, 1)
-            # label = f'{classname}: {int(conf*100)}%'
-            # cv2.putText(capture, label, (xmin, ymin - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.5, color, 2)
-            
-            # Calculate center point
-            cx = int((xmin + xmax) / 2)
-            cy = int((ymin + ymax) / 2)
-            cv2.circle(capture, (cx, cy), 4, (0, 255, 0), -1)
-            cv2.putText(capture, f"ID: {i+1}", (cx + 10, cy - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 0), 2)
-            
-            capture = results[0].plot()
-            
-        return capture
+    def predict(self, captures):
+        results1 = self.model(captures[0], verbose=False, conf=0.9)
+        results2 = self.model(captures[1], verbose=False, conf=0.9)
         
         ## oude code
-        # for r in results:
-        #     # voor elk gedetecteerd object wordt er een vierkant omheen getekend
-        #     boxes = r.boxes
-        #     for box in boxes:
-        #         # dit geeft dus de x,y van de ene hoek en de x,y van de andere hoek van dat vierkant
-        #         x1, y1, x2, y2 = box.xyxy[0].cpu().numpy()
-        #         # dit geeft dus het midden van dat vierkant
-        #         cx = int((x1 + x2) / 2)
-        #         cy = int((y1 + y2) / 2)
+        for r in results1:
+            capture1 = captures[0]
+            idx = 0
+            # voor elk gedetecteerd object wordt er een vierkant omheen getekend
+            boxes = r.boxes
+            for box in boxes:
+                # dit geeft dus de x,y van de ene hoek en de x,y van de andere hoek van dat vierkant
+                x1, y1, x2, y2 = box.xyxy[0].cpu().numpy()
+                # dit geeft dus het midden van dat vierkant
+                cx = int((x1 + x2) / 2)
+                cy = int((y1 + y2) / 2)
                 
-        #         # en dit tekent dat stipje
-        #         cv2.circle(capture, (cx, cy), 4, (0, 255, 0), -1)
-        #         # DIT pakt de hoeken van dat vierkant, en dus NIET van bijde cameras maar van 1 camera
-        #         distance = self.get_distance(x1, x2)
-        #         cv2.putText(capture, f"D: {distance:.2f}m", (cx + 10, cy - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 0), 2)
+                # en dit tekent dat stipje
+                cv2.circle(capture1, (cx, cy), 4, (0, 255, 0), -1)
+                # DIT pakt de hoeken van dat vierkant, en dus NIET van bijde cameras maar van 1 camera
+                # distance = self.get_distance(x1, x2)
+                # cv2.putText(capture, f"D: {distance:.2f}m", (cx + 10, cy - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 0), 2)
+                # label uniek nummer op box
+                cv2.putText(capture1, f"ID: {idx}", (int(x1), int(y1) - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 0), 2)
+                idx += 1    
             
-        #     capture = r.plot()
+            capture1 = r.plot()
             
-        # return capture
+        for r in results2:
+            capture2 = captures[1]
+            idx = 0
+            boxes = r.boxes
+            for box in boxes:
+                x1, y1, x2, y2 = box.xyxy[0].cpu().numpy()
+                cx = int((x1 + x2) / 2)
+                cy = int((y1 + y2) / 2)
+                
+                cv2.circle(capture2, (cx, cy), 4, (0, 255, 0), -1)
+                
+                # distance = self.get_distance(x1, x2)
+                # cv2.putText(capture, f"D: {distance:.2f}m", (cx + 10, cy - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 0), 2)
+                
+                cv2.putText(capture2, f"ID: {idx}", (int(x1), int(y1) - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 0), 2)
+                idx += 1    
+            
+            capture2 = r.plot()
+            
+        return capture1, capture2
     
     # werkt blijkbaar
     def get_distance(self, x1, x2):
