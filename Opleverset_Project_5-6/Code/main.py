@@ -85,9 +85,8 @@ class DebugWindow(QtWidgets.QWidget):
 
     def start_capture(self):
         time_start = time.time()
-        capture1, center1 = self.model.predict(self.camera1.get_frame())
-        capture2, center2 = self.model.predict(self.camera2.get_frame())
-        self.model.get_distance((center1, center2), (capture1, capture2))
+        capture1 = self.model.predict(self.camera1.get_frame())
+        capture2 = self.model.predict(self.camera2.get_frame())
         time_end = time.time()
 
         self.update_metrics(time_start, time_end)
@@ -181,13 +180,12 @@ class AIModel:
             # Calculate center point
             cx = int((xmin + xmax) / 2)
             cy = int((ymin + ymax) / 2)
-            centerpoint = (cx, cy)
             cv2.circle(capture, (cx, cy), 4, (0, 255, 0), -1)
-            
+            cv2.putText(capture, f"ID: {i+1}", (cx + 10, cy - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 0), 2)
             
             capture = results[0].plot()
             
-        return capture, centerpoint
+        return capture
         
         ## oude code
         # for r in results:
@@ -211,7 +209,7 @@ class AIModel:
         # return capture
     
     # werkt blijkbaar
-    def get_distance(self, centers, captures):
+    def get_distance(self, x1, x2):
         baseline = 0.099    # distance between the two cameras in meters
         width_px = 1920     # camera resolution width in pixels
         fov_deg = 60        # camera field of view in degrees
@@ -219,15 +217,12 @@ class AIModel:
         theta_rad = math.radians(fov_deg)
         f = width_px / (2 * math.tan(theta_rad / 2))
 
-        disparity = centers[0][0] - centers[1][0]
+        disparity = x1 - x2
         if abs(disparity) < 0.001:
             return float('inf')
         
-        distance = ((f * baseline) / disparity) * 10
-        
-        # label distance on object
-        cv2.putText(captures[0], f"D: {distance:.2f}m", (centers[0][0] + 10, centers[0][1] - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 0), 2)
-        cv2.putText(captures[1], f"D: {distance:.2f}m", (centers[1][0] + 10, centers[1][1] - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 0), 2)
+        distance = (f * baseline) / disparity
+        return abs(distance*10)
 
     
 
