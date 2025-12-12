@@ -154,8 +154,8 @@ class AIModel:
 
     # veranderen zodat het de middelpunten van die boxes pakt van beide cameras
     def predict(self, captures):
-        results1 = self.model(captures[0], verbose=False, conf=0.9)
-        results2 = self.model(captures[1], verbose=False, conf=0.9)
+        results1 = self.model(captures[0], verbose=False, conf=0.8)
+        results2 = self.model(captures[1], verbose=False, conf=0.8)
         
         ## oude code
         for r in results1:
