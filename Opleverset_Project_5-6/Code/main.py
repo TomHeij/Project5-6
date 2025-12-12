@@ -155,7 +155,7 @@ class AIModel:
 
     # veranderen zodat het de middelpunten van die boxes pakt van beide cameras
     def predict(self, capture):  
-        results = self.model(capture, verbose=False, conf=0.9)
+        results = self.model(capture, verbose=False, conf=0.8)
         detections = results[0].boxes
         
         for i in range(len(detections)):
@@ -175,7 +175,7 @@ class AIModel:
             conf = detections[i].conf.item()
             color = (0, 255, 0)
             cv2.rectangle(capture, (xmin,ymin), (xmax,ymax), color, 2)
-            label = f'{classname} {classnum}: {int(conf*100)}%'
+            label = f'{classname}|{classnum}: {int(conf*100)}%'
             cv2.putText(capture, label, (xmin, ymin - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.5, color, 2)
             
             capture = results[0].plot()
