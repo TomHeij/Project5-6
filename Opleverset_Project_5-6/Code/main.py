@@ -153,6 +153,7 @@ class AIModel:
         self.model = YOLO(model="./yolo11n_ncnn_model", task="detect")  # load a model
 
     # veranderen zodat het de middelpunten van die boxes pakt van beide cameras
+    # kijken of we de frames kunnen overlappen en daar een vast object uit kunnen halen
     def predict(self, captures):
         results1 = self.model(captures[0], verbose=False, conf=0.8)
         results2 = self.model(captures[1], verbose=False, conf=0.8)
@@ -160,7 +161,6 @@ class AIModel:
         ## oude code
         for r in results1:
             capture1 = captures[0]
-            idx = 0
             # voor elk gedetecteerd object wordt er een vierkant omheen getekend
             boxes = r.boxes
             for box in boxes:
@@ -173,17 +173,13 @@ class AIModel:
                 # en dit tekent dat stipje
                 cv2.circle(capture1, (cx, cy), 4, (0, 255, 0), -1)
                 # DIT pakt de hoeken van dat vierkant, en dus NIET van bijde cameras maar van 1 camera
-                # distance = self.get_distance(x1, x2)
-                # cv2.putText(capture, f"D: {distance:.2f}m", (cx + 10, cy - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 0), 2)
-                # label uniek nummer op box
-                cv2.putText(capture1, f"nr: {idx}", (cx + 10, cy - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 0), 2)
-                idx += 1    
+                distance = self.get_distance(x1, x2)
+                cv2.putText(capture1, f"D: {distance:.2f}m", (cx + 10, cy - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 0), 2)
             
             capture1 = r.plot()
             
         for r in results2:
             capture2 = captures[1]
-            idx = 0
             boxes = r.boxes
             for box in boxes:
                 x1, y1, x2, y2 = box.xyxy[0].cpu().numpy()
@@ -192,11 +188,8 @@ class AIModel:
                 
                 cv2.circle(capture2, (cx, cy), 4, (0, 255, 0), -1)
                 
-                # distance = self.get_distance(x1, x2)
-                # cv2.putText(capture, f"D: {distance:.2f}m", (cx + 10, cy - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 0), 2)
-                
-                cv2.putText(capture2, f"nr: {idx}", (cx + 10, cy - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 0), 2)
-                idx += 1    
+                distance = self.get_distance(x1, x2)
+                cv2.putText(capture2, f"D: {distance:.2f}m", (cx + 10, cy - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 0), 2)
             
             capture2 = r.plot()
             
