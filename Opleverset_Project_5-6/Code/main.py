@@ -176,7 +176,7 @@ class AIModel:
                 # distance = self.get_distance(x1, x2)
                 # cv2.putText(capture, f"D: {distance:.2f}m", (cx + 10, cy - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 0), 2)
                 # label uniek nummer op box
-                cv2.putText(capture1, f"ID: {idx}", (int(x1), int(y1) - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 0), 2)
+                cv2.putText(capture1, f"nr: {idx}", (cx + 10, cy - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 0), 2)
                 idx += 1    
             
             capture1 = r.plot()
@@ -195,7 +195,7 @@ class AIModel:
                 # distance = self.get_distance(x1, x2)
                 # cv2.putText(capture, f"D: {distance:.2f}m", (cx + 10, cy - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 0), 2)
                 
-                cv2.putText(capture2, f"ID: {idx}", (int(x1), int(y1) - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 0), 2)
+                cv2.putText(capture2, f"nr: {idx}", (cx + 10, cy - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 0), 2)
                 idx += 1    
             
             capture2 = r.plot()
