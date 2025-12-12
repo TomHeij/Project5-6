@@ -223,13 +223,11 @@ class AIModel:
         if abs(disparity) < 0.001:
             return float('inf')
         
-        distance = (f * baseline) / disparity
+        distance = ((f * baseline) / disparity) * 10
         
         # label distance on object
         cv2.putText(captures[0], f"D: {distance:.2f}m", (centers[0][0] + 10, centers[0][1] - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 0), 2)
         cv2.putText(captures[1], f"D: {distance:.2f}m", (centers[1][0] + 10, centers[1][1] - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 0), 2)
-        
-        return abs(distance*10)
 
     
 
