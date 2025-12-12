@@ -138,7 +138,6 @@ class StereoCamera:
         self.cam.set(cv2.CAP_PROP_FOURCC, cv2.VideoWriter_fourcc(*'MJPG'))
         self.cam.set(cv2.CAP_PROP_FPS, 20.0)
         self.cam.set(cv2.CAP_PROP_AUTOFOCUS, 1)
-        # self.cam.set(cv2.CAP_PROP_FOCUS, 200)
         print(f"Stereo Camera {index} initialized.")
         
     def get_frame(self):
@@ -167,15 +166,16 @@ class AIModel:
             xyxy = xyxy_tensor.numpy().squeeze() # Convert tensors to Numpy array
             xmin, ymin, xmax, ymax = xyxy.astype(int) # Extract individual coordinates and convert to int
 
-            # Get bounding box class ID and name
+            # Get bounding box class ID and name and number            
             classidx = int(detections[i].cls.item())
             classname = self.model.names[classidx]
+            classnum = classidx + 1
 
             # Get bounding box confidence
             conf = detections[i].conf.item()
             color = (0, 255, 0)
             cv2.rectangle(capture, (xmin,ymin), (xmax,ymax), color, 2)
-            label = f'{classname}: {int(conf*100)}%'
+            label = f'{classname} {classnum}: {int(conf*100)}%'
             cv2.putText(capture, label, (xmin, ymin - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.5, color, 2)
             
             capture = results[0].plot()
