@@ -1,0 +1,79 @@
+@startuml packageDiagram
+title Stereo Vision - Depth Estimation
+skinparam TitleFontStyle bold
+skinparam linetype ortho
+skinparam TitleFontSize 18
+'skinparam TitleBackgroundColor #LightBlue
+
+skinparam packageStyle rectangle
+skinparam packageFontSize 11
+skinparam packageBackgroundColor #LightCyan
+
+' Main components
+package "Stereo Camera Capture" as Capture <<Hardware>> #LightGreen {
+}
+
+package "Object Detection (YOLO)" as Detection <<AI Model>>{
+   
+}
+
+package "Calibration Data" as Calibration <<Configuration>> {
+    
+}
+
+rectangle "Stereo Processing Pipeline" as Pipeline <<Core>> #white {
+    /'package "Rectification ???" {
+      
+    }'/
+    package "Detection Matching" as Matching {
+        
+    }
+    
+    package "Depth Estimation" as DepthCalc {
+        
+    }
+    
+    package "3D Reprojection" as Reprojection {
+        
+    }
+    
+    '(depth)
+    DepthCalc -down-> Reprojection : Z 
+}
+
+package "Map Projection" as MapProj {
+    
+}
+
+package "Map" as MainApp <<UI>> #FFC69D {
+  
+}
+
+' Data flow connections
+' run only once for efficiency
+Capture --> Detection : "Frames (L)"
+Detection ----> Matching : "detections[]" 
+Calibration ..> DepthCalc : "parameters"
+Calibration ..> Reprojection : "parameters"
+'(det_L, det_R,disparity)
+Matching --> DepthCalc : "disparity"
+DepthCalc --> Reprojection : "(x,y,Z)"
+Reprojection ---> MapProj : "(X,Y,Z)"
+MapProj --> MainApp : "(map_x, map_y)"
+
+
+
+
+Legend right
+    Data flow: Frames → Rectification → Detections → Matching → Depth → 3D → Map
+    ----
+    Formulas: 
+       Depth: Z = (f × B) / d
+       Reprojection:
+       X = (x - cx) × Z / f
+       Y = (y - cy) × Z / f 
+    ----
+    is "Rectification" voor "Detection Matching" nodig ???
+end Legend
+
+@enduml
