@@ -194,6 +194,9 @@ class AIModel:
         # knip een foto met beide cameras
         capL = cv2.VideoCapture(0)
         capR = cv2.VideoCapture(2)
+        
+        # give cameras time to adjust
+        time.sleep(4)
         ret, frame = capR.read()
         if ret:
             cv2.imwrite('camR.jpg', frame)
