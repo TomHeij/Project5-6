@@ -248,4 +248,4 @@ class AIModel:
 #     sys.exit(app.exec())
 
 if __name__ == "__main__":
-    AIModel.get_offset(None)
+    AIModel.get_offset(AIModel())
