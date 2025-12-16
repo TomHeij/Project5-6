@@ -196,8 +196,8 @@ class AIModel:
         capR = cv2.VideoCapture(2)
         
         # give cameras time to adjust
-        time.sleep(4)
         ret, frame = capR.read()
+        time.sleep(2)
         if ret:
             cv2.imwrite('camR.jpg', frame)
         capR.release()
@@ -205,6 +205,7 @@ class AIModel:
         print("Captured right camera image.")
         
         ret, frame = capL.read()
+        time.sleep(2)
         if ret:
             cv2.imwrite('camL.jpg', frame)
         capL.release()
