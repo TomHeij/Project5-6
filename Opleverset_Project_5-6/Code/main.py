@@ -7,9 +7,7 @@
 # GUI
 # verschil tussen cpu en gpu verwerking meten (?, de AI draait op cpu dus :shrug:)
 #? kijken naar resoluties,fps waardes en compressie
-# logging en debugging (gebeurt technisch gezien al hierboven)
 # configuratie bestand voor instellingen (kan handig zijn gezien we 2 windows gaan hebben) 
-# synchronisatie tussen twee camera's (is er al lijkt mij)
 # niet real-time iets tekenen/zien maar per aantal frames updaten (zien dat de vierkant over een soort 2de layer gaat ipv direct op de camera feed)
 # error handling
 # code opschonen en documenteren
@@ -49,6 +47,7 @@ class DebugWindow(QtWidgets.QWidget):
         ui_file.close()
         if self.ui is None:
             raise RuntimeError(f"Failed to load UI from: {ui_path}")
+        
         self.model = AIModel()
         
         self.cameraResolution = (1920, 1080)
@@ -76,8 +75,8 @@ class DebugWindow(QtWidgets.QWidget):
         self.camR.setSizePolicy(QtWidgets.QSizePolicy.Policy.Fixed, QtWidgets.QSizePolicy.Policy.Fixed)
         self.camR.setScaledContents(True)
 
-        self.camera1 = StereoCamera(self.camIds[1], self.cameraResolution)
-        self.camera2 = StereoCamera(self.camIds[0], self.cameraResolution)
+        self.cameraL = StereoCamera(self.camIds[1], self.cameraResolution)
+        self.cameraR = StereoCamera(self.camIds[0], self.cameraResolution)
 
         self.timer = QtCore.QTimer(self)
         self.timer.timeout.connect(self.start_capture)
@@ -85,13 +84,13 @@ class DebugWindow(QtWidgets.QWidget):
 
     def start_capture(self):
         time_start = time.time()
-        capture1, capture2 = self.model.predict([self.camera1.get_frame(), self.camera2.get_frame()])
+        captureL, captureR = self.model.predict([self.camera1.get_frame(), self.camera2.get_frame()])
         time_end = time.time()
 
         self.update_metrics(time_start, time_end)
 
-        self.camL.setPixmap(self.cv2_to_qt(capture1))
-        self.camR.setPixmap(self.cv2_to_qt(capture2))
+        self.camL.setPixmap(self.cv2_to_qt(captureL))
+        self.camR.setPixmap(self.cv2_to_qt(captureR))
         
     def update_metrics(self, time_start=None, time_end=None):
         if time_start is not None and time_end is not None:
@@ -155,45 +154,43 @@ class AIModel:
     # veranderen zodat het de middelpunten van die boxes pakt van beide cameras
     # kijken of we de frames kunnen overlappen en daar een vast object uit kunnen halen
     def predict(self, captures):
-        results1 = self.model(captures[0], verbose=False, conf=0.8)
-        results2 = self.model(captures[1], verbose=False, conf=0.8)
+        results = [self.model(captures[0], verbose=False, conf=0.8), self.model(captures[1], verbose=False, conf=0.8)]
+        objects = [[], []]
         
-        ## oude code
-        for r in results1:
-            capture1 = captures[0]
-            # voor elk gedetecteerd object wordt er een vierkant omheen getekend
-            boxes = r.boxes
-            for box in boxes:
-                # dit geeft dus de x,y van de ene hoek en de x,y van de andere hoek van dat vierkant
-                x1, y1, x2, y2 = box.xyxy[0].cpu().numpy()
-                # dit geeft dus het midden van dat vierkant
-                cx = int((x1 + x2) / 2)
-                cy = int((y1 + y2) / 2)
+        for result in results:
+            for r in result:
+                capture = captures[0] if result == results[0] else captures[1]
+                boxes = r.boxes
+                for box in boxes:
+                    x1, y1, x2, y2 = box.xyxy[0].cpu().numpy()
+                    cx = int((x1 + x2) / 2)
+                    cy = int((y1 + y2) / 2)
+                    objects[0 if result == results[0] else 1].append((cx, cy))
+                    
+                    cv2.circle(capture, (cx, cy), 4, (0, 255, 0), -1)
+                    
+                    distance = self.get_distance(x1, x2)
+                    cv2.putText(capture, f"D: {distance:.2f}m", (cx + 10, cy - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 0), 2)
                 
-                # en dit tekent dat stipje
-                cv2.circle(capture1, (cx, cy), 4, (0, 255, 0), -1)
-                # DIT pakt de hoeken van dat vierkant, en dus NIET van bijde cameras maar van 1 camera
-                distance = self.get_distance(x1, x2)
-                cv2.putText(capture1, f"D: {distance:.2f}m", (cx + 10, cy - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 0), 2)
-            
-            capture1 = r.plot()
-            
-        for r in results2:
-            capture2 = captures[1]
-            boxes = r.boxes
-            for box in boxes:
-                x1, y1, x2, y2 = box.xyxy[0].cpu().numpy()
-                cx = int((x1 + x2) / 2)
-                cy = int((y1 + y2) / 2)
+                capture = r.plot()
                 
-                cv2.circle(capture2, (cx, cy), 4, (0, 255, 0), -1)
-                
-                distance = self.get_distance(x1, x2)
-                cv2.putText(capture2, f"D: {distance:.2f}m", (cx + 10, cy - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 0), 2)
-            
-            capture2 = r.plot()
-            
-        return capture1, capture2
+        # self.bind_objects(objects[0], objects[1])
+          
+        return captures[0], captures[1]
+    
+    def bind_objects(self, objectsL, objectsR):
+        #! ergens een buffer plaatsen voor als er geen object in 1 van de cameras is
+        # voor elk object in left camera, kijk naar het dichtsbijzijnde object in de right camera
+        # gebruik waarde die uit offset komt
+        # return een lijst van tuples met gekoppelde objecten
+        pass
+    
+    # hoeft maar eenmalig te runnen
+    def get_offset(self):
+        # pak bijde cameras, zet een object op een vaste afstand, pak de x coordinaten van dat object in beide cameras
+        # leg de beelden op elkaar en kijk wat het verschil is in x coordinaten
+        # maak 
+        pass
     
     # werkt blijkbaar
     def get_distance(self, x1, x2):
@@ -212,21 +209,8 @@ class AIModel:
         return abs(distance*10)
 
     
-
-# resolution options helper function (moet nog verder uitgewerkt worden)
-def getResolution(resolution):
-    options = [
-        (640, 480),
-        (1280, 720),
-        (1920, 1080),
-        (2560, 1440),
-        (3840, 2160)
-    ]
-    if resolution not in options:
-        options.insert(0, resolution)
-        return options
-    return options[resolution]
-
+    
+    
 if __name__ == "__main__":
     app = QtWidgets.QApplication(sys.argv)
     window = DebugWindow()
