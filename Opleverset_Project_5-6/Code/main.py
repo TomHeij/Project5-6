@@ -194,27 +194,35 @@ class AIModel:
         camL = StereoCamera(0, (1920, 1080))
         camR = StereoCamera(2, (1920, 1080))
         
-        time = 0
+        # time = 0
         
-        while(time < 150):
+        # while(time < 150):
+        #     frameL = camL.get_frame()
+        #     frameR = camR.get_frame()
+        #     if time % 30 == 0:
+        #         cv2.imwrite(f'camL.jpg', frameL)
+        #         cv2.imwrite(f'camR.jpg', frameR)
+        #         print(f"Captured frames at time {time}")
+        #     time += 1
+        
+        # # pak bijde cameras, zet een object op een vaste afstand, pak de x coordinaten van dat object in beide cameras
+        # camL, camR = self.predict([cv2.imread('./camL.jpg'), cv2.imread('./camR.jpg')])
+        # print("Processed images through AI model.")
+        
+        # # leg de beelden op elkaar en kijk wat het verschil is in x coordinaten
+        # # make images translucent and save the result
+        # alpha = 0.5
+        # blended = cv2.addWeighted(camL, alpha, camR, 1 - alpha, 0)
+        # cv2.imwrite('blended.jpg', blended)
+        # print("Saved blended image as 'blended.jpg'.")
+        
+        while True:
             frameL = camL.get_frame()
             frameR = camR.get_frame()
-            if time % 30 == 0:
-                cv2.imwrite(f'camL.jpg', frameL)
-                cv2.imwrite(f'camR.jpg', frameR)
-                print(f"Captured frames at time {time}")
-            time += 1
-        
-        # pak bijde cameras, zet een object op een vaste afstand, pak de x coordinaten van dat object in beide cameras
-        camL, camR = self.predict([cv2.imread('./camL.jpg'), cv2.imread('./camR.jpg')])
-        print("Processed images through AI model.")
-        
-        # leg de beelden op elkaar en kijk wat het verschil is in x coordinaten
-        # make images translucent and save the result
-        alpha = 0.5
-        blended = cv2.addWeighted(camL, alpha, camR, 1 - alpha, 0)
-        cv2.imwrite('blended.jpg', blended)
-        print("Saved blended image as 'blended.jpg'.")
+            blended = cv2.addWeighted(frameL, 0.5, frameR, 1 - 0.5, 0)
+            cv2.imshow('Blended', blended)
+            if cv2.waitKey(1) & 0xFF == ord('q'):
+                break
         
         # maak 
         pass
