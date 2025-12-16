@@ -191,26 +191,21 @@ class AIModel:
     # hoeft maar eenmalig te runnen
     def get_offset(self):
         
-        # knip een foto met beide cameras
-        capL = cv2.VideoCapture(0)
-        capR = cv2.VideoCapture(2)
+        camL = StereoCamera(0, (1920, 1080))
+        camR = StereoCamera(2, (1920, 1080))
         
-        # give cameras time to adjust
-        ret, frame = capR.read()
-        time.sleep(2)
-        if ret:
-            cv2.imwrite('camR.jpg', frame)
-        capR.release()
-        cv2.destroyAllWindows()
-        print("Captured right camera image.")
+        time = 0
         
-        ret, frame = capL.read()
-        time.sleep(2)
-        if ret:
-            cv2.imwrite('camL.jpg', frame)
-        capL.release()
-        cv2.destroyAllWindows()
-        print("Captured left camera image.")
+        while(time < 600):
+            frameL = camL.get_frame()
+            frameR = camR.get_frame()
+            cv2.imshow("Camera L", frameL)
+            cv2.imshow("Camera R", frameR)
+            if time % 30 == 0:
+                cv2.imwrite(f'camL.jpg', frameL)
+                cv2.imwrite(f'camR.jpg', frameR)
+                print(f"Captured frames at time {time}")
+            time += 1
         
         # pak bijde cameras, zet een object op een vaste afstand, pak de x coordinaten van dat object in beide cameras
         camL, camR = self.predict([cv2.imread('./camL.jpg'), cv2.imread('./camR.jpg')])
