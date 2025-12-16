@@ -110,6 +110,21 @@ Door Tom Heijmans, Fabio Wolthuis, Dennis Zejnilović, Ali Haimed.
 | [ ] | Hoog |  Detectie en afstands testen toevoegen aan het test-rapport| Tom | 1,2 |
 
 
+## Sprint planning 6
+---
+
+**Startdatum:** 16-12-2025  
+**Einddatum:** 13-1-2026  
+**Doel:** Veel aandacht geven aan het correct kunnen te bepalen van de afstand.
+
+| Status | Prioriteit |  Taken | Wie? | User story |
+| :----: | :---- | :---- | :---- | :----: |
+| [ ] | Laag | Raspberry Pi AI HAT+ toevoegen voor optimalisatie | Dennis, Tom | 1 |
+| [ ] | Hoog |  kalibreren, implementeren en testen van de afstandsmethode | Dennis, Tom | 3 |
+| [ ] | Hoog |  Verder punt van een object inzien in een 2D grafiek | Ali, Fabio | 4 |
+| [ ] | Midden |  optimalisatie onderzoeksverslag | Ali | 1 |
+| [ ] | Midden |  Camera houder opnieuw ontwerpen| Fabio | 2 |
+
 
 ### Changelog
 
