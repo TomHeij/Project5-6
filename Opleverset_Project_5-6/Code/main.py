@@ -196,11 +196,9 @@ class AIModel:
         
         time = 0
         
-        while(time < 600):
+        while(time < 300):
             frameL = camL.get_frame()
             frameR = camR.get_frame()
-            cv2.imshow("Camera L", frameL)
-            cv2.imshow("Camera R", frameR)
             if time % 30 == 0:
                 cv2.imwrite(f'camL.jpg', frameL)
                 cv2.imwrite(f'camR.jpg', frameR)
