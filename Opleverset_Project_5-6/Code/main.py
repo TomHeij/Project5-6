@@ -167,8 +167,11 @@ class AIModel:
                     cy = int((y1 + y2) / 2)
                     objects[0 if result == results[0] else 1].append((cx, cy))
                     
-                    cv2.circle(capture, (cx, cy), 4, (0, 255, 0), -1)
+                    # tekent vierkant om object
+                    cv2.rectangle(capture, (int(x1), int(y1)), (int(x2), int(y2)), (255, 0, 0), 1)
                     
+                    # tekent midden punt en afstand
+                    cv2.circle(capture, (cx, cy), 4, (0, 255, 0), -1)
                     distance = self.get_distance(x1, x2)
                     cv2.putText(capture, f"D: {distance:.2f}m", (cx + 10, cy - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 0), 2)
                 
@@ -187,8 +190,35 @@ class AIModel:
     
     # hoeft maar eenmalig te runnen
     def get_offset(self):
+        
+        # knip een foto met beide cameras
+        capL = cv2.VideoCapture(0)
+        capR = cv2.VideoCapture(2)
+        ret, frame = capR.read()
+        if ret:
+            cv2.imwrite('camR.jpg', frame)
+        capR.release()
+        cv2.destroyAllWindows()
+        print("Captured right camera image.")
+        
+        ret, frame = capL.read()
+        if ret:
+            cv2.imwrite('camL.jpg', frame)
+        capL.release()
+        cv2.destroyAllWindows()
+        print("Captured left camera image.")
+        
         # pak bijde cameras, zet een object op een vaste afstand, pak de x coordinaten van dat object in beide cameras
+        camL, camR = self.predict([cv2.imread('./camL.jpg'), cv2.imread('./camR.jpg')])
+        print("Processed images through AI model.")
+        
         # leg de beelden op elkaar en kijk wat het verschil is in x coordinaten
+        # make images translucent and save the result
+        alpha = 0.5
+        blended = cv2.addWeighted(camL, alpha, camR, 1 - alpha, 0)
+        cv2.imwrite('blended.jpg', blended)
+        print("Saved blended image as 'blended.jpg'.")
+        
         # maak 
         pass
     
@@ -211,8 +241,11 @@ class AIModel:
     
     
     
+# if __name__ == "__main__":
+#     app = QtWidgets.QApplication(sys.argv)
+#     window = DebugWindow()
+#     window.show()
+#     sys.exit(app.exec())
+
 if __name__ == "__main__":
-    app = QtWidgets.QApplication(sys.argv)
-    window = DebugWindow()
-    window.show()
-    sys.exit(app.exec())
+    AIModel.get_offset(None)
