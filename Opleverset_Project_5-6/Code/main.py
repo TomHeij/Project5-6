@@ -196,7 +196,7 @@ class AIModel:
         
         time = 0
         
-        while(time < 300):
+        while(time < 150):
             frameL = camL.get_frame()
             frameR = camR.get_frame()
             if time % 30 == 0:
