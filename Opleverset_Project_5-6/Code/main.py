@@ -84,7 +84,7 @@ class DebugWindow(QtWidgets.QWidget):
 
     def start_capture(self):
         time_start = time.time()
-        captureL, captureR = self.model.predict([self.camera1.get_frame(), self.camera2.get_frame()])
+        captureL, captureR = self.model.predict([self.cameraL.get_frame(), self.cameraR.get_frame()])
         time_end = time.time()
 
         self.update_metrics(time_start, time_end)
