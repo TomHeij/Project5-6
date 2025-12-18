@@ -66,41 +66,11 @@ class MapWidget(QWidget):
         self.plot_widget.getPlotItem().getViewBox().setRange(rect=pg.QtCore.QRectF(0, 0, 1000, 1000))
         
         # Add axis labels for coordinates
-        self.plot_widget.setLabel('bottom', 'X(km)')
-        self.plot_widget.setLabel('left', 'Y(km)')
+        self.plot_widget.setLabel('bottom', 'X(m)')
+        self.plot_widget.setLabel('left', 'Y(m)')
 
-        # 4. Add Grid Overlay (net of rectangles)
-        self.add_grid(grid_size=100)  # 100m x 100m cells (10x10 grid)
-
-
-    def add_grid(self, grid_size=100, map_size=1000):
-        """
-        Add a grid overlay of rectangles to the map.
-        
-        Parameters:
-        - grid_size: Size of each grid cell in meters (default 100m)
-        - map_size: Total size of the map in meters (default 1000m)
-        """
-        # Grid line style - semi-transparent gray lines
-        grid_pen = pg.mkPen(color=(100, 100, 100, 100), width=2)
-        
-        # Draw vertical lines
-        for x in range(0, map_size + 1, grid_size):
-            line = pg.PlotCurveItem(
-                x=[x, x], 
-                y=[0, map_size], 
-                pen=grid_pen
-            )
-            self.plot_widget.addItem(line)
-        
-        # Draw horizontal lines
-        for y in range(0, map_size + 1, grid_size):
-            line = pg.PlotCurveItem(
-                x=[0, map_size], 
-                y=[y, y], 
-                pen=grid_pen
-            )
-            self.plot_widget.addItem(line)
+        #creating grid using native pyqtgraph function (faster)
+        self.plot_widget.showGrid(x=True, y=True)
 
 
 
