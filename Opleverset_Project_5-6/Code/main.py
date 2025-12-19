@@ -204,7 +204,7 @@ class AIModel:
             frameL = camL.get_frame()
             frameR = camR.get_frame()
             
-            frameL, frameR = model.predict([frameL, frameR])
+            frameL, frameR, objects = model.predict([frameL, frameR])
             
             # move right frame to left by offset
             
