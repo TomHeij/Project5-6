@@ -150,12 +150,12 @@ class StereoCamera:
 class AIModel:
     def __init__(self):
         self.model = YOLO(model="./yolo11n_ncnn_model", task="detect")  # load a model
+        self.confidence_threshold = 0.2
 
     # veranderen zodat het de middelpunten van die boxes pakt van beide cameras
     # kijken of we de frames kunnen overlappen en daar een vast object uit kunnen halen
     def predict(self, captures):
-        confidence_threshold = 0.2
-        results = [self.model(captures[0], verbose=False, conf=confidence_threshold), self.model(captures[1], verbose=False, conf=confidence_threshold)]
+        results = [self.model(captures[0], verbose=False, conf=self.confidence_threshold), self.model(captures[1], verbose=False, conf=self.confidence_threshold)]
         objects = [[], []]
         
         for result in results:
@@ -206,24 +206,38 @@ class AIModel:
             
             detectedObjects = []
             
-            # find closest objects and draw line between them
-            for (x1, y1) in objects[1]:
+            # find closest objects within a certain threshold and draw lines between them
+            for (x1, y1) in objects[0]:
                 closest_obj = None
                 closest_dist = float('inf')
-                for (x2, y2) in objects[0]:
+                for (x2, y2) in objects[1]:
                     dist = math.sqrt((x1 - x2) ** 2 + (y1 - y2) ** 2)
-                    if dist < closest_dist:
+                    if dist < closest_dist and dist < 100:  # threshold of 100 pixels
                         closest_dist = dist
                         closest_obj = (x2, y2)
                 if closest_obj is not None:
-                    cv2.line(frameL, (closest_obj[0], closest_obj[1]), (x1, y1), (0, 255, 255), 1)
-                    cv2.line(frameR, (x1, y1), closest_obj, (0, 255, 255), 1)
-                    detectedObjects.append([(closest_obj[0], closest_obj[1]), (x1, y1)])
+                    cv2.line(frameL, (x1, y1), closest_obj, (0, 255, 255), 1)
+                    cv2.line(frameR, closest_obj, (x1, y1), (0, 255, 255), 1)
+                    detectedObjects.append([(x1, y1), closest_obj])
+            
+            
+            # for (x1, y1) in objects[1]:
+            #     closest_obj = None
+            #     closest_dist = float('inf')
+            #     for (x2, y2) in objects[0]:
+            #         dist = math.sqrt((x1 - x2) ** 2 + (y1 - y2) ** 2)
+            #         if dist < closest_dist:
+            #             closest_dist = dist
+            #             closest_obj = (x2, y2)
+            #     if closest_obj is not None:
+            #         cv2.line(frameL, (closest_obj[0], closest_obj[1]), (x1, y1), (0, 255, 255), 1)
+            #         cv2.line(frameR, (x1, y1), closest_obj, (0, 255, 255), 1)
+            #         detectedObjects.append([(closest_obj[0], closest_obj[1]), (x1, y1)])
                     
             for ((xL, yL), (xR, yR)) in detectedObjects:
                 distance = self.get_distance(xL, xR)
-                cv2.putText(frameL, f"{distance:.2f}m", (xL, yL - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 0), 1)
-                cv2.putText(frameR, f"{distance:.2f}m", (xR, yR - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 0), 1)
+                cv2.putText(frameL, f"{distance:.2f}m", (xL, yL - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 0, 0), 1)
+                cv2.putText(frameR, f"{distance:.2f}m", (xR, yR - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 0, 0), 1)
                 
             
             blended = cv2.addWeighted(frameR, 0.5, frameL, 1 - 0.5, 0)
