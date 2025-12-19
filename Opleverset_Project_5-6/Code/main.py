@@ -194,12 +194,12 @@ class AIModel:
                     cv2.line(capture[1], (x1, y1), closest_obj, (0, 255, 255), 1)
                     detectedObjects.append([(closest_obj[0], closest_obj[1]), (x1, y1)])
                     
-        for ((x1, y1), (x2, y2)) in detectedObjects:
-            distance = self.get_distance(x1, x2)
-            center_x = int((x1 + x2) / 2)
-            center_y = int((y1 + y2) / 2)
-            cv2.putText(captures[0], f"{distance:.2f} cm", (center_x, center_y - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 255), 2)
-            cv2.putText(captures[1], f"{distance:.2f} cm", (center_x, center_y - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 255), 2)
+        # for ((x1, y1), (x2, y2)) in detectedObjects:
+        #     distance = self.get_distance(x1, x2)
+        #     center_x = int((x1 + x2) / 2)
+        #     center_y = int((y1 + y2) / 2)
+        #     cv2.putText(captures[0], f"{distance:.2f}M", (center_x, center_y - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 255), 2)
+        #     cv2.putText(captures[1], f"{distance:.2f}M", (center_x, center_y - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 255), 2)
                       
         return captures[0], captures[1]
     
@@ -228,18 +228,18 @@ class AIModel:
     # werkt blijkbaar
     def get_distance(self, x1, x2):
         baseline = 0.099    # distance between the two cameras in meters
-        width_px = 1920     # camera resolution width in pixels
+        width_px = 1063.9     # camera resolution width in pixels
         fov_deg = 60        # camera field of view in degrees
 
-        theta_rad = math.radians(fov_deg)
-        f = (width_px / 2) / math.tan(theta_rad / 2)
+        # theta_rad = math.radians(fov_deg)
+        # // f = (width_px / 2) / math.tan(theta_rad / 2)
         # f = width_px / (2 * math.tan(theta_rad / 2))
 
         disparity = x1 - x2
         if abs(disparity) < 0.001:
             return float('inf')
         
-        distance = (f * baseline) / disparity
+        distance = (width_px * baseline) / disparity
         return abs(distance*10)
 
     
