@@ -78,7 +78,7 @@ class MapWidget(QWidget):
         self.plot_widget.showGrid(x=True, y=True)
 
 
-self.start_animation()
+        self.start_animation()
         self.update_position()
         
 
