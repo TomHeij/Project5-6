@@ -222,7 +222,7 @@ class AIModel:
                     
             for ((xL, yL), (xR, yR)) in detectedObjects:
                 distance = self.get_distance(xL, xR)
-                cv2.putText(frameL, f"{distance:.2f}m", (xL, yL - 10), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 255), 2)
+                cv2.putText(frameR, f"{distance:.2f}m", (xL, yL - 10), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 255), 2)
                 
             
             blended = cv2.addWeighted(frameR, 0.5, frameL, 1 - 0.5, 0)
@@ -239,15 +239,15 @@ class AIModel:
         width_px = 1068.9     # camera resolution width in pixels
         fov_deg = 60        # camera field of view in degrees
 
-        theta_rad = math.radians(fov_deg)
-        f = (width_px / 2) / math.tan(theta_rad / 2)
+        # theta_rad = math.radians(fov_deg)
+        # f = (width_px / 2) / math.tan(theta_rad / 2)
         # f = width_px / (2 * math.tan(theta_rad / 2))
 
         disparity = x1 - x2
         if abs(disparity) < 0.001:
             return float('inf')
         
-        distance = (f * baseline) / disparity
+        distance = (width_px * baseline) / disparity
         return abs(distance)
 
     
