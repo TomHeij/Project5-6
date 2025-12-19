@@ -154,7 +154,7 @@ class AIModel:
     # veranderen zodat het de middelpunten van die boxes pakt van beide cameras
     # kijken of we de frames kunnen overlappen en daar een vast object uit kunnen halen
     def predict(self, captures):
-        confidence_threshold = 0.8
+        confidence_threshold = 0.2
         results = [self.model(captures[0], verbose=False, conf=confidence_threshold), self.model(captures[1], verbose=False, conf=confidence_threshold)]
         objects = [[], []]
         
@@ -206,26 +206,24 @@ class AIModel:
             
             detectedObjects = []
             
-            # find closest objects within a certain distance threshold and draw lines between them
-            for objL in objects[0]:
-                x1, y1 = objL
+            # find closest objects and draw line between them
+            for (x1, y1) in objects[1]:
                 closest_obj = None
                 closest_dist = float('inf')
-                for objR in objects[1]:
-                    x2, y2 = objR
-                    dist = abs(x1 - x2)
-                    if dist < closest_dist and dist < 100:  # threshold of 100 pixels
+                for (x2, y2) in objects[0]:
+                    dist = math.sqrt((x1 - x2) ** 2 + (y1 - y2) ** 2)
+                    if dist < closest_dist:
                         closest_dist = dist
-                        closest_obj = objR
+                        closest_obj = (x2, y2)
                 if closest_obj is not None:
-                    cv2.line(frameR, (closest_obj[0], closest_obj[1]), (x1, y1), (0, 255, 0), 2)
-                    cv2.line(frameL, (closest_obj[0], closest_obj[1]), (x1, y1), (0, 255, 0), 2)
+                    cv2.line(frameL, (closest_obj[0], closest_obj[1]), (x1, y1), (0, 255, 255), 1)
+                    cv2.line(frameR, (x1, y1), closest_obj, (0, 255, 255), 1)
                     detectedObjects.append([(closest_obj[0], closest_obj[1]), (x1, y1)])
                     
-            distance = model.get_distance(detectedObjects[0][0], detectedObjects[1][0])
-            centerx = int((detectedObjects[0][0] + detectedObjects[1][0]) / 2)
-            centery = int((detectedObjects[0][1] + detectedObjects[1][1]) / 2)
-            cv2.putText(frameR, f"{distance:.2f}m", (centerx, centery - 10), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 255), 2)
+            for ((xL, yL), (xR, yR)) in detectedObjects:
+                distance = self.get_distance(xL, xR)
+                cv2.putText(frameL, f"{distance:.2f}m", (xL, yL - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 0), 1)
+                cv2.putText(frameR, f"{distance:.2f}m", (xR, yR - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 0), 1)
                 
             
             blended = cv2.addWeighted(frameR, 0.5, frameL, 1 - 0.5, 0)
@@ -243,8 +241,8 @@ class AIModel:
         fov_deg = 60        # camera field of view in degrees
 
         theta_rad = math.radians(fov_deg)
-        # f = (width_px / 2) / math.tan(theta_rad / 2)
-        f = width_px / (2 * math.tan(theta_rad / 2))
+        f = (width_px / 2) / math.tan(theta_rad / 2)
+        # f = width_px / (2 * math.tan(theta_rad / 2))
 
         disparity = x1 - x2
         if abs(disparity) < 0.001:
