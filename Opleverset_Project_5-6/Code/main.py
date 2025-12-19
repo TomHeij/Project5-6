@@ -209,17 +209,17 @@ class AIModel:
             frameL, frameR, objects = model.predict([frameL, frameR])
             
             # find closest objects and draw line between them
-            for (x1, y1) in objects[0]:
+            for (x1, y1) in objects[1]:
                 closest_obj = None
                 closest_dist = float('inf')
-                for (x2, y2) in objects[1]:
+                for (x2, y2) in objects[0]:
                     dist = math.sqrt((x1 - x2) ** 2 + (y1 - y2) ** 2)
                     if dist < closest_dist:
                         closest_dist = dist
                         closest_obj = (x2, y2)
                 if closest_obj is not None:
-                    cv2.line(frameL, (x1, y1), closest_obj, (0, 255, 255), 1)
-                    cv2.line(frameR, (closest_obj[0], closest_obj[1]), (x1, y1), (0, 255, 255), 1)
+                    cv2.line(frameL, (closest_obj[0], closest_obj[1]), (x1, y1), (0, 255, 255), 1)
+                    cv2.line(frameR, (x1, y1), closest_obj, (0, 255, 255), 1)
                 
             
             blended = cv2.addWeighted(frameR, 0.5, frameL, 1 - 0.5, 0)
