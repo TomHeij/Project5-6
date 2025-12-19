@@ -1,12 +1,24 @@
 @startuml packageDiagram
 title Stereo Vision - Depth Estimation
-'object level depth design
+'left to right direction
+
+
+'TOBE DECIDED: 
+'-Sparse vs. Dense Correspondence (which one we need?)
+'-The YOLO Input (Detection Strategy):
+'1. running YOLO only on the Left Frame(optimized) to get bounding boxes
+'Then, we use a lighter Feature Matching or Template Matching algorithm to find the corresponding object in the Right Frame
+' so flow "Detection on Left" -> "Matching in Right" 
+'2. YOLO on both frames left and right (slower)
+'Note: current design is object level depth 
+
+
+'TODO: adding Tracker component to track detected objects over time
 
 skinparam TitleFontStyle bold
 skinparam linetype ortho
 skinparam TitleFontSize 18
 'skinparam TitleBackgroundColor #LightBlue
-'left to right direction
 
 skinparam packageStyle rectangle
 skinparam packageFontSize 11
@@ -60,22 +72,21 @@ package "Map" as MainApp <<UI>> #FFC69D {
 ' run only once for efficiency
 Capture --> Rectification: "L,R frames"
 Rectification ---> Detection: "rectified frames\n L,R"
-' sending 1 rectified image 'left' to yolo ??
 
-Detection ---> Matching: " detection L,R\n(xL, yL)"
-'using only detections on one camera 'left'??
+Detection ---> Matching: " detection left\n(xL, yL, bbox)"
 
 Calibration ..> DepthCalc : <b>f,B</b>
-Calibration ..> Rectification: " R1,R2,\n P1,P2"
-
+Calibration ..> Rectification: "K,D,R,T\nR1,R2,P1,P2"
 Calibration ..> Reprojection : <b> f,cx,cy</b>
 
-Matching --> Disparity : "matched(xR, yR)"
-Disparity --> DepthCalc: "disparity"
+Matching ---> Disparity : "matched right\n(xL, xR)"
+
+Disparity ---> DepthCalc: "disparity\nxL-xR"
+
 DepthCalc --> Reprojection : "depth Z"
-'(depth)
-'DepthCalc -down-> Reprojection : Z 
+
 Reprojection ---> MapProj : "(X,Y,Z)"
+
 MapProj --> MainApp : "(map_x, map_y)"
 
 
