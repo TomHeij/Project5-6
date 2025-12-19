@@ -173,13 +173,17 @@ class AIModel:
                     # tekent midden punt en afstand
                     cv2.circle(capture, (cx, cy), 4, (0, 255, 0), -1)
                     distance = self.get_distance(x1, x2)
-                    cv2.putText(capture, f"D: {distance:.2f}m", (cx + 10, cy - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 0), 2)
+                    
+                    if capture is captures[0]:
+                        cv2.putText(capture, f"D: {distance:.2f}m", (cx + 10, cy - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 0), 2)
+                    else:
+                        cv2.putText(capture, f"D: {distance:.2f}m", (cx + 10, cy - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 0, 255), 2)
                 
                 capture = r.plot()
                 
         # self.bind_objects(objects[0], objects[1])
           
-        return captures[0], captures[1]
+        return captures[0], captures[1], objects
     
     def bind_objects(self, objectsL, objectsR):
         #! ergens een buffer plaatsen voor als er geen object in 1 van de cameras is
@@ -200,7 +204,10 @@ class AIModel:
             frameL = camL.get_frame()
             frameR = camR.get_frame()
             
-            frameL, frameR = model.predict([frameL, frameR])
+            frameL, frameR, objects = model.predict([frameL, frameR])
+            
+            # move right frame to left by offset
+            
             
             blended = cv2.addWeighted(frameL, 0.5, frameR, 1 - 0.5, 0)
             cv2.imshow('Blended', blended)
@@ -217,7 +224,8 @@ class AIModel:
         fov_deg = 60        # camera field of view in degrees
 
         theta_rad = math.radians(fov_deg)
-        f = width_px / (2 * math.tan(theta_rad / 2))
+        f = (width_px / 2) / math.tan(theta_rad / 2)
+        # f = width_px / (2 * math.tan(theta_rad / 2))
 
         disparity = x1 - x2
         if abs(disparity) < 0.001:
