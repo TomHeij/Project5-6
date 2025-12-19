@@ -62,19 +62,14 @@ class DebugWindow(QtWidgets.QWidget):
 
         self.setWindowTitle("Debug Window")
 
-        self.camL = self.ui.findChild(QtWidgets.QLabel, "camL")
-        self.camR = self.ui.findChild(QtWidgets.QLabel, "camR")
+        self.cam = self.ui.findChild(QtWidgets.QLabel, "cam")
         self.fpsLabel = self.ui.findChild(QtWidgets.QLabel, "fpsLabel")
         self.frameTimeLabel = self.ui.findChild(QtWidgets.QLabel, "frameTimeLabel")
+            
+        self.cam.setMinimumSize(self.cameraResolution[0], self.cameraResolution[1])
+        self.cam.setSizePolicy(QtWidgets.QSizePolicy.Policy.Fixed, QtWidgets.QSizePolicy.Policy.Fixed)
+        self.cam.setScaledContents(True)
         
-        self.camL.setMinimumSize(self.cameraResolution[0], self.cameraResolution[1])
-        self.camL.setSizePolicy(QtWidgets.QSizePolicy.Policy.Fixed, QtWidgets.QSizePolicy.Policy.Fixed)
-        self.camL.setScaledContents(True)
-        
-        self.camR.setMinimumSize(self.cameraResolution[0], self.cameraResolution[1])
-        self.camR.setSizePolicy(QtWidgets.QSizePolicy.Policy.Fixed, QtWidgets.QSizePolicy.Policy.Fixed)
-        self.camR.setScaledContents(True)
-
         self.cameraL = StereoCamera(self.camIds[1], self.cameraResolution)
         self.cameraR = StereoCamera(self.camIds[0], self.cameraResolution)
 
@@ -85,16 +80,11 @@ class DebugWindow(QtWidgets.QWidget):
     def start_capture(self):
         time_start = time.time()
         captureL, captureR = self.model.predict([self.cameraL.get_frame(), self.cameraR.get_frame()])
+        blended = cv2.addWeighted(captureR, 0.5, captureL, 1 - 0.5, 0)
+        self.cam.setPixmap(self.cv2_to_qt(blended))
         time_end = time.time()
 
         self.update_metrics(time_start, time_end)
-        
-        # debug window updaten naar blended view
-        # blended = cv2.addWeighted(captureR, 0.5, captureL, 1 - 0.5, 0)
-        # cv2.imshow('Blended', blended)
-
-        self.camL.setPixmap(self.cv2_to_qt(captureL))
-        self.camR.setPixmap(self.cv2_to_qt(captureR))
         
     def update_metrics(self, time_start=None, time_end=None):
         if time_start is not None and time_end is not None:
