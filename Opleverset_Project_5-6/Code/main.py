@@ -137,6 +137,8 @@ class StereoCamera:
         if not ret:
             print("Failed to grab frame")
             return None
+        cv2.initUndistortRectifyMap(frame, None, None, None, (frame.shape[1], frame.shape[0]), cv2.CV_32FC1)
+        cv2.remap(frame, None, None, cv2.INTER_LINEAR)
         return frame
     
    
@@ -202,6 +204,7 @@ class AIModel:
     # werkt blijkbaar
     def get_distance(self, x1, x2):
         baseline = 0.099    # distance between the two cameras in meters
+        # fx = 1063.9      # focal length in pixels
         width_px = 1920    # camera resolution width in pixels
         fov_deg = 60        # camera field of view in degrees
 
@@ -214,7 +217,7 @@ class AIModel:
             return float('inf')
         
         distance = (f * baseline) / disparity
-        return abs(distance)
+        return distance
 
     
     
