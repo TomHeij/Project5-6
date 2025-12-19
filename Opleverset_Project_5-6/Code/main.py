@@ -154,7 +154,8 @@ class AIModel:
     # veranderen zodat het de middelpunten van die boxes pakt van beide cameras
     # kijken of we de frames kunnen overlappen en daar een vast object uit kunnen halen
     def predict(self, captures):
-        results = [self.model(captures[0], verbose=False, conf=0.2), self.model(captures[1], verbose=False, conf=0.8)]
+        confidence_threshold = 0.2
+        results = [self.model(captures[0], verbose=False, conf=confidence_threshold), self.model(captures[1], verbose=False, conf=confidence_threshold)]
         objects = [[], []]
         
         for result in results:
