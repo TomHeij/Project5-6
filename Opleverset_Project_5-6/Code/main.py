@@ -50,7 +50,7 @@ class DebugWindow(QtWidgets.QWidget):
         
         self.model = AIModel()
         
-        self.cameraResolution = (1920, 1080)
+        self.cameraResolution = (1280, 720)
         self.camIds = (0, 2) # raspberry pi
         # self.camIds = (4, 2) # laptop
 
@@ -205,7 +205,7 @@ class AIModel:
     def get_distance(self, x1, x2):
         baseline = 0.099    # distance between the two cameras in meters
         # fx = 1063.9      # focal length in pixels
-        width_px = 1920    # camera resolution width in pixels
+        width_px = 1280    # camera resolution width in pixels
         fov_deg = 60        # camera field of view in degrees
 
         theta_rad = math.radians(fov_deg)
