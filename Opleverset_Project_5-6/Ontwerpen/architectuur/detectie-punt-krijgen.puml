@@ -75,9 +75,11 @@ Rectification ---> Detection: "rectified frames\n L,R"
 
 Detection ---> Matching: " detection left\n(xL, yL, bbox)"
 
-Calibration ..> DepthCalc : <b>f,B</b>
+'fx 
+Calibration ..> DepthCalc : <b>f,B</b> 
 Calibration ..> Rectification: "K,D,R,T\nR1,R2,P1,P2"
-Calibration ..> Reprojection : <b> f,cx,cy</b>
+'fx,fy
+Calibration ..> Reprojection : <b> f,cx,cy</b> 
 
 Matching ---> Disparity : "matched right\n(xL, xR)"
 
