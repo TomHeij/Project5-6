@@ -150,7 +150,7 @@ class StereoCamera:
 class AIModel:
     def __init__(self):
         self.model = YOLO(model="./yolo11n_ncnn_model", task="detect")  # load a model
-        self.confidence_threshold = 0.2
+        self.confidence_threshold = 0.6
 
     # veranderen zodat het de middelpunten van die boxes pakt van beide cameras
     # kijken of we de frames kunnen overlappen en daar een vast object uit kunnen halen
@@ -212,7 +212,7 @@ class AIModel:
                 closest_dist = float('inf')
                 for (x2, y2) in objects[1]:
                     dist = math.sqrt((x1 - x2) ** 2 + (y1 - y2) ** 2)
-                    if dist < closest_dist and dist < 100:  # threshold of 100 pixels
+                    if dist < closest_dist and dist < 150:  # threshold of 100 pixels
                         closest_dist = dist
                         closest_obj = (x2, y2)
                 if closest_obj is not None:
@@ -236,8 +236,8 @@ class AIModel:
                     
             for ((xL, yL), (xR, yR)) in detectedObjects:
                 distance = self.get_distance(xL, xR)
-                cv2.putText(frameL, f"{distance:.2f}m", (xL, yL - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 0, 0), 1)
-                cv2.putText(frameR, f"{distance:.2f}m", (xR, yR - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 0, 0), 1)
+                cv2.putText(frameL, f"{distance:.2f}m", (xL, yL - 10), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 255), 1)
+                cv2.putText(frameR, f"{distance:.2f}m", (xR, yR - 10), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 255), 1)
                 
             
             blended = cv2.addWeighted(frameR, 0.5, frameL, 1 - 0.5, 0)
