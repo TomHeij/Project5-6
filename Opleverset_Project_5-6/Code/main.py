@@ -236,19 +236,19 @@ class AIModel:
     # werkt blijkbaar
     def get_distance(self, x1, x2):
         baseline = 0.099    # distance between the two cameras in meters
-        width_px = 1063.9     # camera resolution width in pixels
+        width_px = 1920     # camera resolution width in pixels
         fov_deg = 60        # camera field of view in degrees
 
-        # theta_rad = math.radians(fov_deg)
-        # f = (width_px / 2) / math.tan(theta_rad / 2)
+        theta_rad = math.radians(fov_deg)
+        f = (width_px / 2) / math.tan(theta_rad / 2)
         # f = width_px / (2 * math.tan(theta_rad / 2))
 
         disparity = x1 - x2
         if abs(disparity) < 0.001:
             return float('inf')
         
-        distance = (width_px * baseline) / disparity
-        return abs(distance)
+        distance = (f * baseline) / disparity
+        return abs(distance * 10)
 
     
     
