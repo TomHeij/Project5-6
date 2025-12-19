@@ -1,21 +1,22 @@
 @startuml packageDiagram
 title Stereo Vision - Depth Estimation
-'object level depth design
+'left to right direction
+
 
 'TOBE DECIDED: 
 '-Sparse vs. Dense Correspondence (which one we need?)
 '-The YOLO Input (Detection Strategy):
 '1. running YOLO only on the Left Frame(optimized) to get bounding boxes
 'Then, we use a lighter Feature Matching or Template Matching algorithm to find the corresponding object in the Right Frame
-'so flow "Detection on Left" -> "Matching in Right" 
+' so flow "Detection on Left" -> "Matching in Right" 
 '2. YOLO on both frames left and right (slower)
+'Note: current design is object level depth 
 
 
 skinparam TitleFontStyle bold
 skinparam linetype ortho
 skinparam TitleFontSize 18
 'skinparam TitleBackgroundColor #LightBlue
-'left to right direction
 
 skinparam packageStyle rectangle
 skinparam packageFontSize 11
@@ -70,13 +71,13 @@ package "Map" as MainApp <<UI>> #FFC69D {
 Capture --> Rectification: "L,R frames"
 Rectification ---> Detection: "rectified frames\n L,R"
 
-Detection ---> Matching: " detection L,R\n(xL, yL, bbox)"
+Detection ---> Matching: " detection left\n(xL, yL, bbox)"
 
 Calibration ..> DepthCalc : <b>f,B</b>
 Calibration ..> Rectification: "K,D,R,T\nR1,R2,P1,P2"
 Calibration ..> Reprojection : <b> f,cx,cy</b>
 
-Matching --> Disparity : "matched(xL, xR)"
+Matching ---> Disparity : "matched right\n(xL, xR)"
 
 Disparity --> DepthCalc: "disparity"
 
