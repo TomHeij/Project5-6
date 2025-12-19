@@ -179,6 +179,8 @@ class AIModel:
           
         for ((xL, yL), (xR, yR)) in detectedObjects:
             distance = self.get_distance(xL, xR)
+            cv2.line(captures[0], (xL, yL), (xR, yR), (255, 255, 0), 1)
+            cv2.line(captures[1], (xL, yL), (xR, yR), (255, 255, 0), 1)
             cv2.putText(captures[1], f"{distance:.2f}m", (xL, yL - 10), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 255), 2)
           
         return captures[0], captures[1]
