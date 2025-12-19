@@ -55,7 +55,7 @@ class DebugWindow(QtWidgets.QWidget):
         # self.camIds = (4, 2) # laptop
 
         self.ui.setParent(self)
-        self.ui.setMinimumWidth(self.cameraResolution[0] * 2 + 50)
+        self.ui.setMinimumWidth(self.cameraResolution[0])
         layout = QtWidgets.QVBoxLayout(self)
         layout.setContentsMargins(0, 0, 0, 0)
         layout.addWidget(self.ui)
