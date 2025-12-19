@@ -13,6 +13,8 @@ title Stereo Vision - Depth Estimation
 'Note: current design is object level depth 
 
 
+'TODO: adding Tracker component to track detected objects over time
+
 skinparam TitleFontStyle bold
 skinparam linetype ortho
 skinparam TitleFontSize 18
@@ -79,7 +81,7 @@ Calibration ..> Reprojection : <b> f,cx,cy</b>
 
 Matching ---> Disparity : "matched right\n(xL, xR)"
 
-Disparity --> DepthCalc: "disparity"
+Disparity ---> DepthCalc: "disparity\nxL-xR"
 
 DepthCalc --> Reprojection : "depth Z"
 
