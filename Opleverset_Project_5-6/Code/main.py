@@ -171,13 +171,15 @@ class AIModel:
                     cv2.rectangle(capture, (int(x1), int(y1)), (int(x2), int(y2)), (255, 0, 0), 1)
                     
                     # tekent midden punt en afstand
-                    cv2.circle(capture, (cx, cy), 4, (0, 255, 0), -1)
-                    distance = self.get_distance(x1, x2)
-                    
                     if capture is captures[0]:
-                        cv2.putText(capture, f"D: {distance:.2f}m", (cx + 10, cy - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 0), 2)
+                        cv2.circle(capture, (cx, cy), 4, (0, 255, 0), -1)
                     else:
-                        cv2.putText(capture, f"D: {distance:.2f}m", (cx + 10, cy - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 0, 255), 2)
+                        cv2.circle(capture, (cx, cy), 4, (0, 0, 255), -1)
+                    
+                    distance = self.get_distance(x1, x2)
+                            
+                    cv2.putText(capture, f"D: {distance:.2f}m", (cx + 10, cy - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 0), 2)  
+                
                 
                 capture = r.plot()
                 
@@ -206,7 +208,7 @@ class AIModel:
             
             frameL, frameR, objects = model.predict([frameL, frameR])
             
-            # move right frame to left by offset
+            
             
             
             blended = cv2.addWeighted(frameL, 0.5, frameR, 1 - 0.5, 0)
