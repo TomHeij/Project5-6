@@ -150,7 +150,7 @@ class StereoCamera:
 class AIModel:
     def __init__(self):
         self.model = YOLO(model="./yolo11n_ncnn_model", task="detect")  # load a model
-        self.confidence_threshold = 0.6
+        self.confidence_threshold = 0.5
 
     # veranderen zodat het de middelpunten van die boxes pakt van beide cameras
     # kijken of we de frames kunnen overlappen en daar een vast object uit kunnen halen
@@ -219,24 +219,10 @@ class AIModel:
                     cv2.line(frameL, (x1, y1), closest_obj, (0, 255, 255), 1)
                     cv2.line(frameR, closest_obj, (x1, y1), (0, 255, 255), 1)
                     detectedObjects.append([(x1, y1), closest_obj])
-            
-            
-            # for (x1, y1) in objects[1]:
-            #     closest_obj = None
-            #     closest_dist = float('inf')
-            #     for (x2, y2) in objects[0]:
-            #         dist = math.sqrt((x1 - x2) ** 2 + (y1 - y2) ** 2)
-            #         if dist < closest_dist:
-            #             closest_dist = dist
-            #             closest_obj = (x2, y2)
-            #     if closest_obj is not None:
-            #         cv2.line(frameL, (closest_obj[0], closest_obj[1]), (x1, y1), (0, 255, 255), 1)
-            #         cv2.line(frameR, (x1, y1), closest_obj, (0, 255, 255), 1)
-            #         detectedObjects.append([(closest_obj[0], closest_obj[1]), (x1, y1)])
                     
             for ((xL, yL), (xR, yR)) in detectedObjects:
                 distance = self.get_distance(xL, xR)
-                cv2.putText(frameR, f"{distance:.2f}m", (xL, yL - 10), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 255), 2)
+                cv2.putText(frameL, f"{distance:.2f}m", (xL, yL - 10), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 255), 2)
                 
             
             blended = cv2.addWeighted(frameR, 0.5, frameL, 1 - 0.5, 0)
@@ -254,15 +240,15 @@ class AIModel:
         fov_deg = 60        # camera field of view in degrees
 
         theta_rad = math.radians(fov_deg)
-        f = (width_px / 2) / math.tan(theta_rad / 2)
-        # f = width_px / (2 * math.tan(theta_rad / 2))
+        # f = (width_px / 2) / math.tan(theta_rad / 2)
+        f = width_px / (2 * math.tan(theta_rad / 2))
 
         disparity = x1 - x2
         if abs(disparity) < 0.001:
             return float('inf')
         
         distance = (f * baseline) / disparity
-        return abs(distance)
+        return abs(distance*10)
 
     
     
