@@ -202,6 +202,9 @@ class AIModel:
             
             frameL, frameR = model.predict([frameL, frameR])
             
+            # move right frame to left by offset
+            
+            
             blended = cv2.addWeighted(frameL, 0.5, frameR, 1 - 0.5, 0)
             cv2.imshow('Blended', blended)
             if cv2.waitKey(1) & 0xFF == ord('q'):
@@ -217,7 +220,8 @@ class AIModel:
         fov_deg = 60        # camera field of view in degrees
 
         theta_rad = math.radians(fov_deg)
-        f = width_px / (2 * math.tan(theta_rad / 2))
+        f = (width_px / 2) / math.tan(theta_rad / 2)
+        # f = width_px / (2 * math.tan(theta_rad / 2))
 
         disparity = x1 - x2
         if abs(disparity) < 0.001:
