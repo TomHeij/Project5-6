@@ -8,7 +8,7 @@
 
 
 ## References:
-# Stereo vision:
+# Stereo vision
 1. Revised_Thesis_RvG_v021.pdf (Tidalis)
 2. Stereo Vision and depth estimation: https://www.geeksforgeeks.org/computer-vision/stereo-vision-and-depth-estimation/
 3. Camera Calibration and 3D Reconstruction: https://docs.opencv.org/4.x/d9/d0c/group__calib3d.html
