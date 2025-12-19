@@ -149,13 +149,13 @@ class StereoCamera:
     
 class AIModel:
     def __init__(self):
-        self.model = YOLO(model="./yolo11n_ncnn_model", task="detect", verbose=False)  # load a model
+        self.model = YOLO(model="./yolo11n_ncnn_model", task="detect")  # load a model
 
     # veranderen zodat het de middelpunten van die boxes pakt van beide cameras
     # kijken of we de frames kunnen overlappen en daar een vast object uit kunnen halen
     def predict(self, captures):
         confidence_threshold = 0.4
-        results = [self.model(captures[0], conf=confidence_threshold), self.model(captures[1], conf=confidence_threshold)]
+        results = [self.model(captures[0], conf=confidence_threshold, verbose=False), self.model(captures[1], conf=confidence_threshold, verbose=False)]
         objects = [[], []]
         detectedObjects = []
         
@@ -196,8 +196,11 @@ class AIModel:
                     
         for ((x1, y1), (x2, y2)) in detectedObjects:
             distance = self.get_distance(x1, x2)
-            cv2.putText(captures[0], f"{distance:.2f} cm", ((x2-x1)/2 + 10, y1), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 0), 1)
-          
+            center_x = int((x1 + x2) / 2)
+            center_y = int((y1 + y2) / 2)
+            cv2.putText(captures[0], f"{distance:.2f} cm", (center_x, center_y - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 255), 2)
+            cv2.putText(captures[1], f"{distance:.2f} cm", (center_x, center_y - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 255), 2)
+                      
         return captures[0], captures[1]
     
     # hoeft maar eenmalig te runnen
