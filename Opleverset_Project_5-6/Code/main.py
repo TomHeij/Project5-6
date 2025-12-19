@@ -149,12 +149,13 @@ class StereoCamera:
     
 class AIModel:
     def __init__(self):
-        self.model = YOLO(model="./yolo11n_ncnn_model", task="detect", verbose=False, conf=0.4)  # load a model
+        self.model = YOLO(model="./yolo11n_ncnn_model", task="detect", verbose=False)  # load a model
 
     # veranderen zodat het de middelpunten van die boxes pakt van beide cameras
     # kijken of we de frames kunnen overlappen en daar een vast object uit kunnen halen
     def predict(self, captures):
-        results = [self.model(captures[0]), self.model(captures[1])]
+        confidence_threshold = 0.4
+        results = [self.model(captures[0], conf=confidence_threshold), self.model(captures[1], conf=confidence_threshold)]
         objects = [[], []]
         detectedObjects = []
         
