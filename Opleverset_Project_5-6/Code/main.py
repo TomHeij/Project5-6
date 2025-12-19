@@ -206,20 +206,22 @@ class AIModel:
             
             detectedObjects = []
             
-            # find closest objects and draw line between them
-            for (x1, y1) in objects[1]:
+            # find closest objects within a certain distance threshold and draw lines between them
+            for objL in objects[0]:
+                x1, y1 = objL
                 closest_obj = None
                 closest_dist = float('inf')
-                for (x2, y2) in objects[0]:
-                    dist = math.sqrt((x1 - x2) ** 2 + (y1 - y2) ** 2)
-                    if dist < closest_dist:
+                for objR in objects[1]:
+                    x2, y2 = objR
+                    dist = abs(x1 - x2)
+                    if dist < closest_dist and dist < 100:  # threshold of 100 pixels
                         closest_dist = dist
-                        closest_obj = (x2, y2)
+                        closest_obj = objR
                 if closest_obj is not None:
-                    cv2.line(frameL, (closest_obj[0], closest_obj[1]), (x1, y1), (0, 255, 255), 1)
-                    cv2.line(frameR, (x1, y1), closest_obj, (0, 255, 255), 1)
-                    # store points in varible
+                    cv2.line(frameR, (closest_obj[0], closest_obj[1]), (x1, y1), (0, 255, 0), 2)
+                    cv2.line(frameL, (closest_obj[0], closest_obj[1]), (x1, y1), (0, 255, 0), 2)
                     detectedObjects.append([(closest_obj[0], closest_obj[1]), (x1, y1)])
+                    
                 
             
             blended = cv2.addWeighted(frameR, 0.5, frameL, 1 - 0.5, 0)
