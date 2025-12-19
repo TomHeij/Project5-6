@@ -50,6 +50,11 @@ class MapWidget(QWidget):
     def __init__(self, parent=None):
         super().__init__(parent)
         self.layout = QVBoxLayout(self)
+
+        self.map_x = [200.0, 399.0, 400.0, 411.0, 420.0, 500.0]
+        self.map_y = [500.0, 499.0,488.0, 399.0, 299.0, 200.0]
+        self.current_step = 0
+        self.tail_length = 5
         
         # 1. Create the PlotWidget
         self.plot_widget = pg.PlotWidget(title="Object Locatie Kaart")
@@ -72,6 +77,44 @@ class MapWidget(QWidget):
         #creating grid using native pyqtgraph function (faster)
         self.plot_widget.showGrid(x=True, y=True)
 
+
+self.start_animation()
+        self.update_position()
+        
+
+    def start_animation(self):
+        # Start timer (interval in milliseconds: 100ms = 10 updates/sec)
+        self.current_step = 0
+        self.timer.start(100)
+
+    def update_position(self):
+
+        if self.current_step < len(self.map_x):
+
+            start_idx = max(0, self.current_step - self.tail_length)
+            
+            # 2. Get the slices of data for the tail
+            tail_x = self.map_x[start_idx : self.current_step + 1]
+            tail_y = self.map_y[start_idx : self.current_step + 1]
+            
+            self.plot_widget.clear()
+            
+            # 3. Plot the tail (the line)
+            self.plot_widget.plot(tail_x, tail_y, pen='b')
+            x = [self.map_x[self.current_step]]
+            y = [self.map_y[self.current_step]]
+            
+            # Update your plot widget
+            # We clear or overwrite the previous point to show 'movement'
+            #self.plot_widget.clear() 
+            self.plot_widget.plot(x, y, symbol='o', symbolSize=20, symbolBrush='b')
+            
+            print(f"Moving to: {x}, {y}")
+            self.current_step += 1
+        else:
+            # reset
+            self.current_step = 0
+            
 
 
 class MainWindow(QMainWindow):
