@@ -154,7 +154,7 @@ class AIModel:
     # veranderen zodat het de middelpunten van die boxes pakt van beide cameras
     # kijken of we de frames kunnen overlappen en daar een vast object uit kunnen halen
     def predict(self, captures):
-        confidence_threshold = 0.2
+        confidence_threshold = 0.8
         results = [self.model(captures[0], verbose=False, conf=confidence_threshold), self.model(captures[1], verbose=False, conf=confidence_threshold)]
         objects = [[], []]
         
@@ -222,6 +222,10 @@ class AIModel:
                     cv2.line(frameL, (closest_obj[0], closest_obj[1]), (x1, y1), (0, 255, 0), 2)
                     detectedObjects.append([(closest_obj[0], closest_obj[1]), (x1, y1)])
                     
+            distance = model.get_distance(detectedObjects[0][0][0], detectedObjects[0][1][0])
+            centerx = int((detectedObjects[0][0][0] + detectedObjects[0][1][0]) / 2)
+            centery = int((detectedObjects[0][0][1] + detectedObjects[0][1][1]) / 2)
+            cv2.putText(frameR, f"{distance:.2f}m", (centerx, centery - 10), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 255), 2)
                 
             
             blended = cv2.addWeighted(frameR, 0.5, frameL, 1 - 0.5, 0)
@@ -239,8 +243,8 @@ class AIModel:
         fov_deg = 60        # camera field of view in degrees
 
         theta_rad = math.radians(fov_deg)
-        f = (width_px / 2) / math.tan(theta_rad / 2)
-        # f = width_px / (2 * math.tan(theta_rad / 2))
+        # f = (width_px / 2) / math.tan(theta_rad / 2)
+        f = width_px / (2 * math.tan(theta_rad / 2))
 
         disparity = x1 - x2
         if abs(disparity) < 0.001:
