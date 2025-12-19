@@ -236,8 +236,7 @@ class AIModel:
                     
             for ((xL, yL), (xR, yR)) in detectedObjects:
                 distance = self.get_distance(xL, xR)
-                cv2.putText(frameL, f"{distance:.2f}m", (xL, yL - 10), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 255), 1)
-                cv2.putText(frameR, f"{distance:.2f}m", (xR, yR - 10), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 255), 1)
+                cv2.putText(frameR, f"{distance:.2f}m", (xL, yL - 10), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 255), 2)
                 
             
             blended = cv2.addWeighted(frameR, 0.5, frameL, 1 - 0.5, 0)
