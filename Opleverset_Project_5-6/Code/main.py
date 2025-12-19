@@ -88,6 +88,10 @@ class DebugWindow(QtWidgets.QWidget):
         time_end = time.time()
 
         self.update_metrics(time_start, time_end)
+        
+        # debug window updaten naar blended view
+        # blended = cv2.addWeighted(captureR, 0.5, captureL, 1 - 0.5, 0)
+        # cv2.imshow('Blended', blended)
 
         self.camL.setPixmap(self.cv2_to_qt(captureL))
         self.camR.setPixmap(self.cv2_to_qt(captureR))
@@ -179,59 +183,31 @@ class AIModel:
                 
                 capture = r.plot()
                 
-        # self.bind_objects(objects[0], objects[1])
+        detectedObjects = self.bind_objects(objects[0], objects[1])
           
-        return captures[0], captures[1], objects
+        for ((xL, yL), (xR, yR)) in detectedObjects:
+            distance = self.get_distance(xL, xR)
+            cv2.putText(captures[1], f"{distance:.2f}m", (xL, yL - 10), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 255), 2)
+          
+        return captures[0], captures[1]
     
     def bind_objects(self, objectsL, objectsR):
         #! ergens een buffer plaatsen voor als er geen object in 1 van de cameras is
-        # voor elk object in left camera, kijk naar het dichtsbijzijnde object in de right camera
-        # gebruik waarde die uit offset komt
-        # return een lijst van tuples met gekoppelde objecten
-        pass
-    
-    # hoeft maar eenmalig te runnen
-    def get_offset(self):
         
-        camL = StereoCamera(0, (1920, 1080))
-        camR = StereoCamera(2, (1920, 1080))
+        detectedObjects = []
         
-        model = AIModel()
-        
-        while True:
-            frameL = camL.get_frame()
-            frameR = camR.get_frame()
-            
-            frameL, frameR, objects = model.predict([frameL, frameR])
-            
-            detectedObjects = []
-            
-            # find closest objects within a certain threshold and draw lines between them
-            for (x1, y1) in objects[0]:
+        for (x1, y1) in objectsL:
                 closest_obj = None
                 closest_dist = float('inf')
-                for (x2, y2) in objects[1]:
+                for (x2, y2) in objectsR:
                     dist = math.sqrt((x1 - x2) ** 2 + (y1 - y2) ** 2)
-                    if dist < closest_dist and dist < 150:  # threshold of 100 pixels
+                    if dist < closest_dist and dist < 150:  # threshold of 150 pixels
                         closest_dist = dist
                         closest_obj = (x2, y2)
                 if closest_obj is not None:
-                    cv2.line(frameL, (x1, y1), closest_obj, (0, 255, 255), 1)
-                    cv2.line(frameR, closest_obj, (x1, y1), (0, 255, 255), 1)
                     detectedObjects.append([(x1, y1), closest_obj])
                     
-            for ((xL, yL), (xR, yR)) in detectedObjects:
-                distance = self.get_distance(xL, xR)
-                cv2.putText(frameR, f"{distance:.2f}m", (xL, yL - 10), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 255), 2)
-                
-            
-            blended = cv2.addWeighted(frameR, 0.5, frameL, 1 - 0.5, 0)
-            cv2.imshow('Blended', blended)
-            if cv2.waitKey(1) & 0xFF == ord('q'):
-                break
-        
-        # maak 
-        pass
+        return detectedObjects
     
     # werkt blijkbaar
     def get_distance(self, x1, x2):
@@ -253,12 +229,8 @@ class AIModel:
     
     
     
-# if __name__ == "__main__":
-#     app = QtWidgets.QApplication(sys.argv)
-#     window = DebugWindow()
-#     window.show()
-#     sys.exit(app.exec())
-
 if __name__ == "__main__":
-    model = AIModel()
-    model.get_offset()
+    app = QtWidgets.QApplication(sys.argv)
+    window = DebugWindow()
+    window.show()
+    sys.exit(app.exec())
