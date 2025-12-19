@@ -173,13 +173,17 @@ class AIModel:
                     # tekent midden punt en afstand
                     cv2.circle(capture, (cx, cy), 4, (0, 255, 0), -1)
                     distance = self.get_distance(x1, x2)
-                    cv2.putText(capture, f"D: {distance:.2f}m", (cx + 10, cy - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 0), 2)
+                    
+                    if capture is captures[0]:
+                        cv2.putText(capture, f"D: {distance:.2f}m", (cx + 10, cy - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 0), 2)
+                    else:
+                        cv2.putText(capture, f"D: {distance:.2f}m", (cx + 10, cy - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 0, 255), 2)
                 
                 capture = r.plot()
                 
         # self.bind_objects(objects[0], objects[1])
           
-        return captures[0], captures[1]
+        return captures[0], captures[1], objects
     
     def bind_objects(self, objectsL, objectsR):
         #! ergens een buffer plaatsen voor als er geen object in 1 van de cameras is
