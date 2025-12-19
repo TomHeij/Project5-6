@@ -137,8 +137,8 @@ class StereoCamera:
         if not ret:
             print("Failed to grab frame")
             return None
-        cv2.initUndistortRectifyMap(frame, None, None, None, (frame.shape[1], frame.shape[0]), cv2.CV_32FC1)
-        cv2.remap(frame, None, None, cv2.INTER_LINEAR)
+        # cv2.initUndistortRectifyMap(frame, None, None, None, (frame.shape[1], frame.shape[0]), cv2.CV_32FC1)
+        # cv2.remap(frame, None, None, cv2.INTER_LINEAR)
         return frame
     
    
