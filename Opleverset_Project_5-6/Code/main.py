@@ -263,7 +263,7 @@ class AIModel:
             return float('inf')
         
         distance = (f * baseline) / disparity
-        return abs(distance*10)
+        return abs(distance)
 
     
     
