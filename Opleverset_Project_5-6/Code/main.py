@@ -223,8 +223,8 @@ class AIModel:
                     detectedObjects.append([(closest_obj[0], closest_obj[1]), (x1, y1)])
                     
             distance = model.get_distance(detectedObjects[0][0][0], detectedObjects[0][1][0])
-            centerx = int((detectedObjects[0][0][0] + detectedObjects[0][1][0]) / 2)
-            centery = int((detectedObjects[0][0][1] + detectedObjects[0][1][1]) / 2)
+            centerx = int((detectedObjects[0][0] + detectedObjects[1][0]) / 2)
+            centery = int((detectedObjects[0][1] + detectedObjects[1][1]) / 2)
             cv2.putText(frameR, f"{distance:.2f}m", (centerx, centery - 10), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 255), 2)
                 
             
