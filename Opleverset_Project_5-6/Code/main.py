@@ -48,7 +48,7 @@ class DebugWindow(QtWidgets.QWidget):
         if self.ui is None:
             raise RuntimeError(f"Failed to load UI from: {ui_path}")
         
-        self.model = AIModel()
+        self.model = AIModel(self.cameraResolution)
         
         self.cameraResolution = (1920, 1080)
         self.camIds = (0, 2) # raspberry pi
@@ -144,9 +144,10 @@ class StereoCamera:
    
     
 class AIModel:
-    def __init__(self):
+    def __init__(self, screen_resolution):
         self.model = YOLO(model="./yolo11n_ncnn_model", task="detect")  # load a model
         self.confidence_threshold = 0.5
+        self.screen_resolution = screen_resolution
 
     # veranderen zodat het de middelpunten van die boxes pakt van beide cameras
     # kijken of we de frames kunnen overlappen en daar een vast object uit kunnen halen
@@ -207,7 +208,7 @@ class AIModel:
     def get_distance(self, x1, x2):
         baseline = 0.099    # distance between the two cameras in meters
         # fx = 1063.9      # focal length in pixels
-        width_px = 1920    # camera resolution width in pixels
+        width_px = self.screen_resolution[0]    # camera resolution width in pixels
         fov_deg = 60        # camera field of view in degrees
 
         theta_rad = math.radians(fov_deg)
