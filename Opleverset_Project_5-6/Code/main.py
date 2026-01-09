@@ -132,6 +132,10 @@ class StereoCamera:
         self.cam.set(cv2.CAP_PROP_AUTOFOCUS, 1)
         print(f"Stereo Camera {index} initialized.")
         
+        w = self.cam.get(cv2.CAP_PROP_FRAME_WIDTH)
+        h = self.cam.get(cv2.CAP_PROP_FRAME_HEIGHT)
+        print(f"Camera {index} resolution: {w}x{h}")
+        
     def get_frame(self):
         ret, frame = self.cam.read()
         if not ret:
