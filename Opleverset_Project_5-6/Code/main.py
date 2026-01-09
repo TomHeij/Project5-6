@@ -128,7 +128,7 @@ class StereoCamera:
         self.cam.set(cv2.CAP_PROP_FRAME_WIDTH, resolution[0])
         self.cam.set(cv2.CAP_PROP_FRAME_HEIGHT, resolution[1])
         self.cam.set(cv2.CAP_PROP_FOURCC, cv2.VideoWriter_fourcc(*'MJPG'))
-        self.cam.set(cv2.CAP_PROP_FPS, 20.0)
+        self.cam.set(cv2.CAP_PROP_FPS, 10.0)
         self.cam.set(cv2.CAP_PROP_AUTOFOCUS, 1)
         print(f"Stereo Camera {index} initialized.")
         
@@ -139,7 +139,7 @@ class StereoCamera:
             return None
         # cv2.initUndistortRectifyMap(frame, None, None, None, (frame.shape[1], frame.shape[0]), cv2.CV_32FC1)
         # cv2.remap(frame, None, None, cv2.INTER_LINEAR)
-        frame = cv2.resize(frame, (1920, 1080), interpolation=cv2.INTER_LINEAR)
+        # frame = cv2.resize(frame, (1920, 1080), interpolation=cv2.INTER_LINEAR)
         return frame
     
    
