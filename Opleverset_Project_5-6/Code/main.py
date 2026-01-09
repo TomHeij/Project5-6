@@ -132,10 +132,6 @@ class StereoCamera:
         self.cam.set(cv2.CAP_PROP_AUTOFOCUS, 1)
         print(f"Stereo Camera {index} initialized.")
         
-        w = self.cam.get(cv2.CAP_PROP_FRAME_WIDTH)
-        h = self.cam.get(cv2.CAP_PROP_FRAME_HEIGHT)
-        print(f"Camera {index} resolution: {w}x{h}")
-        
     def get_frame(self):
         ret, frame = self.cam.read()
         if not ret:
@@ -143,6 +139,7 @@ class StereoCamera:
             return None
         # cv2.initUndistortRectifyMap(frame, None, None, None, (frame.shape[1], frame.shape[0]), cv2.CV_32FC1)
         # cv2.remap(frame, None, None, cv2.INTER_LINEAR)
+        frame = cv2.resize(frame, (1920, 1080), interpolation=cv2.INTER_LINEAR)
         return frame
     
    
