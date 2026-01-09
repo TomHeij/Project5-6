@@ -146,7 +146,8 @@ class StereoCamera:
 class AIModel:
     def __init__(self, screen_resolution):
         self.model = YOLO(model="./yolo11n_ncnn_model", task="detect")  # load a model
-        self.confidence_threshold = 0.5
+        self.confidence_threshold = 0.8
+        self.distance_threshold = 200  # in pixels
         self.screen_resolution = screen_resolution
 
     # veranderen zodat het de middelpunten van die boxes pakt van beide cameras
@@ -196,7 +197,7 @@ class AIModel:
                 closest_dist = float('inf')
                 for (x2, y2) in objectsR:
                     dist = math.sqrt((x1 - x2) ** 2 + (y1 - y2) ** 2)
-                    if dist < closest_dist and dist < 150:  # threshold of 150 pixels
+                    if dist < closest_dist and dist < self.distance_threshold:  # threshold of 150 pixels
                         closest_dist = dist
                         closest_obj = (x2, y2)
                 if closest_obj is not None:
