@@ -48,7 +48,7 @@ class DebugWindow(QtWidgets.QWidget):
         if self.ui is None:
             raise RuntimeError(f"Failed to load UI from: {ui_path}")
         
-        self.cameraResolution = (1280, 720)
+        self.cameraResolution = (1920, 1080)
         self.camIds = (0, 2) # raspberry pi
         # self.camIds = (4, 2) # laptop
         
