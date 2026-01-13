@@ -21,9 +21,8 @@ def install_dependencies():
     os.system("echo 'Cloning Hailo repository...'")
     os.chdir("../../../")
     os.system("git clone https://github.com/hailo-ai/hailo-apps.git")
-    os.system("cd hailo-apps")
-    os.system("sudo ./scripts/hailo_installer.sh")
-    os.system("sudo ./install.sh")
+    os.system("echo 'Please run the Hailo installation script manually as it requires user interaction.'")
+    os.system("echo 'Found in hailo-apps outside the current project directory.'")
     os.system("echo 'Hailo repository cloned successfully.'")
     os.system("echo 'installation script completed.'")
        
