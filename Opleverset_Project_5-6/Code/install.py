@@ -16,6 +16,11 @@ def install_dependencies():
     os.system("echo 'Converting ONNX model to NCNN format...'")
     os.system("onnx2ncnn yolo11n.onnx yolo11n.param yolo11n.bin")
     os.system("echo 'NCNN model conversion completed.'")
-    
+    os.system("echo 'Cloning Hailo repository...'")
+    os.chdir("../../../")
+    os.system("git clone https://github.com/hailo-ai/hailo-apps.git")
+    os.system("echo 'Hailo repository cloned successfully.'")
+    os.system("echo 'installation script completed.'")
+       
 if __name__ == "__main__":
     install_dependencies()
