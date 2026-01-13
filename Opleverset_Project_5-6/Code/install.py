@@ -8,6 +8,7 @@ def install_dependencies():
     os.system("pip install onnx --break-system-packages")
     os.system("pip install onnxruntime --break-system-packages")
     os.system("pip install onnxsim --break-system-packages")
+    os.system("pip install onnxslim --break-system-packages")
     os.system("echo 'Dependencies installed successfully.'")
     
     os.system("echo 'exporting YOLO model to ONNX format...'")
