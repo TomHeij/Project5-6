@@ -221,47 +221,84 @@ class TearOffTab(QWidget):
     
     def __init__(self, name, index, is_last, parent=None):
         super().__init__(parent)
-        # TODO: 
-        # - Bewaar tab eigenschappen (name, index, is_last)
-        # - Initialiseer status (active, hovered, drag_start)
-        # - Stel vaste grootte en cursor in
-        # - Activeer hover tracking
-        pass
+        self.name = name
+        self.index = index
+        self.is_last = is_last
+        self.is_active = False
+        self._hovered = False
+        self._drag_start = None
+        self._drag_threshold = 15
+        
+        self.setFixedSize(140, 44)
+        self.setCursor(Qt.PointingHandCursor)
+        self.setAttribute(Qt.WA_Hover, True)
     
     def setActive(self, active):
-        # TODO: Update active status en herteken
-        pass
+        self.is_active = active
+        self.update()
     
     def enterEvent(self, event):
-        # TODO: Stel hovered status in
-        pass
+        self._hovered = True
+        self.update()
     
     def leaveEvent(self, event):
-        # TODO: Wis hovered status
-        pass
+        self._hovered = False
+        self.update()
     
     def mousePressEvent(self, event):
-        # TODO: Bewaar drag start positie bij linksklik
-        pass
+        if event.button() == Qt.LeftButton:
+            self._drag_start = event.position().toPoint()
     
     def mouseMoveEvent(self, event):
-        # TODO: Controleer of drag drempel is overschreden
-        # TODO: Activeer tear-off als er gesleept wordt
-        pass
+        if self._drag_start and (event.position().toPoint() - self._drag_start).manhattanLength() > self._drag_threshold:
+            # Start drag - tear off the tab
+            self.parent().parent().tearOffTab(self.index)
+            self._drag_start = None
     
     def mouseReleaseEvent(self, event):
-        # TODO:
-        # - Activeer tab bij klik (niet gesleept)
-        # - Wis drag status
-        pass
+        if self._drag_start:
+            # Click - switch to this tab
+            self.parent().parent().activateTab(self.index)
+        self._drag_start = None
     
     def paintEvent(self, event):
-        # TODO:
-        # - Stel painter in met antialiasing
-        # - Kies kleuren op basis van active/hover status
-        # - Teken tab vorm (afgerond indien is_last)
-        # - Teken tab tekst gecentreerd
-        pass
+        painter = QPainter(self)
+        painter.setRenderHint(QPainter.Antialiasing)
+        
+        w, h = self.width(), self.height()
+        
+        # Colors
+        if self.is_active:
+            bg_color = QColor("#ffffff")
+            text_color = QColor("#000000")
+        elif self._hovered:
+            bg_color = QColor("#e8e8e8")
+            text_color = QColor("#333333")
+        else:
+            bg_color = QColor("#d0d0d0")
+            text_color = QColor("#555555")
+        
+        # Draw tab shape
+        path = QPainterPath()
+        radius = h // 2 if self.is_last else 0
+        
+        path.moveTo(0, 0) # Top-left
+        path.lineTo(w, 0) # Top-right (Always 90 deg)
+        if self.is_last:
+            path.lineTo(w, h - radius)
+            path.quadTo(w, h, w - radius, h) # Bottom-right (Rounded)
+        else:
+            path.lineTo(w, h)
+        path.lineTo(0, h) # Bottom-left
+        path.closeSubpath()
+        
+        painter.setBrush(bg_color)
+        painter.setPen(QColor("#aaaaaa"))
+        painter.drawPath(path)
+        
+        # Draw text
+        painter.setPen(text_color)
+        painter.drawText(self.rect(), Qt.AlignCenter, self.name)
 
 
 class TearOffTabBar(QWidget):
