@@ -49,8 +49,8 @@ class DebugWindow(QtWidgets.QWidget):
             raise RuntimeError(f"Failed to load UI from: {ui_path}")
         
         self.cameraResolution = (1280, 720)
-        self.camIds = (0, 2) # raspberry pi
-        # self.camIds = (4, 2) # laptop
+        # self.camIds = (0, 2) # raspberry pi
+        self.camIds = (4, 2) # laptop
         
         self.model = AIModel(self.cameraResolution)
 
@@ -146,8 +146,8 @@ class StereoCamera:
     
 class AIModel:
     def __init__(self, screen_resolution):
-        os.environ["OMP_NUM_THREADS"] = "4"  # Set number of threads for OpenMP
-        os.environ["NCNN_NUM_THREADS"] = "4"  # Set number of threads for ncnn
+        # os.environ["OMP_NUM_THREADS"] = "4"  # Set number of threads for OpenMP
+        # os.environ["NCNN_NUM_THREADS"] = "4"  # Set number of threads for ncnn
         self.model = YOLO(model="yolo11n_ncnn_model", task="detect")  # load a model
         self.confidence_threshold = 0.8
         self.distance_threshold = 200  # in pixels
@@ -156,7 +156,7 @@ class AIModel:
     # veranderen zodat het de middelpunten van die boxes pakt van beide cameras
     # kijken of we de frames kunnen overlappen en daar een vast object uit kunnen halen
     def predict(self, captures):
-        results = [self.model(captures[0], verbose=False, conf=self.confidence_threshold, device="cpu"), self.model(captures[1], verbose=False, conf=self.confidence_threshold, device="cpu")]
+        results = [self.model(captures[0], verbose=False, conf=self.confidence_threshold), self.model(captures[1], verbose=False, conf=self.confidence_threshold)]
         objects = [[], []]
         
         for result in results:
@@ -200,7 +200,7 @@ class AIModel:
                 closest_dist = float('inf')
                 for (x2, y2) in objectsR:
                     dist = math.sqrt((x1 - x2) ** 2 + (y1 - y2) ** 2)
-                    if dist < closest_dist and dist < self.distance_threshold:  # threshold of 150 pixels
+                    if dist < closest_dist and dist < self.distance_threshold:
                         closest_dist = dist
                         closest_obj = (x2, y2)
                 if closest_obj is not None:
