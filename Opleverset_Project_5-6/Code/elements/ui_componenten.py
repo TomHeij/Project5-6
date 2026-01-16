@@ -106,32 +106,114 @@ class ChevronHandle(QWidget):
 class RightOffCanvas(QWidget):
     def __init__(self, parent, width=280):
         super().__init__(parent)
-        # TODO: 
-        # - Initialiseer breedte en status variabelen
-        # - Stel transparante achtergrond stijl in
-        # - Voeg slagschaduw effect toe
-        # - Laad control panel vanuit UI bestand (ControlPanel.ui)
-        # - Verkrijg referenties naar alle checkboxen uit geladen UI
-        # - Maak ChevronHandle en stel animatie in
-        # - Roep reposition() aan om initiële geometrie in te stellen
-        pass
+        self.panelWidth = width
+        self.handleWidth = 28  # Handle extends beyond panel
+        self.collapsed = False
+
+        # Make the main widget transparent (only the content area will have color)
+        self.setStyleSheet("background: transparent;")
+        self.setFixedWidth(width + self.handleWidth)
+
+        # Add drop shadow for depth
+        shadow = QGraphicsDropShadowEffect(self)
+        shadow.setBlurRadius(25)
+        shadow.setColor(QColor(0, 0, 0, 80))
+        shadow.setOffset(-5, 0)
+        self.setGraphicsEffect(shadow)
+
+        # Load control panel from UI file
+        ui_file_path = os.path.join(os.path.dirname(__file__), "ControlPanel.ui")
+        if not os.path.exists(ui_file_path):
+            ui_file_path = os.path.join("elements", "ControlPanel.ui")
+        
+        loader = QUiLoader()
+        ui_file = QFile(ui_file_path)
+        if ui_file.open(QFile.ReadOnly):
+            self.contentWidget = loader.load(ui_file, self)
+            ui_file.close()
+            
+            # Ensure contentWidget is a child of self
+            if self.contentWidget:
+                self.contentWidget.setParent(self)
+            
+            # Get references to checkboxes
+            self.cb_drones = self.contentWidget.findChild(QCheckBox, "cb_drones") if self.contentWidget else None
+            self.cb_ships = self.contentWidget.findChild(QCheckBox, "cb_ships") if self.contentWidget else None
+            self.cb_unknown = self.contentWidget.findChild(QCheckBox, "cb_unknown") if self.contentWidget else None
+            self.cb_trails = self.contentWidget.findChild(QCheckBox, "cb_trails") if self.contentWidget else None
+            self.cb_labels = self.contentWidget.findChild(QCheckBox, "cb_labels") if self.contentWidget else None
+            self.cb_range = self.contentWidget.findChild(QCheckBox, "cb_range") if self.contentWidget else None
+            self.cb_zones = self.contentWidget.findChild(QCheckBox, "cb_zones") if self.contentWidget else None
+            self.cb_grid = self.contentWidget.findChild(QCheckBox, "cb_grid") if self.contentWidget else None
+            self.cb_radar = self.contentWidget.findChild(QCheckBox, "cb_radar") if self.contentWidget else None
+            self.cb_direction = self.contentWidget.findChild(QCheckBox, "cb_direction") if self.contentWidget else None
+        else:
+            # Fallback: create simple widget if UI file not found
+            self.contentWidget = QWidget(self)
+            self.contentWidget.setStyleSheet("""
+                background: rgba(240, 240, 240, 178);
+                border-left: 1px solid #CCCCCC;
+            """)
+            layout = QVBoxLayout(self.contentWidget)
+            title = QLabel("Map Controls")
+            title.setAlignment(Qt.AlignCenter)
+            layout.addWidget(title)
+            # Create minimal checkbox references to avoid errors
+            self.cb_drones = self.cb_ships = self.cb_unknown = None
+            self.cb_trails = self.cb_labels = self.cb_range = self.cb_zones = None
+            self.cb_grid = self.cb_radar = self.cb_direction = None
+
+        # Chevron handle
+        self.handle = ChevronHandle(self)
+        self.handle.raise_()
+
+        # Animation
+        self.anim = QPropertyAnimation(self, b"geometry")
+        self.anim.setDuration(300)
+        self.anim.setEasingCurve(QEasingCurve.InOutCubic)
+
+        self.reposition()
 
     def reposition(self):
-        # TODO:
-        # - Bereken geometrie gebaseerd op collapsed status
-        # - Positioneer content widget en handgreep
-        pass
+        p = self.parent().rect()
+        h = p.height()
+        totalWidth = self.panelWidth + self.handleWidth
+
+        if self.collapsed:
+            # Only show handle portion
+            self.setGeometry(p.width() - self.handleWidth, 0, totalWidth, h)
+        else:
+            # Show full panel
+            self.setGeometry(p.width() - totalWidth, 0, totalWidth, h)
+
+        # Position content area (after handle)
+        self.contentWidget.setGeometry(self.handleWidth, 0, self.panelWidth, h)
+        
+        # Position handle on left edge
+        self.handle.move(2, (h - self.handle.height()) // 2)
 
     def resizeEvent(self, event):
-        # TODO: Herpositioneer bij parent resize
-        pass
+        self.reposition()
 
     def toggle(self):
-        # TODO: 
-        # - Bereken start en eind geometrieën voor animatie
-        # - Stel property animatie in en start deze
-        # - Update collapsed status en handgreep
-        pass
+        p = self.parent().rect()
+        h = p.height()
+        totalWidth = self.panelWidth + self.handleWidth
+
+        if self.collapsed:
+            start = QRect(p.width() - self.handleWidth, 0, totalWidth, h)
+            end = QRect(p.width() - totalWidth, 0, totalWidth, h)
+        else:
+            start = QRect(p.width() - totalWidth, 0, totalWidth, h)
+            end = QRect(p.width() - self.handleWidth, 0, totalWidth, h)
+
+        self.anim.stop()
+        self.anim.setStartValue(start)
+        self.anim.setEndValue(end)
+        self.anim.start()
+
+        self.collapsed = not self.collapsed
+        self.handle.setCollapsed(self.collapsed)
 
 
 class TearOffTab(QWidget):
