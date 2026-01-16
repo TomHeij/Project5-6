@@ -342,49 +342,168 @@ class FloatingPane(QWidget):
     
     def __init__(self, content_widget, tab_index, tab_name, parent=None):
         super().__init__(parent)
-        # TODO:
-        # - Bewaar content widget, tab index en naam
-        # - Initialiseer drag en resize status variabelen
-        # - Stel initiële geometrie in (500x500 vierkant)
-        # - Stel minimum grootte in
-        # - Pas stylesheet toe met rand en achtergrond
-        # - Voeg slagschaduw effect toe
-        # - Maak layout met titelbalk en content
-        # - Voeg sluitknop toe aan titelbalk
-        # - Activeer muis tracking
-        pass
+        self.content_widget = content_widget
+        self.tab_index = tab_index
+        self.tab_name = tab_name
+        
+        self._drag_pos = None
+        self._resize_edge = None
+        self._resize_margin = 8
+        self._min_size = 150
+        
+        # Start as a perfect square
+        self.setGeometry(50, 80, 500, 500)
+        self.setMinimumSize(self._min_size, self._min_size)
+        
+        self.setAttribute(Qt.WA_StyledBackground)
+        self.setStyleSheet("""
+            FloatingPane {
+                background: #f0f0f0;
+                border: 3px solid #000000;
+                border-radius: 8px;
+            }
+        """)
+        
+        # Add shadow
+        shadow = QGraphicsDropShadowEffect(self)
+        shadow.setBlurRadius(25)
+        shadow.setColor(QColor(0, 0, 0, 150))
+        shadow.setOffset(4, 4)
+        self.setGraphicsEffect(shadow)
+        
+        # Layout
+        layout = QVBoxLayout(self)
+        layout.setContentsMargins(4, 4, 4, 4)
+        layout.setSpacing(0)
+        
+        # Title bar
+        title_bar = QWidget()
+        title_bar.setFixedHeight(28)
+        title_bar.setStyleSheet("background: #555555; border-radius: 4px;")
+        title_layout = QHBoxLayout(title_bar)
+        title_layout.setContentsMargins(8, 0, 4, 0)
+        
+        title_label = QLabel(tab_name)
+        title_label.setStyleSheet("color: white; font-weight: bold; background: transparent;")
+        title_layout.addWidget(title_label)
+        title_layout.addStretch()
+        
+        close_btn = QPushButton("×")
+        close_btn.setFixedSize(20, 20)
+        close_btn.setStyleSheet("""
+            QPushButton {
+                background: transparent;
+                color: white;
+                font-size: 16px;
+                font-weight: bold;
+                border: none;
+            }
+            QPushButton:hover {
+                background: rgba(255, 255, 255, 50);
+                border-radius: 3px;
+            }
+        """)
+        close_btn.clicked.connect(self.closePane)
+        title_layout.addWidget(close_btn)
+        
+        layout.addWidget(title_bar)
+        
+        # Content
+        content_widget.setParent(self)
+        layout.addWidget(content_widget)
+        
+        self.setMouseTracking(True)
     
     def closePane(self):
-        # TODO: Breng tab terug naar tab bar via parent
-        pass
+        # Return tab to tab bar
+        self.parent().returnFloatingPane(self)
     
     def mousePressEvent(self, event):
-        # TODO: Detecteer resize rand of start drag
-        pass
+        if event.button() == Qt.LeftButton:
+            pos = event.position().toPoint()
+            self._resize_edge = self._getResizeEdge(pos)
+            if not self._resize_edge:
+                self._drag_pos = event.globalPosition().toPoint() - self.pos()
     
     def mouseMoveEvent(self, event):
-        # TODO:
-        # - Update cursor op basis van positie boven randen
-        # - Behandel resize of drag op basis van status
-        pass
+        pos = event.position().toPoint()
+        
+        if event.buttons() == Qt.NoButton:
+            # Update cursor based on edge
+            edge = self._getResizeEdge(pos)
+            if edge in ('left', 'right'):
+                self.setCursor(Qt.SizeHorCursor)
+            elif edge in ('top', 'bottom'):
+                self.setCursor(Qt.SizeVerCursor)
+            elif edge in ('top-left', 'bottom-right'):
+                self.setCursor(Qt.SizeFDiagCursor)
+            elif edge in ('top-right', 'bottom-left'):
+                self.setCursor(Qt.SizeBDiagCursor)
+            else:
+                self.setCursor(Qt.ArrowCursor)
+        elif event.buttons() == Qt.LeftButton:
+            if self._resize_edge:
+                self._doResize(event.globalPosition().toPoint())
+            elif self._drag_pos:
+                new_pos = event.globalPosition().toPoint() - self._drag_pos
+                # Bound to parent
+                parent_rect = self.parent().rect()
+                new_pos.setX(max(0, min(new_pos.x(), parent_rect.width() - self.width())))
+                new_pos.setY(max(0, min(new_pos.y(), parent_rect.height() - self.height())))
+                self.move(new_pos)
     
     def mouseReleaseEvent(self, event):
-        # TODO:
-        # - Wis drag en resize status
-        pass
+        self._drag_pos = None
+        self._resize_edge = None
+
 
     def _getResizeEdge(self, pos):
-        # TODO:
-        # - Bepaal bij welke rand(en) de positie in de buurt is
-        # - Retourneer rand identificatie of None
-        pass
+        m = self._resize_margin
+        w, h = self.width(), self.height()
+        
+        left = pos.x() < m
+        right = pos.x() > w - m
+        top = pos.y() < m
+        bottom = pos.y() > h - m
+        
+        if top and left: return 'top-left'
+        if top and right: return 'top-right'
+        if bottom and left: return 'bottom-left'
+        if bottom and right: return 'bottom-right'
+        if left: return 'left'
+        if right: return 'right'
+        if top: return 'top'
+        if bottom: return 'bottom'
+        return None
     
     def _doResize(self, global_pos):
-        # TODO:
-        # - Bereken nieuwe geometrie op basis van resize rand
-        # - Pas minimum grootte beperkingen toe
-        # - Update widget geometrie
-        pass
+        geo = self.geometry()
+        # Map to parent coordinates
+        parent_pos = self.parent().mapFromGlobal(global_pos)
+        
+        if 'left' in self._resize_edge:
+            new_left = max(0, parent_pos.x())
+            new_width = geo.right() - new_left
+            if new_width >= self._min_size:
+                geo.setLeft(new_left)
+        elif 'right' in self._resize_edge:
+            new_right = min(self.parent().width(), parent_pos.x())
+            new_width = new_right - geo.left()
+            if new_width >= self._min_size:
+                geo.setRight(new_right)
+                
+        if 'top' in self._resize_edge:
+            new_top = max(0, parent_pos.y())
+            new_height = geo.bottom() - new_top
+            if new_height >= self._min_size:
+                geo.setTop(new_top)
+        elif 'bottom' in self._resize_edge:
+            new_bottom = min(self.parent().height(), parent_pos.y())
+            new_height = new_bottom - geo.top()
+            if new_height >= self._min_size:
+                geo.setBottom(new_bottom)
+        
+        self.setGeometry(geo)
 
 
 class CameraView(QWidget):
