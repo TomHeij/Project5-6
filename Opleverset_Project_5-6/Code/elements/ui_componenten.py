@@ -25,35 +25,82 @@ class ChevronHandle(QWidget):
 
     def __init__(self, parent):
         super().__init__(parent)
-        # TODO:
-        # - Initialiseer status variabelen (collapsed, hovered)
-        # - Stel vaste grootte in voor de handgreep
-        # - Stel cursor stijl in en activeer hover tracking
-        pass
+        self.collapsed = False
+        self._hovered = False
+        self.setFixedSize(20, 100)
+        self.setCursor(Qt.PointingHandCursor)
+        self.setAttribute(Qt.WA_Hover, True)
+       
 
     def setCollapsed(self, collapsed: bool):
-        # TODO: Update collapsed status en trigger hertekenen
-        pass
+        self.collapsed = collapsed
+        self.update()
 
     def enterEvent(self, event):
-        # TODO: Behandel muis enter (stel hovered status in)
-        pass
+        self._hovered = True
+        self.update()
 
     def leaveEvent(self, event):
-        # TODO: Behandel muis leave (wis hovered status)
-        pass
+        self._hovered = False
+        self.update()
 
     def mousePressEvent(self, event):
-        # TODO: Schakel parent sidebar om bij klik
-        pass
+        self.parent().toggle()
 
     def paintEvent(self, event):
-        # TODO: 
-        # - Maak QPainter met antialiasing
-        # - Kies kleuren op basis van hover status
-        # - Teken sinusgolf-vormige achtergrond met QPainterPath
-        # - Teken chevron pijl (links wanneer collapsed, rechts wanneer expanded)
-        pass
+        painter = QPainter(self)
+        painter.setRenderHint(QPainter.Antialiasing)
+        
+        # Colors based on hover state
+        if self._hovered:
+            bg_color = QColor("#3a3a3a")
+            arrow_color = QColor("#ffffff")
+        else:
+            bg_color = QColor("#555555")
+            arrow_color = QColor("#dddddd")
+        
+        w, h = self.width(), self.height()
+        
+        # Draw sine wave shaped background
+        path = QPainterPath()
+        
+        # Start at top-right
+        path.moveTo(w, 0)
+        
+        # Sine wave curve on the left side (curving inward then outward)
+        # Top portion curves inward
+        path.quadTo(QPointF(w * 0.2, h * 0.25), QPointF(w * 0.15, h * 0.5))
+        # Bottom portion curves back out
+        path.quadTo(QPointF(w * 0.2, h * 0.75), QPointF(w, h))
+        
+        # Close the path along the right edge
+        path.lineTo(w, 0)
+        
+        painter.setBrush(bg_color)
+        painter.setPen(Qt.NoPen)
+        painter.drawPath(path)
+        
+        # Draw chevron arrow in center
+        painter.setBrush(arrow_color)
+        arrow_w, arrow_h = 8, 16
+        cx, cy = w // 2, h // 2
+        
+        if self.collapsed:
+            # ◀ to expand the sidebar leftward
+            poly = QPolygon([
+                QPoint(cx + arrow_w // 2, cy - arrow_h // 2),
+                QPoint(cx - arrow_w // 2, cy),
+                QPoint(cx + arrow_w // 2, cy + arrow_h // 2),
+            ])
+        else:
+            # ▶ to collapse the sidebar rightward
+            poly = QPolygon([
+                QPoint(cx - arrow_w // 2, cy - arrow_h // 2),
+                QPoint(cx + arrow_w // 2, cy),
+                QPoint(cx - arrow_w // 2, cy + arrow_h // 2),
+            ])
+
+        painter.drawPolygon(poly)
 
 
 class RightOffCanvas(QWidget):
