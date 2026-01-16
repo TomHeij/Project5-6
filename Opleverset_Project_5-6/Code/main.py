@@ -208,23 +208,35 @@ class AIModel:
                     
         return detectedObjects
     
-    # werkt blijkbaar
-    def get_distance(self, x1, x2):
-        baseline = 0.099    # distance between the two cameras in meters
-        # fx = 1063.9      # focal length in pixels
-        width_px = self.screen_resolution[0]    # camera resolution width in pixels
-        fov_deg = 60        # camera field of view in degrees
 
-        theta_rad = math.radians(fov_deg)
-        # f = (width_px / 2) / math.tan(theta_rad / 2)
-        f = width_px / (2 * math.tan(theta_rad / 2))
+    def get_distance(self, x_left, x_right):
+        fx = 1052.42              # uit camera 0 intrinsic
+        baseline = 0.1026         # meters, uit ||T||
 
-        disparity = x1 - x2
-        if abs(disparity) < 0.001:
+        disparity = x_left - x_right
+        if abs(disparity) < 0.5:
             return float('inf')
+
+        distance = (fx * baseline) / disparity
+        return abs(distance)
+
+    # werkt blijkbaar
+    # def get_distance(self, x1, x2):
+    #     baseline = 0.099    # distance between the two cameras in meters
+    #     # fx = 1063.9      # focal length in pixels
+    #     width_px = self.screen_resolution[0]    # camera resolution width in pixels
+    #     fov_deg = 60        # camera field of view in degrees
+
+    #     theta_rad = math.radians(fov_deg)
+    #     # f = (width_px / 2) / math.tan(theta_rad / 2)
+    #     f = width_px / (2 * math.tan(theta_rad / 2))
+
+    #     disparity = x1 - x2
+    #     if abs(disparity) < 0.001:
+    #         return float('inf')
         
-        distance = (f * baseline) / disparity
-        return abs(distance) 
+    #     distance = (f * baseline) / disparity
+    #     return abs(distance) 
 
     
     
