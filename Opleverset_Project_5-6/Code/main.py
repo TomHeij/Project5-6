@@ -128,7 +128,7 @@ class StereoCamera:
         self.cam.set(cv2.CAP_PROP_FRAME_WIDTH, resolution[0])
         self.cam.set(cv2.CAP_PROP_FRAME_HEIGHT, resolution[1])
         self.cam.set(cv2.CAP_PROP_FOURCC, cv2.VideoWriter_fourcc(*'MJPG'))
-        self.cam.set(cv2.CAP_PROP_FPS, 10.0)
+        # self.cam.set(cv2.CAP_PROP_FPS, 10.0)
         self.cam.set(cv2.CAP_PROP_AUTOFOCUS, 1)
         print(f"Stereo Camera {index} initialized.")
         
@@ -148,7 +148,8 @@ class AIModel:
     def __init__(self, screen_resolution):
         # os.environ["OMP_NUM_THREADS"] = "4"  # Set number of threads for OpenMP
         # os.environ["NCNN_NUM_THREADS"] = "4"  # Set number of threads for ncnn
-        self.model = YOLO(model="yolo11n_ncnn_model", task="detect")  # load a model
+        self.model = YOLO(model="./yolo11n.pt", task="detect")  # load a model
+        self.model.to("cuda")
         self.confidence_threshold = 0.8
         self.distance_threshold = 200  # in pixels
         self.screen_resolution = screen_resolution
