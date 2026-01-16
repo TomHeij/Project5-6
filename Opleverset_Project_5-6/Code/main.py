@@ -180,19 +180,6 @@ class MainApp(QtWidgets.QMainWindow):
         # Install event filter to handle resize events
         self.ui.installEventFilter(self)
     
-    def _are_cameras_available(self, cameraL=None, cameraR=None):
-        
-        if not (self.cameraL and self.cameraR):
-            return False
-        
-        if not (hasattr(self.cameraL, 'cam') and hasattr(self.cameraR, 'cam')):
-            return False
-        
-        if not (self.cameraL.cam and self.cameraR.cam):
-            return False
-        
-        return self.cameraL.cam.isOpened() and self.cameraR.cam.isOpened()
-    
     def setup_cameras(self, cameraL, cameraR, aimodel):
       """Setup cameras and AI model. Delegates camera setup to CameraView."""
         self.cameraL = cameraL
@@ -206,27 +193,48 @@ class MainApp(QtWidgets.QMainWindow):
         # Start map update timer 
         self.map_update_timer.start(100)  # Update map every 100ms
     
+    def _are_cameras_available(self):
+        
+        if not (self.cameraL and self.cameraR):
+            return False
+        
+        if not (hasattr(self.cameraL, 'cam') and hasattr(self.cameraR, 'cam')):
+            return False
+        
+        if not (self.cameraL.cam and self.cameraR.cam):
+            return False
+        
+        return self.cameraL.cam.isOpened() and self.cameraR.cam.isOpened()
+    
     def _update_map_from_detections(self):
+        """Update map with detected objects from AI model."""
+        # Check if cameras are available
+        if not self._are_cameras_available() or not self.aimodel:
+            return
+               
+        try:
+            # Get frames
+            frameL = self.cameraL.get_frame() 
+            frameR = self.cameraR.get_frame() 
+            
+            if frameL is None or frameR is None:
+                return
+            
+            # Use AIModel's get_detections method (no code duplication!)
+            detections = self.aimodel.get_detections(frameL, frameR)
+            
+            # Convert detections to map objects with tracking
+            map_objects = self._prepare_map_objects(detections['bound_pairs'])
+            
+            # Update map view
+            if map_objects and self.main_content and hasattr(self.main_content, 'map_view'):
+                self.main_content.map_view.update_object_positions(map_objects)
+                
+        except Exception as e:
+            # Silently handle errors to avoid spam
+            pass
 
     def _prepare_map_objects(self, bound_pairs):
-    def _get_or_create_object_id(self, position, match_threshold):
-        """Get existing object ID or create new one based on position matching."""
-        xL, yL = position
-        
-        # Try to match with existing object
-        for (prev_x, prev_y), prev_id in self._object_id_map.items():
-            if abs(prev_x - xL) < match_threshold and abs(prev_y - yL) < match_threshold:
-                # Update position and return existing ID
-                del self._object_id_map[(prev_x, prev_y)]
-                self._object_id_map[(xL, yL)] = prev_id
-                return prev_id
-        
-        # Create new ID
-        new_id = self._next_object_id
-        self._next_object_id += 1
-        self._object_id_map[(xL, yL)] = new_id
-        return new_id
-    
         """Convert bound pairs from AIModel to map object format with tracking."""
         map_objects = []
         match_threshold = 50  # pixels for position matching
@@ -254,32 +262,25 @@ class MainApp(QtWidgets.QMainWindow):
         self._cleanup_stale_objects(bound_pairs, match_threshold)
         
         return map_objects
-        """Update map with detected objects from AI model."""
-        # Check if cameras are available
-        if not self._are_cameras_available() or not self.aimodel:
-            return
-               
-        try:
-            # Get frames
-            frameL = self.cameraL.get_frame() 
-            frameR = self.cameraR.get_frame() 
-            
-            if frameL is None or frameR is None:
-                return
-            
-            # Use AIModel's get_detections method (no code duplication!)
-            detections = self.aimodel.get_detections(frameL, frameR)
-            
-            # Convert detections to map objects with tracking
-            map_objects = self._prepare_map_objects(detections['bound_pairs'])
-            
-            # Update map view
-            if map_objects and self.main_content and hasattr(self.main_content, 'map_view'):
-                self.main_content.map_view.update_object_positions(map_objects)
-                
-        except Exception as e:
-            # Silently handle errors to avoid spam
-            pass
+
+    def _get_or_create_object_id(self, position, match_threshold):
+        """Get existing object ID or create new one based on position matching."""
+        xL, yL = position
+        
+        # Try to match with existing object
+        for (prev_x, prev_y), prev_id in self._object_id_map.items():
+            if abs(prev_x - xL) < match_threshold and abs(prev_y - yL) < match_threshold:
+                # Update position and return existing ID
+                del self._object_id_map[(prev_x, prev_y)]
+                self._object_id_map[(xL, yL)] = prev_id
+                return prev_id
+        
+        # Create new ID
+        new_id = self._next_object_id
+        self._next_object_id += 1
+        self._object_id_map[(xL, yL)] = new_id
+        return new_id
+      
     def _cleanup_stale_objects(self, bound_pairs, match_threshold):
         """Remove object IDs for positions that are no longer detected."""
         current_positions = {(pair[0][0], pair[0][1]) for pair in bound_pairs}
@@ -300,6 +301,7 @@ class MainApp(QtWidgets.QMainWindow):
         # Remove stale positions
         for pos in positions_to_remove:
             del self._object_id_map[pos]
+
     def eventFilter(self, obj, event):
         """Handle resize events to update sidebar position."""
         if obj == self.ui and event.type() == event.Type.Resize:
