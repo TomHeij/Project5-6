@@ -306,30 +306,35 @@ class TearOffTabBar(QWidget):
     
     def __init__(self, parent=None):
         super().__init__(parent)
-        # TODO: 
-        # - Initialiseer tabs lijst
-        # - Stel vaste hoogte en achtergrond stijl in
-        # - Maak horizontale layout met stretch
-        pass
+        self.tabs = []
+        self.setFixedHeight(44)
+        self.setStyleSheet("background: rgba(0, 0, 0, 40); border-bottom: 1px solid rgba(255, 255, 255, 20);")
+        
+        layout = QHBoxLayout(self)
+        layout.setContentsMargins(0, 0, 0, 0)
+        layout.setSpacing(0)
+        layout.addStretch()
     
     def addTab(self, name, index, is_last=False):
-        # TODO:
-        # - Maak nieuwe TearOffTab
-        # - Voeg toe aan tabs lijst en layout
-        # - Retourneer tab referentie
-        pass
+        tab = TearOffTab(name, index, is_last, self)
+        self.tabs.append(tab)
+        # Insert before the stretch
+        self.layout().insertWidget(self.layout().count() - 1, tab)
+        return tab
     
     def setActiveTab(self, index):
-        # TODO: Update active status voor alle tabs
-        pass
+        for tab in self.tabs:
+            tab.setActive(tab.index == index)
     
     def hideTab(self, index):
-        # TODO: Verberg tab met gegeven index
-        pass
+        for tab in self.tabs:
+            if tab.index == index:
+                tab.hide()
     
     def showTab(self, index):
-        # TODO: Toon tab met gegeven index
-        pass
+        for tab in self.tabs:
+            if tab.index == index:
+                tab.show()
 
 
 class FloatingPane(QWidget):
