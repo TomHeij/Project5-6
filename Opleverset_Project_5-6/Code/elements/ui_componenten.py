@@ -511,49 +511,201 @@ class CameraView(QWidget):
     
     def __init__(self, parent=None):
         super().__init__(parent)
-        # TODO:
-        # - Stel zwarte achtergrond in
-        # - Maak camera feed label
-        # - Maak status label voor niet-verbonden status
-        # - Initialiseer camera referenties (None initieel)
-        # - Maak timer voor camera updates
-        pass
+        self.setStyleSheet("background: #000000;")
+        
+        # Camera setup
+        self.cameraL = None
+        self.cameraR = None
+        self.aimodel = None
+        self.cameras_connected = False
+        
+        # Camera feed label
+        self.camera_label = QLabel(self)
+        self.camera_label.setAlignment(Qt.AlignCenter)
+        self.camera_label.setScaledContents(True)
+        self.camera_label.setStyleSheet("background: transparent;")
+        
+        # Status label for "not connected" message
+        self.status_label = QLabel("Stereo camera is not connected", self)
+        self.status_label.setAlignment(Qt.AlignCenter)
+        self.status_label.setStyleSheet("""
+            color: #ffffff;
+            font-size: 24px;
+            font-weight: bold;
+            background: transparent;
+        """)
+        self.status_label.show()
+        self.status_label.raise_()
+        
+        # Timer for camera updates
+        self.timer = QTimer(self)
+        self.timer.timeout.connect(self.update_camera_feed)
     
     def setup_cameras(self, cameraL, cameraR, aimodel):
-        # TODO:
-        # - Bewaar camera en AI model referenties
-        # - Controleer of camera's verbonden en geopend zijn
-        # - Update status en start timer indien verbonden
-        pass
+        self.cameraL = cameraL
+        self.cameraR = cameraR
+        self.aimodel = aimodel
+        
+        # Check if cameras are connected
+        if self.cameraL and self.cameraR:
+            # Check if cameras have valid capture objects
+            if hasattr(self.cameraL, 'cam') and hasattr(self.cameraR, 'cam'):
+                if self.cameraL.cam and self.cameraL.cam.isOpened() and \
+                   self.cameraR.cam and self.cameraR.cam.isOpened():
+                    self.cameras_connected = True
+                    self.status_label.hide()
+                    self.timer.start(10)  # Update every 10ms
+                    return
+        
+        self.cameras_connected = False
+        self.status_label.show()
     
     def update_camera_feed(self):
-        # TODO:
-        # - Haal frames op van beide camera's
-        # - Verwerk met AI model indien beschikbaar
-        # - Blend frames en converteer naar QPixmap
-        # - Toon in camera label
-        # - Behandel fouten en update verbindingsstatus
-        pass
+        """Update the camera feed display."""
+        if not self.cameras_connected:
+            return
+        
+        try:
+            frameL = self.cameraL.get_frame() if self.cameraL else None
+            frameR = self.cameraR.get_frame() if self.cameraR else None
+            
+            if frameL is None or frameR is None:
+                self.cameras_connected = False
+                self.status_label.show()
+                self.timer.stop()
+                return
+            
+            # Process frames with AI model if available
+            if self.aimodel:
+                frameL, frameR = self.aimodel.predict([frameL, frameR])
+            
+            # Blend the two camera feeds
+            blended = cv2.addWeighted(frameR, 0.5, frameL, 1 - 0.5, 0)
+            
+            # Convert to QPixmap and display
+            pixmap = self.cv2_to_qt(blended)
+            self.camera_label.setPixmap(pixmap)
+            
+        except Exception as e:
+            print(f"Error updating camera feed: {e}")
+            self.cameras_connected = False
+            self.status_label.show()
+            self.timer.stop()
     
     def cv2_to_qt(self, cv_img):
-        # TODO:
-        # - Converteer OpenCV BGR afbeelding naar QImage
-        # - Converteer naar QPixmap
-        # - Schaal om in widget te passen met behoud van aspect ratio
-        pass
+        """Convert OpenCV image to QPixmap."""
+        if cv_img is None:
+            return QPixmap()
+        height, width, channel = cv_img.shape
+        bytes_per_line = 3 * width
+        q_img = QImage(cv_img.data, width, height, bytes_per_line, QImage.Format.Format_BGR888)
+        pixmap = QPixmap.fromImage(q_img)
+        # Scale to fit the widget while maintaining aspect ratio
+        scaled_pixmap = pixmap.scaled(
+            self.width(), self.height(),
+            Qt.AspectRatioMode.KeepAspectRatio,
+            Qt.TransformationMode.SmoothTransformation
+        )
+        return scaled_pixmap
     
     def resizeEvent(self, event):
-        # TODO:
-        # - Update camera label en status label posities
-        # - Update camera feed indien verbonden
-        pass
+        """Handle widget resize to update camera label and status label positions."""
+        super().resizeEvent(event)
+        w, h = self.width(), self.height()
+        
+        # Update camera label size
+        self.camera_label.setGeometry(0, 0, w, h)
+        
+        # Update status label position (centered)
+        status_w, status_h = 400, 50
+        self.status_label.setGeometry(
+            (w - status_w) // 2,
+            (h - status_h) // 2,
+            status_w,
+            status_h
+        )
+        
+        # Update camera feed if connected
+        if self.cameras_connected:
+            self.update_camera_feed()
     
     def paintEvent(self, event):
-        # TODO:
-        # - Teken UI overlay (header balk met status/tijd)
-        # - Indien verbonden, teken crosshair en REC indicator
-        # - Indien niet verbonden, teken scan lijnen en inactieve status
-        pass
+        """Paint UI overlay elements."""
+        painter = QPainter(self)
+        painter.setRenderHint(QPainter.Antialiasing)
+        
+        rect = self.rect()
+        w, h = rect.width(), rect.height()
+        
+        if not self.cameras_connected:
+            # Draw background when cameras are not connected
+            grad = QPainterPath()
+            grad.addRect(rect.toRectF())
+            painter.fillPath(grad, QColor("#0a0a1a"))
+            
+            # Draw some "scan lines"
+            painter.setPen(QColor(0, 255, 136, 15))
+            for y in range(0, h, 4):
+                painter.drawLine(0, y, w, y)
+            
+            # UI Header bar background
+            painter.fillRect(0, 0, w, 60, QColor(0, 0, 0, 100))
+            
+            font = painter.font()
+            font.setBold(True)
+            painter.setFont(font)
+            fm = painter.fontMetrics()
+            
+            # Draw backgrounds and text
+            status_text = "SYSTEM: INACTIVE"
+            time_text = "00:00:00:00"
+            
+            w_status = fm.horizontalAdvance(status_text) + 10
+            w_time = fm.horizontalAdvance(time_text) + 10
+            
+            # Left side status
+            painter.fillRect(QRect(20, 44, w_status, 20), Qt.white)
+            painter.setPen(Qt.black)
+            painter.drawText(QRect(20, 44, w_status, 20), Qt.AlignCenter, status_text)
+            
+            # Right side time
+            painter.fillRect(QRect(w - 20 - w_time, 44, w_time, 20), Qt.white)
+            painter.drawText(QRect(w - 20 - w_time, 44, w_time, 20), Qt.AlignCenter, time_text)
+        else:
+            # Draw UI overlay on top of camera feed
+            # UI Header bar background
+            painter.fillRect(0, 0, w, 60, QColor(0, 0, 0, 100))
+            
+            font = painter.font()
+            font.setBold(True)
+            painter.setFont(font)
+            fm = painter.fontMetrics()
+            
+            # Draw backgrounds and text
+            status_text = "SYSTEM: ACTIVE"
+            time_text = "00:00:00:00"
+            
+            w_status = fm.horizontalAdvance(status_text) + 10
+            w_time = fm.horizontalAdvance(time_text) + 10
+            
+            # Left side status
+            painter.fillRect(QRect(20, 44, w_status, 20), Qt.white)
+            painter.setPen(Qt.black)
+            painter.drawText(QRect(20, 44, w_status, 20), Qt.AlignCenter, status_text)
+            
+            # Right side time
+            painter.fillRect(QRect(w - 20 - w_time, 44, w_time, 20), Qt.white)
+            painter.drawText(QRect(w - 20 - w_time, 44, w_time, 20), Qt.AlignCenter, time_text)
+            
+            # Crosshair in center (restored context)
+            cx, cy = w // 2, h // 2
+            painter.setPen(QColor(0, 255, 136, 120))
+            painter.drawLine(cx - 20, cy, cx + 20, cy)
+            painter.drawLine(cx, cy - 20, cx, cy + 20)
+            painter.drawEllipse(QPoint(cx, cy), 100, 100)
+            
+            painter.setPen(QColor(0, 255, 136))
+            #painter.drawText(rect, Qt.AlignCenter, "REC ● LIVE CAMERA FEED")
 
 
 class MapView(QWidget):
@@ -561,34 +713,104 @@ class MapView(QWidget):
     
     def __init__(self, parent=None):
         super().__init__(parent)
-        # TODO:
-        # - Maak layout
-        # - Initialiseer object tracking dictionaries
-        # - Maak PyQtGraph PlotWidget
-        # - Configureer aspect ratio en view limieten
-        # - Voeg as labels toe
-        # - Activeer raster
-        # - Stel kleurenschema in voor object klassen
-        # - Maak timer voor dummy data (optioneel)
-        pass
+        self.layout = QVBoxLayout(self)
+        self.layout.setContentsMargins(0, 0, 0, 0)
+        
+        # Object tracking - maps object_id to history
+        self.object_history = {}  # Maps object_id to list of (x, y, label, depth) tuples
+        self.tail_length = 20  # Number of history points to show
+        
+        # Create the PlotWidget
+        self.plot_widget = pg.PlotWidget(title="Object Locatie Kaart")
+        self.layout.addWidget(self.plot_widget)
+        
+        # Lock the aspect ratio so the map doesn't look stretched
+        self.plot_widget.setAspectLocked(True)
+        
+        # Create Timer for dummy data updates
+        self.dummy_timer = QTimer()
+        self.dummy_timer.timeout.connect(self._update_dummy_data)
+        self.use_dummy_data = False
+        
+        # Configure the view
+        self.plot_widget.showGrid(x=False, y=False)  # Turn off default grid initially
+        self.plot_widget.getPlotItem().setMouseEnabled(
+            x=False, y=False
+        )  # Optional: lock pan/zoom
+        self.plot_widget.getPlotItem().getViewBox().setAspectLocked(True)
+        self.plot_widget.getPlotItem().getViewBox().setLimits(
+            xMin=-10, xMax=10, yMin=0, yMax=10
+        )
+        self.plot_widget.getPlotItem().getViewBox().setRange(
+            rect=pg.QtCore.QRectF(-10, 0, 20, 10)
+        )
+        
+        # Add axis labels for coordinates
+        self.plot_widget.setLabel("bottom", "Lateral Position (m)")
+        self.plot_widget.setLabel("left", "Forward Distance (m)")
+        
+        # Create grid using native pyqtgraph function (much faster)
+        self.plot_widget.showGrid(x=True, y=True, alpha=0.3)
+        
+        # Text items for labels (stored to update/remove them)
+        self.text_items = {}  # Maps object_id to TextItem
+        
+        # Color scheme for different object classes
+        self.class_colors = {
+            'person': (100, 149, 237),      # Cornflower blue
+            'drone': (220, 20, 60),           # Crimson
+            'ship': (178, 34, 34),         # Firebrick
+            'bicycle': (50, 205, 50),       # Lime green
+            'default': (169, 169, 169)      # Dark gray
+        }
     
     def _get_class_color(self, class_name):
-        # TODO: Retourneer kleur tuple voor gegeven klasse naam
-        pass
+        """Get color for object class."""
+        return self.class_colors.get(class_name.lower(), self.class_colors['default'])
     
     def start_dummy_data(self):
-        # TODO: Start timer voor dummy data generatie
-        pass
+        """Start dummy data generation when cameras are not available."""
+        self.use_dummy_data = True
+        self.dummy_timer.start(200) 
     
     def stop_dummy_data(self):
-        # TODO: Stop dummy data timer
-        pass
+        self.use_dummy_data = False
+        self.dummy_timer.stop()
     
     def _update_dummy_data(self):
-        # TODO:
-        # - Genereer willekeurige bewegende objecten ter demonstratie
-        # - Roep update_object_positions aan met dummy data
-        pass
+        import random
+        import time
+        
+        # Generate 2-4 dummy objects
+        num_objects = random.randint(2, 4)
+        dummy_objects = []
+        
+        current_time = time.time()
+        
+        for i in range(num_objects):
+            # Create or update dummy object
+            obj_id = i + 1
+            
+            # Generate moving position (circular or linear motion)
+            t = current_time * 0.5 + obj_id
+            x = math.sin(t) * 3  # Lateral position in meters
+            y = 3 + math.cos(t) * 2  # Forward distance in meters
+            depth = math.sqrt(x**2 + y**2)
+            
+            # Random class name
+            classes = ['person', 'car', 'bicycle', 'truck', 'motorcycle']
+            label = random.choice(classes)
+            
+            dummy_objects.append({
+                'id': obj_id,
+                'x': x,
+                'y': y,
+                'depth': depth,
+                'label': label
+            })
+        
+        # Update map with dummy data
+        self.update_object_positions(dummy_objects)
     
     def update_object_positions(self, detected_objects):
         """
@@ -602,18 +824,109 @@ class MapView(QWidget):
                 - 'depth': stereo diepte in meters
                 - 'label': object klasse naam
         """
-        # TODO:
-        # - Stop dummy data als echte data gebruikt wordt
-        # - Wis plot en tekst items
-        # - Verwerk elk gedetecteerd object:
-        #   - Converteer pixel coördinaten naar meters indien nodig
-        #   - Update object geschiedenis voor trails
-        #   - Verkrijg kleur voor object klasse
-        #   - Plot trail met verloop effect
-        #   - Plot huidige positie als cirkel
-        #   - Voeg tekst label toe met object info
-        # - Ruim geschiedenis op voor objecten die niet meer gedetecteerd worden
-        pass
+        # Stop dummy data when real data is available
+        if self.use_dummy_data:
+            self.stop_dummy_data()
+        
+        self.plot_widget.clear()
+        
+        # Remove old text items
+        for text_item in self.text_items.values():
+            self.plot_widget.removeItem(text_item)
+        self.text_items.clear()
+        
+        if not detected_objects:
+            return
+        
+        # Camera parameters for coordinate conversion (if needed)
+        camera_resolution = (1280, 720)  # Default
+        fov_deg = 60
+        cam_center_x = camera_resolution[0] / 2
+        
+        # Process detected objects
+        for obj_data in detected_objects:
+            if not isinstance(obj_data, dict):
+                continue
+            
+            obj_id = obj_data.get('id', 0)
+            label = obj_data.get('label', 'unknown')
+            depth = obj_data.get('depth', 0)
+            x = obj_data.get('x', 0)
+            y = obj_data.get('y', 0)
+            
+            # Check if x, y are in pixels (large values) or meters (small values)
+            # If x > 100, assume it's pixel coordinates and convert
+            if abs(x) > 100 or abs(y) > 100:
+                # Convert from pixel coordinates to meters
+                fov_rad = math.radians(fov_deg)
+                focal_length = camera_resolution[0] / (2 * math.tan(fov_rad / 2))
+                pixel_offset_x = x - cam_center_x
+                lateral_angle = math.atan2(pixel_offset_x, focal_length)
+                lateral = depth * math.sin(lateral_angle)  # Lateral position in meters
+                forward = depth * math.cos(lateral_angle)  # Forward distance in meters
+            else:
+                # Already in meters
+                lateral = x
+                forward = y if y > 0 else depth  # Use depth if y not provided
+            
+            # Skip invalid positions
+            if depth <= 0 or depth == float('inf'):
+                continue
+            
+            # Update object history for trails
+            if obj_id not in self.object_history:
+                self.object_history[obj_id] = []
+            
+            # Add current position to history
+            self.object_history[obj_id].append((lateral, forward, label, depth))
+            
+            # Limit history length
+            if len(self.object_history[obj_id]) > self.tail_length:
+                self.object_history[obj_id].pop(0)
+            
+            # Get color for this object class
+            color = self._get_class_color(label)
+            
+            # Plot trail (history)
+            if len(self.object_history[obj_id]) > 1:
+                trail_x = [pos[0] for pos in self.object_history[obj_id]]
+                trail_y = [pos[1] for pos in self.object_history[obj_id]]
+                # Create gradient effect - older points are more transparent
+                for i in range(len(trail_x) - 1):
+                    alpha = int(100 + (155 * i / len(trail_x)))
+                    pen = pg.mkPen(color=color, width=2, style=Qt.SolidLine)
+                    self.plot_widget.plot(
+                        [trail_x[i], trail_x[i+1]], 
+                        [trail_y[i], trail_y[i+1]], 
+                        pen=pen
+                    )
+            
+            # Plot current position as circle
+            self.plot_widget.plot(
+                [lateral], 
+                [forward], 
+                symbol='o', 
+                symbolSize=15, 
+                symbolBrush=pg.mkBrush(color=color),
+                pen=pg.mkPen(color=(0, 0, 0), width=1)
+            )
+            
+            # Add text label with object info
+            label_text = f"{label}\nID:{obj_id}\n{depth:.2f}m"
+            text_item = pg.TextItem(
+                text=label_text,
+                color=(0, 0, 0),
+                anchor=(0.5, 1.5)  # Position below the point
+            )
+            text_item.setPos(lateral, forward)
+            self.plot_widget.addItem(text_item)
+            self.text_items[obj_id] = text_item
+        
+        # Clean up history for objects that are no longer detected
+        current_ids = set(obj.get('id', 0) for obj in detected_objects)
+        ids_to_remove = [oid for oid in self.object_history.keys() if oid not in current_ids]
+        for oid in ids_to_remove:
+            del self.object_history[oid]
 
 
 class MainContentArea(QWidget):
