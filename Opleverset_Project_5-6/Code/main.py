@@ -31,7 +31,7 @@ import os
 from PySide6 import QtCore, QtWidgets, QtGui
 from PySide6.QtUiTools import QUiLoader
 from PySide6.QtCore import QFile
-
+from elements.ui_componenten import CameraView, MapView, MainContentArea, RightOffCanvas
 
 # debug window class
 class DebugWindow(QtWidgets.QWidget):
@@ -499,6 +499,6 @@ if __name__ == "__main__":
     except Exception as e:
         print(f"Warning: Kan camera's niet initialiseren {e}")
     main_window.setup_cameras(cameraL, cameraR, aimodel)
-    
+
     main_window.show()
     sys.exit(app.exec())
