@@ -121,7 +121,7 @@ class MainApp(QtWidgets.QMainWindow):
 
 class StereoCamera:
     def __init__(self, index, resolution):
-        self.cam = cv2.VideoCapture(index)
+        self.cam = cv2.VideoCapture(index, cv2.CAP_V4L2)
         if not self.cam.isOpened():
             print(f"Camera {index} failed to open")
             return None
@@ -146,7 +146,9 @@ class StereoCamera:
     
 class AIModel:
     def __init__(self, screen_resolution):
-        self.model = YOLO(model="yolo11n_ncnn_model", task="detect")  # load a model
+        os.environ["OMP_NUM_THREADS"] = "4"  # Set number of threads for OpenMP
+        os.environ["NCNN_NUM_THREADS"] = "4"  # Set number of threads for ncnn
+        self.model = YOLO(model="yolo11n_ncnn_model", task="detect", imgsz=512)  # load a model
         self.confidence_threshold = 0.8
         self.distance_threshold = 200  # in pixels
         self.screen_resolution = screen_resolution
@@ -154,7 +156,7 @@ class AIModel:
     # veranderen zodat het de middelpunten van die boxes pakt van beide cameras
     # kijken of we de frames kunnen overlappen en daar een vast object uit kunnen halen
     def predict(self, captures):
-        results = [self.model(captures[0], verbose=False, conf=self.confidence_threshold), self.model(captures[1], verbose=False, conf=self.confidence_threshold)]
+        results = [self.model(captures[0], verbose=False, conf=self.confidence_threshold, device="cpu"), self.model(captures[1], verbose=False, conf=self.confidence_threshold, device="cpu")]
         objects = [[], []]
         
         for result in results:
