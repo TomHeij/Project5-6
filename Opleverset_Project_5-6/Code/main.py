@@ -148,7 +148,7 @@ class AIModel:
     def __init__(self, screen_resolution):
         os.environ["OMP_NUM_THREADS"] = "4"  # Set number of threads for OpenMP
         os.environ["NCNN_NUM_THREADS"] = "4"  # Set number of threads for ncnn
-        self.model = YOLO(model="yolo11n_ncnn_model", task="detect", imgsz=512)  # load a model
+        self.model = YOLO(model="yolo11n_ncnn_model", task="detect")  # load a model
         self.confidence_threshold = 0.8
         self.distance_threshold = 200  # in pixels
         self.screen_resolution = screen_resolution
@@ -156,7 +156,7 @@ class AIModel:
     # veranderen zodat het de middelpunten van die boxes pakt van beide cameras
     # kijken of we de frames kunnen overlappen en daar een vast object uit kunnen halen
     def predict(self, captures):
-        results = [self.model(captures[0], verbose=False, conf=self.confidence_threshold, device="cpu"), self.model(captures[1], verbose=False, conf=self.confidence_threshold, device="cpu")]
+        results = [self.model(captures[0], verbose=False, conf=self.confidence_threshold, device="cpu", imgsz=512), self.model(captures[1], verbose=False, conf=self.confidence_threshold, device="cpu", imgsz=512)]
         objects = [[], []]
         
         for result in results:
