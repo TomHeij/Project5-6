@@ -111,8 +111,15 @@ class DebugWindow(QtWidgets.QWidget):
 # main application class
 
 class MainApp(QtWidgets.QMainWindow):
+    """ 
+    Doet: 
+    - Object-ID-tracking
+    - Detecties converteren naar kaartformaat
+    - De kaartweergave bijwerken
+    """
+    
     def __init__(self):
-        super(MainApp, self).__init__()
+        super().__init__()
         #self.setWindowTitle("Main Application")
         #self.setGeometry(100, 100, 800, 600)
         # hier komt alleen die map met punten
@@ -166,200 +173,133 @@ class MainApp(QtWidgets.QMainWindow):
         self.map_update_timer = QtCore.QTimer(self)
         self.map_update_timer.timeout.connect(self._update_map_from_detections)
         
+        # Object tracking data
+        self._object_id_map = {}  # Maps (xL, yL) to object_id
+        self._next_object_id = 1
+
         # Install event filter to handle resize events
         self.ui.installEventFilter(self)
     
-    def _check_cameras_available(self, cameraL=None, cameraR=None):
-        """Helper method to check if cameras are available."""
-        checkL = cameraL if cameraL is not None else self.cameraL
-        checkR = cameraR if cameraR is not None else self.cameraR
+    def _are_cameras_available(self, cameraL=None, cameraR=None):
         
-        if not (checkL and checkR):
+        if not (self.cameraL and self.cameraR):
             return False
         
-        if not (hasattr(checkL, 'cam') and hasattr(checkR, 'cam')):
+        if not (hasattr(self.cameraL, 'cam') and hasattr(self.cameraR, 'cam')):
             return False
         
-        if not (checkL.cam and checkR.cam):
+        if not (self.cameraL.cam and self.cameraR.cam):
             return False
         
-        return checkL.cam.isOpened() and checkR.cam.isOpened()
-    
-    def _update_dummy_data_state(self, cameras_available):
-        """Update dummy data state based on camera availability."""
-        if not (self.main_content and hasattr(self.main_content, 'map_view')):
-            return
-        
-        if not cameras_available:
-            if not self.main_content.map_view.use_dummy_data:
-                print("Starting dummy data mode - cameras not available")
-                self.main_content.map_view.start_dummy_data()
-        else:
-            if self.main_content.map_view.use_dummy_data:
-                self.main_content.map_view.stop_dummy_data()
+        return self.cameraL.cam.isOpened() and self.cameraR.cam.isOpened()
     
     def setup_cameras(self, cameraL, cameraR, aimodel):
-        """Setup cameras and AI model from main.py."""
+      """Setup cameras and AI model. Delegates camera setup to CameraView."""
         self.cameraL = cameraL
         self.cameraR = cameraR
         self.aimodel = aimodel
         
-        # Setup camera view with cameras
+        # Delegate camera view setup to the CameraView widget
         if self.main_content and hasattr(self.main_content, 'camera_view'):
             self.main_content.camera_view.setup_cameras(cameraL, cameraR, aimodel)
         
-        # Check if cameras are available and update dummy data state
-        cameras_available = self._check_cameras_available(cameraL, cameraR)
-        self._update_dummy_data_state(cameras_available)
-        
-        # Start map update timer (this will check for cameras and use dummy data if needed)
+        # Start map update timer 
         self.map_update_timer.start(100)  # Update map every 100ms
     
     def _update_map_from_detections(self):
+
+    def _prepare_map_objects(self, bound_pairs):
+    def _get_or_create_object_id(self, position, match_threshold):
+        """Get existing object ID or create new one based on position matching."""
+        xL, yL = position
+        
+        # Try to match with existing object
+        for (prev_x, prev_y), prev_id in self._object_id_map.items():
+            if abs(prev_x - xL) < match_threshold and abs(prev_y - yL) < match_threshold:
+                # Update position and return existing ID
+                del self._object_id_map[(prev_x, prev_y)]
+                self._object_id_map[(xL, yL)] = prev_id
+                return prev_id
+        
+        # Create new ID
+        new_id = self._next_object_id
+        self._next_object_id += 1
+        self._object_id_map[(xL, yL)] = new_id
+        return new_id
+    
+        """Convert bound pairs from AIModel to map object format with tracking."""
+        map_objects = []
+        match_threshold = 50  # pixels for position matching
+        
+        for pair_data in bound_pairs:
+            (xL, yL), (xR, yR), cls_id, class_name, confidence, distance = pair_data
+            
+            # Skip invalid distances
+            if distance == float('inf') or distance <= 0:
+                continue
+            
+            # Track object ID based on position
+            obj_id = self._get_or_create_object_id((xL, yL), match_threshold)
+            
+            # Create map object data
+            map_objects.append({
+                'id': obj_id,
+                'x': xL,
+                'y': yL,
+                'depth': distance,
+                'label': class_name
+            })
+        
+        # Clean up stale object IDs
+        self._cleanup_stale_objects(bound_pairs, match_threshold)
+        
+        return map_objects
         """Update map with detected objects from AI model."""
         # Check if cameras are available
-        cameras_available = self._check_cameras_available()
-        
-        # Update dummy data state
-        self._update_dummy_data_state(cameras_available)
-        
-        # If cameras not available, return early (dummy data will handle updates)
-        if not cameras_available:
+        if not self._are_cameras_available() or not self.aimodel:
             return
-        
+               
         try:
             # Get frames
-            frameL = self.cameraL.get_frame() if self.cameraL else None
-            frameR = self.cameraR.get_frame() if self.cameraR else None
+            frameL = self.cameraL.get_frame() 
+            frameR = self.cameraR.get_frame() 
             
             if frameL is None or frameR is None:
                 return
             
-            # Run detection (without modifying frames for display)
-            if not hasattr(self.aimodel, 'model') or self.aimodel.model is None:
-                return
-                
-            results = [
-                self.aimodel.model(frameL, verbose=False, conf=self.aimodel.confidence_threshold),
-                self.aimodel.model(frameR, verbose=False, conf=self.aimodel.confidence_threshold)
-            ]
+            # Use AIModel's get_detections method (no code duplication!)
+            detections = self.aimodel.get_detections(frameL, frameR)
             
-            # Extract object centers with class information
-            objects_left = []  # List of (cx, cy, class_id, class_name, confidence)
-            objects_right = []  # List of (cx, cy)
-            
-            # Process left camera results
-            for r in results[0]:
-                boxes = r.boxes
-                for box in boxes:
-                    x1, y1, x2, y2 = box.xyxy[0].cpu().numpy()
-                    cx = int((x1 + x2) / 2)
-                    cy = int((y1 + y2) / 2)
-                    cls_id = int(box.cls[0].cpu().numpy())
-                    class_name = r.names[cls_id] if hasattr(r, 'names') else 'unknown'
-                    confidence = float(box.conf[0].cpu().numpy())
-                    objects_left.append((cx, cy, cls_id, class_name, confidence))
-            
-            # Process right camera results
-            for r in results[1]:
-                boxes = r.boxes
-                for box in boxes:
-                    x1, y1, x2, y2 = box.xyxy[0].cpu().numpy()
-                    cx = int((x1 + x2) / 2)
-                    cy = int((y1 + y2) / 2)
-                    objects_right.append((cx, cy))
-            
-            # Bind objects between cameras using AIModel's bind_objects method
-            # First, get position-only lists for binding
-            positions_left = [(x, y) for (x, y, cls_id, class_name, confidence) in objects_left]
-            
-            # Use AIModel's bind_objects method (reusing existing logic)
-            bound_pairs = self.aimodel.bind_objects(positions_left, objects_right)
-            
-            # Merge class metadata back with bound pairs
-            detected_pairs = []
-            for pair in bound_pairs:
-                (xL, yL), (xR, yR) = pair[0], pair[1]
-                # Find the original object_left entry to get metadata
-                for (x, y, cls_id, class_name, confidence) in objects_left:
-                    if x == xL and y == yL:
-                        detected_pairs.append(((xL, yL), (xR, yR), cls_id, class_name, confidence))
-                        break
-            
-            # Calculate distances and prepare data for map
-            map_objects = []
-            
-            # Track object IDs based on position (simple tracking)
-            if not hasattr(self, '_object_id_map'):
-                self._object_id_map = {}  # Maps (xL, yL) to object_id
-                self._next_object_id = 1
-            
-            for pair_data in detected_pairs:
-                if len(pair_data) == 5:
-                    (xL, yL), (xR, yR), cls_id, class_name, confidence = pair_data
-                else:
-                    (xL, yL), (xR, yR) = pair_data[:2]
-                    cls_id = 0
-                    class_name = 'unknown'
-                    confidence = 0.5
-                
-                distance = self.aimodel.get_distance(xL, xR)
-                if distance != float('inf') and distance > 0:
-                    # Try to match with existing object ID (simple position-based tracking)
-                    obj_id = None
-                    match_threshold = 50  # pixels
-                    for (prev_x, prev_y), prev_id in self._object_id_map.items():
-                        if abs(prev_x - xL) < match_threshold and abs(prev_y - yL) < match_threshold:
-                            obj_id = prev_id
-                            # Update position
-                            del self._object_id_map[(prev_x, prev_y)]
-                            self._object_id_map[(xL, yL)] = obj_id
-                            break
-                    
-                    # If no match found, assign new ID
-                    if obj_id is None:
-                        obj_id = self._next_object_id
-                        self._next_object_id += 1
-                        self._object_id_map[(xL, yL)] = obj_id
-                    
-                    # Create object data dict
-                    obj_data = {
-                        'id': obj_id,
-                        'x': xL,  # Pixel x coordinate (will be converted to meters)
-                        'y': yL,  # Pixel y coordinate
-                        'depth': distance,  # Stereo depth in meters
-                        'label': class_name  # Object class name
-                    }
-                    map_objects.append(obj_data)
-            
-            # Clean up old object IDs (objects that are no longer detected)
-            current_positions = set()
-            for pair_data in detected_pairs:
-                if len(pair_data) >= 2:
-                    (xL, yL), _ = pair_data[0], pair_data[1]
-                    current_positions.add((xL, yL))
-            
-            # Remove IDs for positions that are no longer detected
-            if current_positions:
-                positions_to_remove = []
-                for pos in self._object_id_map.keys():
-                    # Check if this position is close to any current position
-                    is_close = any(abs(pos[0] - xL) < 50 and abs(pos[1] - yL) < 50 
-                                  for (xL, yL) in current_positions)
-                    if not is_close:
-                        positions_to_remove.append(pos)
-                
-                for pos in positions_to_remove:
-                    del self._object_id_map[pos]
+            # Convert detections to map objects with tracking
+            map_objects = self._prepare_map_objects(detections['bound_pairs'])
             
             # Update map view
-            if self.main_content and hasattr(self.main_content, 'map_view'):
+            if map_objects and self.main_content and hasattr(self.main_content, 'map_view'):
                 self.main_content.map_view.update_object_positions(map_objects)
                 
         except Exception as e:
             # Silently handle errors to avoid spam
             pass
-    
+    def _cleanup_stale_objects(self, bound_pairs, match_threshold):
+        """Remove object IDs for positions that are no longer detected."""
+        current_positions = {(pair[0][0], pair[0][1]) for pair in bound_pairs}
+        
+        if not current_positions:
+            return
+        
+        # Find positions to remove
+        positions_to_remove = []
+        for pos in self._object_id_map.keys():
+            is_close = any(
+                abs(pos[0] - xL) < match_threshold and abs(pos[1] - yL) < match_threshold
+                for (xL, yL) in current_positions
+            )
+            if not is_close:
+                positions_to_remove.append(pos)
+        
+        # Remove stale positions
+        for pos in positions_to_remove:
+            del self._object_id_map[pos]
     def eventFilter(self, obj, event):
         """Handle resize events to update sidebar position."""
         if obj == self.ui and event.type() == event.Type.Resize:
@@ -400,42 +340,115 @@ class AIModel:
         self.distance_threshold = 200  # in pixels
         self.screen_resolution = screen_resolution
 
+    def get_detections(self, frameL, frameR):
+
+        # Run YOLO detection on both frames
+            results = [
+                self.model(frameL, verbose=False, conf=self.confidence_threshold),
+                self.model(frameR, verbose=False, conf=self.confidence_threshold)
+            ]
+            
+            # Extract objects from both cameras
+            objects_left = self._extract_objects(results[0], include_metadata=True)
+            objects_right = self._extract_objects(results[1], include_metadata=False)
+            
+            # Bind objects between cameras
+            positions_left = [(x, y) for (x, y, *_) in objects_left]
+            positions_right = [(x, y) for (x, y, *_) in objects_right]
+            bound_pairs_positions = self.bind_objects(positions_left, positions_right)
+            
+            # Enrich bound pairs with metadata and distance
+            bound_pairs = []
+            for pair in bound_pairs_positions:
+                (xL, yL), (xR, yR) = pair[0], pair[1]
+                
+                # Find metadata from objects_left
+                metadata = next(
+                    ((cls_id, class_name, confidence, bbox)
+                    for (x, y, cls_id, class_name, confidence, bbox) in objects_left
+                    if x == xL and y == yL),
+                    (0, 'unknown', 0.5, None)
+                )
+                cls_id, class_name, confidence, bbox = metadata
+                
+                # Calculate distance
+                distance = self.get_distance(xL, xR)
+                
+                bound_pairs.append(((xL, yL), (xR, yR), cls_id, class_name, confidence, distance))
+            
+            return {
+                'objects_left': objects_left,
+                'objects_right': objects_right,
+                'bound_pairs': bound_pairs,
+                'results': results
+            }
+    def _extract_objects(self, results, include_metadata=True):
+     
+        objects = []
+        
+        for r in results:
+            boxes = r.boxes
+            for box in boxes:
+                x1, y1, x2, y2 = box.xyxy[0].cpu().numpy()
+                cx = int((x1 + x2) / 2)
+                cy = int((y1 + y2) / 2)
+                bbox = (int(x1), int(y1), int(x2), int(y2))
+                
+                if include_metadata:
+                    cls_id = int(box.cls[0].cpu().numpy())
+                    class_name = r.names[cls_id] if hasattr(r, 'names') else 'unknown'
+                    confidence = float(box.conf[0].cpu().numpy())
+                    objects.append((cx, cy, cls_id, class_name, confidence, bbox))
+                else:
+                    objects.append((cx, cy, bbox))
+        
+        return objects
+   
     # veranderen zodat het de middelpunten van die boxes pakt van beide cameras
     # kijken of we de frames kunnen overlappen en daar een vast object uit kunnen halen
     def predict(self, captures):
-        results = [self.model(captures[0], verbose=False, conf=self.confidence_threshold), self.model(captures[1], verbose=False, conf=self.confidence_threshold)]
-        objects = [[], []]
+        # Get detections without modifying frames
+        detections = self.get_detections(captures[0], captures[1])
         
-        for result in results:
-            for r in result:
-                capture = captures[0] if result == results[0] else captures[1]
-                boxes = r.boxes
-                for box in boxes:
-                    x1, y1, x2, y2 = box.xyxy[0].cpu().numpy()
-                    cx = int((x1 + x2) / 2)
-                    cy = int((y1 + y2) / 2)
-                    objects[0 if result == results[0] else 1].append((cx, cy))
-                    
-                    # tekent vierkant om object
-                    cv2.rectangle(capture, (int(x1), int(y1)), (int(x2), int(y2)), (255, 0, 0), 1)
-                    
-                    # tekent midden punt en afstand
-                    if capture is captures[0]:
-                        cv2.circle(capture, (cx, cy), 4, (0, 255, 0), -1)
-                    else:
-                        cv2.circle(capture, (cx, cy), 4, (0, 0, 255), -1)        
-                
-                capture = r.plot()
-                
-        detectedObjects = self.bind_objects(objects[0], objects[1])
-          
-        for ((xL, yL), (xR, yR)) in detectedObjects:
-            distance = self.get_distance(xL, xR)
+        # Draw visualizations on frames
+        self._draw_detections(captures[0], detections['objects_left'], is_left=True)
+        self._draw_detections(captures[1], detections['objects_right'], is_left=False)
+        self._draw_bound_pairs(captures, detections['bound_pairs'])
+        
+        return captures[0], captures[1]
+    def _draw_detections(self, frame, objects, is_left=True):
+        color = (0, 255, 0) if is_left else (0, 0, 255)
+        
+        for obj in objects:
+            cx, cy = obj[0], obj[1]
+            bbox = obj[-1]  # Last element is always bbox
+            
+            if bbox:
+                x1, y1, x2, y2 = bbox
+                # Draw bounding box
+                cv2.rectangle(frame, (x1, y1), (x2, y2), (255, 0, 0), 1)
+                # Draw center point
+                cv2.circle(frame, (cx, cy), 4, color, -1)
+    
+    def _draw_bound_pairs(self, captures, bound_pairs):
+        for pair in bound_pairs:
+            (xL, yL), (xR, yR), cls_id, class_name, confidence, distance = pair
+            
+            # Draw connection lines on both frames
             cv2.line(captures[0], (xL, yL), (xR, yR), (255, 255, 0), 1)
             cv2.line(captures[1], (xL, yL), (xR, yR), (255, 255, 0), 1)
-            cv2.putText(captures[1], f"{distance:.2f}m", (xL, yL - 10), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 255), 2)
-          
-        return captures[0], captures[1]
+            
+            # Draw distance text on right frame
+            if distance != float('inf'):
+                cv2.putText(
+                    captures[1], 
+                    f"{distance:.2f}m", 
+                    (xL, yL - 10), 
+                    cv2.FONT_HERSHEY_SIMPLEX, 
+                    1, 
+                    (0, 255, 255), 
+                    2
+                )
     
     def bind_objects(self, objectsL, objectsR):
         #! ergens een buffer plaatsen voor als er geen object in 1 van de cameras is
