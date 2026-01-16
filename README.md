@@ -126,6 +126,20 @@ Door Tom Heijmans, Fabio Wolthuis, Dennis Zejnilović, Ali Haimed.
 | [ ] | Midden |  Camera houder opnieuw ontwerpen| Fabio | 2 |
 
 
+## Sprint planning 7
+---
+
+**Startdatum:** 13-1-2025  
+**Einddatum:** 27-1-2026  
+**Doel:** Functionaliteit afmaken en documentatie afronden.
+
+| Status | Prioriteit |  Taken | Wie? | User story |
+| :----: | :---- | :---- | :---- | :----: |
+| [ ] | Laag | Raspberry Pi AI HAT+ toevoegen voor optimalisatie | Fabio, Dennis | 1 |
+| [ ] | Hoog |  kalibreren, implementeren en testen van de afstandsmethode | Fabio, Tom | 3 |
+| [ ] | Hoog |  Verder punt van een object inzien in een 2D grafiek | Ali, Tom, Fabio | 4 |
+| [ ] | Midden | Aanpassingen/ toevoegingen documentatie na mate scope | Dennis, Ali | 1,2 |
+
 ### Changelog
 
 | Versie | Wat | Datum |
