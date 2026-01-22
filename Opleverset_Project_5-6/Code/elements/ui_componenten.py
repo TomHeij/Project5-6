@@ -269,13 +269,13 @@ class TearOffTab(QWidget):
         
         # Colors
         if self.is_active:
-            bg_color = QColor("#ffffff")
+            bg_color = QColor("#c0c0c0") #active tab is gray
             text_color = QColor("#000000")
         elif self._hovered:
             bg_color = QColor("#e8e8e8")
             text_color = QColor("#333333")
         else:
-            bg_color = QColor("#d0d0d0")
+            bg_color = QColor("#ffffff")
             text_color = QColor("#555555")
         
         # Draw tab shape
