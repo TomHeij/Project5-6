@@ -309,7 +309,6 @@ class MainApp(QtWidgets.QMainWindow):
         return super().eventFilter(obj, event)
 
 # stereo camera class
-
 class StereoCamera:
     def __init__(self, index, resolution):
         self.cam = cv2.VideoCapture(index)
