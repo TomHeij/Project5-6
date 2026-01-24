@@ -33,6 +33,8 @@ class ChevronHandle(QWidget):
        
 
     def setCollapsed(self, collapsed: bool):
+        if self.collapsed == collapsed: #Prevent unnecessary updates (paint events)
+            return
         self.collapsed = collapsed
         self.update()
 
@@ -53,11 +55,11 @@ class ChevronHandle(QWidget):
         
         # Colors based on hover state
         if self._hovered:
-            bg_color = QColor("#3a3a3a")
+            bg_color = QColor("#555555")
             arrow_color = QColor("#ffffff")
         else:
-            bg_color = QColor("#555555")
-            arrow_color = QColor("#dddddd")
+            bg_color = QColor("#dddddd")
+            arrow_color = QColor("#555555")
         
         w, h = self.width(), self.height()
         
@@ -727,10 +729,6 @@ class MapView(QWidget):
         # Lock the aspect ratio so the map doesn't look stretched
         self.plot_widget.setAspectLocked(True)
         
-        # Create Timer for dummy data updates
-        self.dummy_timer = QTimer()
-        self.dummy_timer.timeout.connect(self._update_dummy_data)
-        self.use_dummy_data = False
         
         # Configure the view
         self.plot_widget.showGrid(x=False, y=False)  # Turn off default grid initially
@@ -760,7 +758,7 @@ class MapView(QWidget):
             'person': (100, 149, 237),      # Cornflower blue
             'drone': (220, 20, 60),           # Crimson
             'ship': (178, 34, 34),         # Firebrick
-            'bicycle': (50, 205, 50),       # Lime green
+            'chair': (50, 205, 50),       # Lime green
             'default': (169, 169, 169)      # Dark gray
         }
     
@@ -768,50 +766,7 @@ class MapView(QWidget):
         """Get color for object class."""
         return self.class_colors.get(class_name.lower(), self.class_colors['default'])
     
-    def start_dummy_data(self):
-        """Start dummy data generation when cameras are not available."""
-        self.use_dummy_data = True
-        self.dummy_timer.start(200) 
-    
-    def stop_dummy_data(self):
-        self.use_dummy_data = False
-        self.dummy_timer.stop()
-    
-    def _update_dummy_data(self):
-        import random
-        import time
-        
-        # Generate 2-4 dummy objects
-        num_objects = random.randint(2, 4)
-        dummy_objects = []
-        
-        current_time = time.time()
-        
-        for i in range(num_objects):
-            # Create or update dummy object
-            obj_id = i + 1
-            
-            # Generate moving position (circular or linear motion)
-            t = current_time * 0.5 + obj_id
-            x = math.sin(t) * 3  # Lateral position in meters
-            y = 3 + math.cos(t) * 2  # Forward distance in meters
-            depth = math.sqrt(x**2 + y**2)
-            
-            # Random class name
-            classes = ['person', 'drone', 'ship', 'bicycle', 'default']
-            label = random.choice(classes)
-            
-            dummy_objects.append({
-                'id': obj_id,
-                'x': x,
-                'y': y,
-                'depth': depth,
-                'label': label
-            })
-        
-        # Update map with dummy data
-        self.update_object_positions(dummy_objects)
-    
+
     def update_object_positions(self, detected_objects):
         """
         Update kaart met real-time object posities vanuit stereo vision systeem.
@@ -824,9 +779,6 @@ class MapView(QWidget):
                 - 'depth': stereo diepte in meters
                 - 'label': object klasse naam
         """
-        # Stop dummy data when real data is available
-        if self.use_dummy_data:
-            self.stop_dummy_data()
         
         self.plot_widget.clear()
         
