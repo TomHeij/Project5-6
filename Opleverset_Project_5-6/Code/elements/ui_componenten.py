@@ -649,7 +649,7 @@ class CameraView(QWidget):
         
         # Scale-independent positioning
         margin = int(w * 0.02)  # 2% of width
-        top_y = int(h * 0.06)   # 3% from top ()
+        top_y = int(h * 0.05)   # 3% from top ()
         bar_height = int(h * 0.08)  # 8% of height
 
         font = painter.font()
