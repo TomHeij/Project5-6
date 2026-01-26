@@ -277,7 +277,7 @@ class MainApp(QtWidgets.QMainWindow):
                 self.sidebar.start_alarm_pulse()
             else:
                 self.sidebar.stop_alarm_pulse()
-                
+
     
     def setup_cameras(self, cameraL, cameraR, aimodel):
         """Setup cameras and AI model. Delegates camera setup to CameraView."""
@@ -700,7 +700,7 @@ class AIModel:
         f = width_px / (2 * math.tan(theta_rad / 2))
 
         disparity = x1 - x2
-        if abs(disparity) < 0.001:
+        if abs(disparity) < 0.5:
             return float('inf')
         
         distance = (f * baseline) / disparity
