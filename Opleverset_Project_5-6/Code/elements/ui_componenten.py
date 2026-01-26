@@ -631,7 +631,7 @@ class CameraView(QWidget):
                    self.cameraR.cam and self.cameraR.cam.isOpened():
                     self.cameras_connected = True
                     self.status_label.hide()
-                    self.timer.start(40)  # Update every 40ms
+                    self.timer.start(50)  # Update every 50ms
                     return
         
         self.cameras_connected = False
