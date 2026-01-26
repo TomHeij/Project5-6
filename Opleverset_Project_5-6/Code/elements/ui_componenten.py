@@ -773,14 +773,7 @@ class CameraView(QWidget):
             painter.fillRect(QRect(w - 20 - w_time, 44, w_time, 20), Qt.white)
             painter.drawText(QRect(w - 20 - w_time, 44, w_time, 20), Qt.AlignCenter, time_text)
             
-            # Crosshair in center (restored context)
-            cx, cy = w // 2, h // 2
-            painter.setPen(QColor(0, 255, 136, 120))
-            painter.drawLine(cx - 20, cy, cx + 20, cy)
-            painter.drawLine(cx, cy - 20, cx, cy + 20)
-            painter.drawEllipse(QPoint(cx, cy), 100, 100)
-            
-            painter.setPen(QColor(0, 255, 136))
+           
             
 
 class MapView(QWidget):
