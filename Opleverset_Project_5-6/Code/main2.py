@@ -227,6 +227,9 @@ class AIModel:
     # veranderen zodat het de middelpunten van die boxes pakt van beide cameras
     # kijken of we de frames kunnen overlappen en daar een vast object uit kunnen halen
     def predict(self, captures):
+        if captures[0] is None or captures[1] is None:
+            return captures[0], captures[1]
+
         # 1️⃣ Rectificeer frames
         left_img  = cv2.remap(captures[0], self.map0x, self.map0y, cv2.INTER_LINEAR)
         right_img = cv2.remap(captures[1], self.map1x, self.map1y, cv2.INTER_LINEAR)
