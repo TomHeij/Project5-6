@@ -120,6 +120,8 @@ class MainApp(QtWidgets.QMainWindow):
     - Object-ID-tracking
     - Detecties converteren naar kaartformaat
     - De kaartweergave bijwerken
+    - Alarm afspelen
+    - Filteren van detecties
     """
     
     def __init__(self):
