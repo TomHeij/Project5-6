@@ -740,73 +740,7 @@ class CameraView(QWidget):
         if self.cameras_connected:
             self.update_camera_feed()
     
-    """ def paintEvent(self, event):
-        painter = QPainter(self)
-        painter.setRenderHint(QPainter.Antialiasing)
-        
-        rect = self.rect()
-        w, h = rect.width(), rect.height()
-        
-        if not self.cameras_connected:
-            # Draw background when cameras are not connected
-            grad = QPainterPath()
-            grad.addRect(rect.toRectF())
-            painter.fillPath(grad, QColor("#0a0a1a"))
-            
-            # Draw some "scan lines"
-            painter.setPen(QColor(0, 255, 136, 15))
-            for y in range(0, h, 4):
-                painter.drawLine(0, y, w, y)
-            
-            # UI Header bar background
-            painter.fillRect(0, 0, w, 60, QColor(0, 0, 0, 100))
-            
-            font = painter.font()
-            font.setBold(True)
-            painter.setFont(font)
-            fm = painter.fontMetrics()
-            
-            # Draw backgrounds and text
-            status_text = "SYSTEM: INACTIVE"
-            time_text = "00:00:00:00"
-            
-            w_status = fm.horizontalAdvance(status_text) + 10
-            w_time = fm.horizontalAdvance(time_text) + 10
-            
-            # Left side status
-            painter.fillRect(QRect(20, 44, w_status, 20), Qt.white)
-            painter.setPen(Qt.black)
-            painter.drawText(QRect(20, 44, w_status, 20), Qt.AlignCenter, status_text)
-            
-            # Right side time
-            painter.fillRect(QRect(w - 20 - w_time, 44, w_time, 20), Qt.white)
-            painter.drawText(QRect(w - 20 - w_time, 44, w_time, 20), Qt.AlignCenter, time_text)
-        else:
-            # Draw UI overlay on top of camera feed
-            # UI Header bar background
-           
-            painter.fillRect(0, 0, w, 60, QColor(0, 0, 0, 100))
-            
-            font = painter.font()
-            font.setBold(True)
-            painter.setFont(font)
-            fm = painter.fontMetrics()
-            
-            # Draw backgrounds and text
-            status_text = "SYSTEM: ACTIVE"
-            time_text = "00:00:00:00"
-            
-            w_status = fm.horizontalAdvance(status_text) + 10
-            w_time = fm.horizontalAdvance(time_text) + 10
-            
-            # Left side status
-            painter.fillRect(QRect(20, 44, w_status, 20), Qt.white)
-            painter.setPen(Qt.black)
-            painter.drawText(QRect(20, 44, w_status, 20), Qt.AlignCenter, status_text)
-            
-            # Right side time
-            painter.fillRect(QRect(w - 20 - w_time, 44, w_time, 20), Qt.white)
-            painter.drawText(QRect(w - 20 - w_time, 44, w_time, 20), Qt.AlignCenter, time_text) """
+    
         
 class MapView(QWidget):
     """2D Map Visualization with PyQtGraph for displaying object positions and trails."""
