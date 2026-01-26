@@ -560,7 +560,8 @@ class StereoCamera:
 class AIModel:
     def __init__(self, screen_resolution):
         self.model = YOLO(model="./yolo11n.pt", task="detect")  # load a model
-        self.model.to('cuda')  # force to use GPU
+        #self.model.to('cuda')  # force to use GPU
+        self.model.to('cpu')  # force to use GPU
         self.confidence_threshold = 0.8
         self.distance_threshold = 200  # in pixels
         self.screen_resolution = screen_resolution
@@ -726,8 +727,8 @@ if __name__ == "__main__":
     
     try:
         camera_resolution = (1280, 720)
-        # cam_ids = (0, 2)  # raspberry pi
-        cam_ids = (4, 2)  # laptop
+        cam_ids = (0, 2)  # raspberry pi
+        #cam_ids = (4, 2)  # laptop
        
         
         aimodel = AIModel(camera_resolution)
