@@ -240,6 +240,51 @@ class MainApp(QtWidgets.QMainWindow):
         #self.test_alarm(True)   # should start looping sound
         #self.test_alarm(False)  # should stop sound
     
+
+    def on_filter_toggled(self, key: str, enabled: bool):
+        self.filter_state[key] = enabled
+        print(f"[FILTER] {key} = {enabled}")
+
+
+    def test_alarm(self, active: bool):
+        self.alarm_active = active
+        self._update_alarm_sound()
+
+    def on_alarm_button_clicked(self):
+        self.toggle_alarm_mute()
+
+    def toggle_alarm_mute(self):
+        self.alarm_muted = not self.alarm_muted
+
+        if self.sidebar:
+            self.sidebar.set_alarm_muted(self.alarm_muted)
+
+        self._update_alarm_sound()
+
+
+    def _update_alarm_sound(self):
+        # derive should-sound
+        self.alarm_should_sound = self.alarm_active and not self.alarm_muted
+
+
+        # edge detection
+        if self.alarm_should_sound and not self._prev_alarm_should_sound:
+            # ENTER sound state
+            self.alarm_sound.play()
+
+        elif not self.alarm_should_sound and self._prev_alarm_should_sound:
+            # EXIT sound state
+            self.alarm_sound.stop()
+
+        # update memory ONCE
+        self._prev_alarm_should_sound = self.alarm_should_sound
+
+        if self.sidebar:
+            if self.alarm_active:
+                self.sidebar.start_alarm_pulse()
+            else:
+                self.sidebar.stop_alarm_pulse()
+    
     def setup_cameras(self, cameraL, cameraR, aimodel):
       """Setup cameras and AI model. Delegates camera setup to CameraView."""
         self.cameraL = cameraL
