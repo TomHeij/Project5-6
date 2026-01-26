@@ -542,7 +542,7 @@ class StereoCamera:
         self.cam.set(cv2.CAP_PROP_FRAME_HEIGHT, resolution[1])
         self.cam.set(cv2.CAP_PROP_FOURCC, cv2.VideoWriter_fourcc(*'MJPG'))
         self.cam.set(cv2.CAP_PROP_FPS, 10.0)
-        self.cam.set(cv2.CAP_PROP_AUTOFOCUS, 1)
+        self.cam.set(cv2.CAP_PROP_AUTOFOCUS, 0)
         print(f"Stereo Camera {index} initialized.")
         
     def get_frame(self):
@@ -559,7 +559,8 @@ class StereoCamera:
     
 class AIModel:
     def __init__(self, screen_resolution):
-        self.model = YOLO(model="./yolo11n.onnx", task="detect")  # load a model
+        self.model = YOLO(model="./yolo11n.pt", task="detect")  # load a model
+        self.model.to('cuda')  # force to use GPU
         self.confidence_threshold = 0.8
         self.distance_threshold = 200  # in pixels
         self.screen_resolution = screen_resolution
@@ -725,8 +726,8 @@ if __name__ == "__main__":
     
     try:
         camera_resolution = (1280, 720)
-        cam_ids = (0, 2)  # raspberry pi
-        #cam_ids = (4, 2)  # laptop
+        # cam_ids = (0, 2)  # raspberry pi
+        cam_ids = (4, 2)  # laptop
        
         
         aimodel = AIModel(camera_resolution)
