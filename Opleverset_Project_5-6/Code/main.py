@@ -334,7 +334,7 @@ class MainApp(QtWidgets.QMainWindow):
         """Update map with detected objects from AI model."""
 
         
-        """ # Testing with fake object
+        """# Testing with fake object
         if self.aimodel is None:
             # Create/Update fake object track
             fake_id = 999
