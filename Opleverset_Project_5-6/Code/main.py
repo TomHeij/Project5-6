@@ -49,8 +49,8 @@ class DebugWindow(QtWidgets.QWidget):
             raise RuntimeError(f"Failed to load UI from: {ui_path}")
         
         self.cameraResolution = (1280, 720)
-        # self.camIds = (0, 2) # raspberry pi
-        self.camIds = (4, 2) # laptop
+        self.camIds = (0, 2) # raspberry pi
+        # self.camIds = (4, 2) # laptop
         
         self.model = AIModel(self.cameraResolution)
 
@@ -149,7 +149,7 @@ class AIModel:
         # os.environ["OMP_NUM_THREADS"] = "4"  # Set number of threads for OpenMP
         # os.environ["NCNN_NUM_THREADS"] = "4"  # Set number of threads for ncnn
         self.model = YOLO(model="./yolo11n.pt", task="detect")  # load a model
-        self.model.to("cuda")
+        self.model.to("cpu")
         self.confidence_threshold = 0.8
         self.distance_threshold = 200  # in pixels
         self.screen_resolution = screen_resolution
