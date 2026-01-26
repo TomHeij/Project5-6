@@ -792,23 +792,19 @@ class MapView(QWidget):
         self.layout = QVBoxLayout(self)
         self.layout.setContentsMargins(0, 0, 0, 0)
         
-        # Object tracking - maps object_id to history
-        self.object_history = {}  # Maps object_id to list of (x, y, label, depth) tuples
-        self.tail_length = 20  # Number of history points to show
-        
         # Create the PlotWidget
         self.plot_widget = pg.PlotWidget(title="Object Locatie Kaart")
         self.layout.addWidget(self.plot_widget)
         
         # Lock the aspect ratio so the map doesn't look stretched
         self.plot_widget.setAspectLocked(True)
-        
+
         
         # Configure the view
         self.plot_widget.showGrid(x=False, y=False)  # Turn off default grid initially
         self.plot_widget.getPlotItem().setMouseEnabled(
             x=False, y=False
-        )  # Optional: lock pan/zoom
+        )  #lock pan/zoom
         self.plot_widget.getPlotItem().getViewBox().setAspectLocked(True)
         self.plot_widget.getPlotItem().getViewBox().setLimits(
             xMin=-10, xMax=10, yMin=0, yMax=10
@@ -835,24 +831,21 @@ class MapView(QWidget):
             'chair': (50, 205, 50),       # Lime green
             'default': (169, 169, 169)      # Dark gray
         }
+        
+        # Trail visibility flag
+        self.trails_enabled = True
+
+    def set_trails_enabled(self, enabled: bool):
+        """Enable or disable trail drawing."""
+        self.trails_enabled = enabled
+
     
     def _get_class_color(self, class_name):
         """Get color for object class."""
         return self.class_colors.get(class_name.lower(), self.class_colors['default'])
     
 
-    def update_object_positions(self, detected_objects):
-        """
-        Update kaart met real-time object posities vanuit stereo vision systeem.
-        
-        Args:
-            detected_objects: Lijst van dicts met:
-                - 'id': object identificatie (int)
-                - 'x': laterale positie in meters of pixels
-                - 'y': voorwaartse afstand in meters of pixels  
-                - 'depth': stereo diepte in meters
-                - 'label': object klasse naam
-        """
+    def update_object_positions(self, tracks):
         
         self.plot_widget.clear()
         
@@ -861,62 +854,30 @@ class MapView(QWidget):
             self.plot_widget.removeItem(text_item)
         self.text_items.clear()
         
-        if not detected_objects:
+
+        if not tracks:
             return
-        
-        # Camera parameters for coordinate conversion (if needed)
-        camera_resolution = (1280, 720)  # Default
-        fov_deg = 60
-        cam_center_x = camera_resolution[0] / 2
-        
-        # Process detected objects
-        for obj_data in detected_objects:
-            if not isinstance(obj_data, dict):
+    
+        # Process extracted tracks
+        for track in tracks:
+            if not isinstance(track, dict):
                 continue
             
-            obj_id = obj_data.get('id', 0)
-            label = obj_data.get('label', 'unknown')
-            depth = obj_data.get('depth', 0)
-            x = obj_data.get('x', 0)
-            y = obj_data.get('y', 0)
+            obj_id = track.get('id', 0)
+            label = track.get('label', 'unknown')
+            history = track.get('history', [])
+            current_pos = track.get('current_pos', (0, 0))
             
-            # Check if x, y are in pixels (large values) or meters (small values)
-            # If x > 100, assume it's pixel coordinates and convert
-            if abs(x) > 100 or abs(y) > 100:
-                # Convert from pixel coordinates to meters
-                fov_rad = math.radians(fov_deg)
-                focal_length = camera_resolution[0] / (2 * math.tan(fov_rad / 2))
-                pixel_offset_x = x - cam_center_x
-                lateral_angle = math.atan2(pixel_offset_x, focal_length)
-                lateral = depth * math.sin(lateral_angle)  # Lateral position in meters
-                forward = depth * math.cos(lateral_angle)  # Forward distance in meters
-            else:
-                # Already in meters
-                lateral = x
-                forward = y if y > 0 else depth  # Use depth if y not provided
+            lateral, forward = current_pos
             
-            # Skip invalid positions
-            if depth <= 0 or depth == float('inf'):
-                continue
-            
-            # Update object history for trails
-            if obj_id not in self.object_history:
-                self.object_history[obj_id] = []
-            
-            # Add current position to history
-            self.object_history[obj_id].append((lateral, forward, label, depth))
-            
-            # Limit history length
-            if len(self.object_history[obj_id]) > self.tail_length:
-                self.object_history[obj_id].pop(0)
-            
+    
             # Get color for this object class
             color = self._get_class_color(label)
             
-            # Plot trail (history)
-            if len(self.object_history[obj_id]) > 1:
-                trail_x = [pos[0] for pos in self.object_history[obj_id]]
-                trail_y = [pos[1] for pos in self.object_history[obj_id]]
+            # Plot trail (history) if trails are enabled
+            if self.trails_enabled and len(history) > 1:
+                trail_x = [pos[0] for pos in history]
+                trail_y = [pos[1] for pos in history]
                 # Create gradient effect - older points are more transparent
                 for i in range(len(trail_x) - 1):
                     alpha = int(100 + (155 * i / len(trail_x)))
@@ -938,7 +899,10 @@ class MapView(QWidget):
             )
             
             # Add text label with object info
-            label_text = f"{label}\nID:{obj_id}\n{depth:.2f}m"
+            # Use the most recent distance from history if available for display
+            display_depth = history[-1][3] if history else forward
+            
+            label_text = f"{label}\nID:{obj_id}\n{display_depth:.2f}m"
             text_item = pg.TextItem(
                 text=label_text,
                 color=(0, 0, 0),
@@ -947,12 +911,8 @@ class MapView(QWidget):
             text_item.setPos(lateral, forward)
             self.plot_widget.addItem(text_item)
             self.text_items[obj_id] = text_item
-        
-        # Clean up history for objects that are no longer detected
-        current_ids = set(obj.get('id', 0) for obj in detected_objects)
-        ids_to_remove = [oid for oid in self.object_history.keys() if oid not in current_ids]
-        for oid in ids_to_remove:
-            del self.object_history[oid]
+
+    
 
 
 class MainContentArea(QWidget):
