@@ -243,7 +243,7 @@ class MainApp(QtWidgets.QMainWindow):
 
     def on_filter_toggled(self, key: str, enabled: bool):
         self.filter_state[key] = enabled
-        print(f"[FILTER] {key} = {enabled}")
+      
 
 
     def test_alarm(self, active: bool):
