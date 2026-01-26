@@ -3,7 +3,7 @@ import os
 import warnings
 import math
 from PySide6.QtCore import Qt, QRect, QPropertyAnimation, QEasingCurve, QPoint, QPointF, QTimer, QFile
-from PySide6.QtGui import QPainter, QPolygon, QColor, QPainterPath, QImage, QPixmap
+from PySide6.QtGui import QPainter, QPolygon, QColor, QPainterPath, QImage, QPixmap, QIcon
 from PySide6.QtWidgets import (
     QWidget, QApplication, QLabel, QVBoxLayout, QCheckBox,
     QPushButton, QSlider, QGroupBox, QHBoxLayout, QGraphicsDropShadowEffect, QMainWindow
@@ -11,6 +11,7 @@ from PySide6.QtWidgets import (
 from PySide6.QtUiTools import QUiLoader
 import pyqtgraph as pg
 import cv2
+from PySide6.QtCore import QPropertyAnimation, QEasingCurve
 
 # Ignore disconnect warnings for pyqtgraph specifically
 warnings.filterwarnings("ignore", message="Failed to disconnect")
@@ -39,12 +40,16 @@ class ChevronHandle(QWidget):
         self.update()
 
     def enterEvent(self, event):
-        self._hovered = True
-        self.update()
+        if not self._hovered: #avoid redandont repaint
+            self._hovered = True
+            self.update()
+        super().enterEvent(event)
 
     def leaveEvent(self, event):
-        self._hovered = False
+        if self._hovered: #avoid redandont repaint
+            self._hovered = False
         self.update()
+        super().leaveEvent(event)
 
     def mousePressEvent(self, event):
         self.parent().toggle()
@@ -58,7 +63,7 @@ class ChevronHandle(QWidget):
             bg_color = QColor("#555555")
             arrow_color = QColor("#ffffff")
         else:
-            bg_color = QColor("#dddddd")
+            bg_color = QColor("#cacaca")
             arrow_color = QColor("#555555")
         
         w, h = self.width(), self.height()
