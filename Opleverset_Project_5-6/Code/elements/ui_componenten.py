@@ -631,7 +631,7 @@ class CameraView(QWidget):
                    self.cameraR.cam and self.cameraR.cam.isOpened():
                     self.cameras_connected = True
                     self.status_label.hide()
-                    self.timer.start(50)  # Update every 50ms
+                    self.timer.start(10)  # Update every 10ms
                     return
         
         self.cameras_connected = False
@@ -643,8 +643,6 @@ class CameraView(QWidget):
         painter.setRenderHint(QPainter.Antialiasing)
         
         w, h = pixmap.width(), pixmap.height()
-        
-        
         
         # Scale-independent positioning
         margin = int(w * 0.02)  # 2% of width
