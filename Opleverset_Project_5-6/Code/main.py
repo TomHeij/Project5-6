@@ -203,7 +203,7 @@ class MainApp(QtWidgets.QMainWindow):
         self.filter_state = {
             "drones": True,
             "ships": True,
-            "unknown": False,
+            "unknown": True,
             "trails": True,
         }
 
@@ -223,7 +223,7 @@ class MainApp(QtWidgets.QMainWindow):
             )
 
 
-        self.ALARM_CLASSES = {"drone", "ship", "boat", "chair"}
+        self.ALARM_CLASSES = {"drone", "ship", "person", "chair"}
         
         self.alarm_sound = QSoundEffect(self)
 
