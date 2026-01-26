@@ -311,8 +311,80 @@ class MainApp(QtWidgets.QMainWindow):
         
         return self.cameraL.cam.isOpened() and self.cameraR.cam.isOpened()
     
+    # Helper for coordinate conversion
+    def _pixel_to_meter(self, x, depth):
+        """Convert pixel x-coordinate and depth to lateral meters."""
+        if depth <= 0 or depth == float('inf'):
+            return 0
+            
+        camera_resolution = (1280, 720)
+        fov_deg = 60
+        cam_center_x = camera_resolution[0] / 2
+        
+        fov_rad = math.radians(fov_deg)
+        focal_length = camera_resolution[0] / (2 * math.tan(fov_rad / 2))
+        
+        pixel_offset_x = x - cam_center_x
+        lateral_angle = math.atan2(pixel_offset_x, focal_length)
+        lateral = depth * math.sin(lateral_angle)
+        return lateral
+
+    
     def _update_map_from_detections(self):
         """Update map with detected objects from AI model."""
+
+        
+        """ # Testing with fake object
+        if self.aimodel is None:
+            # Create/Update fake object track
+            fake_id = 999
+            
+            # Simple circular motion for testing trails
+            import time
+            t = time.time()
+            fake_x_meter = 2.0 * math.sin(t)
+            fake_depth = 5.0 + 1.0 * math.cos(t)
+            
+            if fake_id not in self.tracks:
+                self.tracks[fake_id] = {
+                    'id': fake_id,
+                    'label': 'drone',
+                    'history': []
+                }
+            
+            # Add to history
+            track = self.tracks[fake_id]
+            track['current_pos'] = (fake_x_meter, fake_depth)
+            track['history'].append((fake_x_meter, fake_depth, 'drone', fake_depth))
+            if len(track['history']) > 20:
+                track['history'].pop(0)
+
+            # Apply filtering logic (same as real camera path)
+            visible_tracks = []
+            for track in self.tracks.values():
+                label = track["label"]
+                if label == "drone" and not self.filter_state["drones"]:
+                    continue
+                if label == "ship" and not self.filter_state["ships"]:
+                    continue
+                if label not in ("drone", "ship") and not self.filter_state["unknown"]:
+                    continue
+                visible_tracks.append(track)
+
+            # Send tracks to map view
+            if self.main_content and hasattr(self.main_content, 'map_view'):
+                self.main_content.map_view.update_object_positions(visible_tracks)
+                
+                # Apply trails filter
+                if hasattr(self.main_content.map_view, "set_trails_enabled"):
+                    self.main_content.map_view.set_trails_enabled(
+                        self.filter_state["trails"]
+                    )
+
+            # Update alarm state
+            self.alarm_active = track['label'] in self.ALARM_CLASSES
+            self._update_alarm_sound()
+            return """
         # Check if cameras are available
         if not self._are_cameras_available() or not self.aimodel:
             return
@@ -325,15 +397,89 @@ class MainApp(QtWidgets.QMainWindow):
             if frameL is None or frameR is None:
                 return
             
-            # Use AIModel's get_detections method (no code duplication!)
+            # Use AIModel's get_detections method
             detections = self.aimodel.get_detections(frameL, frameR)
             
-            # Convert detections to map objects with tracking
-            map_objects = self._prepare_map_objects(detections['bound_pairs'])
+            # Match new detections to existing tracks or create new ones
+            bound_pairs = detections['bound_pairs']
+            current_track_ids = set()
+            match_threshold = 50  # pixels (matching logic still uses pixels for now)
             
-            # Update map view
-            if map_objects and self.main_content and hasattr(self.main_content, 'map_view'):
-                self.main_content.map_view.update_object_positions(map_objects)
+            for pair in bound_pairs:
+                (xL, yL), (xR, yR), cls_id, class_name, confidence, distance = pair
+                
+                if distance == float('inf') or distance <= 0:
+                    continue
+                
+                # Convert to meters
+                lateral = self._pixel_to_meter(xL, distance)
+                forward = distance
+                
+                # Find or create object ID
+                obj_id = self._get_or_create_object_id((xL, yL), match_threshold)
+                current_track_ids.add(obj_id)
+                
+                # Create track if not exists
+                if obj_id not in self.tracks:
+                    self.tracks[obj_id] = {
+                        'id': obj_id,
+                        'label': class_name,
+                        'history': []
+                    }
+                
+                # Update track data
+                track = self.tracks[obj_id]
+                # Always update label from source of truth
+                track['label'] = class_name 
+                track['current_pos'] = (lateral, forward)
+                track['history'].append((lateral, forward, class_name, distance))
+                
+                # Limit history
+                if len(track['history']) > 20:
+                    track['history'].pop(0)
+
+            # 2. Cleanup stale tracks
+            start_ids = list(self.tracks.keys())
+            stale_ids = [tid for tid in start_ids if tid not in current_track_ids]
+            
+            for tid in stale_ids:
+                del self.tracks[tid]
+            
+            # 3. Cleanup pixel-based tracking map
+            self._cleanup_stale_objects(bound_pairs, match_threshold)
+
+            # 4. Update map view
+            if self.main_content and hasattr(self.main_content, 'map_view'):
+                
+                visible_tracks = []
+                for track in self.tracks.values():
+                    label = track["label"]
+
+                    if label == "drone" and not self.filter_state["drones"]:
+                        continue
+                    if label == "ship" and not self.filter_state["ships"]:
+                        continue
+                    if label not in ("drone", "ship") and not self.filter_state["unknown"]:
+                        continue
+
+                    visible_tracks.append(track)
+
+                self.main_content.map_view.update_object_positions(visible_tracks)
+
+            if hasattr(self.main_content.map_view, "set_trails_enabled"):
+                self.main_content.map_view.set_trails_enabled(
+                    self.filter_state["trails"]
+                )
+
+
+            
+            # Update alarm state
+            self.alarm_active = any(
+                track['label'] in self.ALARM_CLASSES
+                for track in self.tracks.values()
+            )
+
+            self._update_alarm_sound()
                 
         except Exception as e:
             # Silently handle errors to avoid spam
