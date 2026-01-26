@@ -135,7 +135,7 @@ class StereoCamera:
         self.cam.set(cv2.CAP_PROP_FRAME_HEIGHT, resolution[1])
         self.cam.set(cv2.CAP_PROP_FOURCC, cv2.VideoWriter_fourcc(*'MJPG'))
         # self.cam.set(cv2.CAP_PROP_FPS, 10.0)
-        self.cam.set(cv2.CAP_PROP_AUTOFOCUS, 1)
+        self.cam.set(cv2.CAP_PROP_AUTOFOCUS, 0)
         print(f"Stereo Camera {index} initialized.")
         
     def get_frame(self):
@@ -155,7 +155,7 @@ class AIModel:
         # os.environ["OMP_NUM_THREADS"] = "4"  # Set number of threads for OpenMP
         # os.environ["NCNN_NUM_THREADS"] = "4"  # Set number of threads for ncnn
         self.model = YOLO(model="./yolo11n.pt", task="detect")  # load a model
-        self.model.to("cpu")
+        self.model.to("cuda")
         self.confidence_threshold = 0.8
         self.distance_threshold = 200  # in pixels
         self.screen_resolution = screen_resolution
@@ -245,8 +245,8 @@ class AIModel:
         draw_right = right_img.copy()
 
         # 2️⃣ YOLO inference
-        results_left  = self.model(left_img,  verbose=False, conf=self.confidence_threshold, device="cpu")
-        results_right = self.model(right_img, verbose=False, conf=self.confidence_threshold, device="cpu")
+        results_left  = self.model(left_img,  verbose=False, conf=self.confidence_threshold)
+        results_right = self.model(right_img, verbose=False, conf=self.confidence_threshold)
 
         objects = [[], []]
 
