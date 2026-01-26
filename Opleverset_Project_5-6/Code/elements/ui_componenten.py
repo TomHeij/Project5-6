@@ -647,6 +647,11 @@ class CameraView(QWidget):
         # UI Header bar background
         painter.fillRect(0, 0, w, 60, QColor(0, 0, 0, 100))
         
+        # Scale-independent positioning
+        margin = int(w * 0.02)  # 2% of width
+        top_y = int(h * 0.03)   # 3% from top
+        bar_height = int(h * 0.08)  # 8% of height
+        
         font = painter.font()
         font.setBold(True)
         painter.setFont(font)
