@@ -662,6 +662,7 @@ class CameraView(QWidget):
         
         w_status = fm.horizontalAdvance(status_text) + 10
         w_time = fm.horizontalAdvance(time_text) + 10
+        box_height = int(h * 0.03)
         
         # Left side status
         painter.fillRect(QRect(margin, top_y, w_status, box_height), Qt.white)
