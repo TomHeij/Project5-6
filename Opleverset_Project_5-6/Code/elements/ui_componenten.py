@@ -793,7 +793,7 @@ class MapView(QWidget):
         self.layout.setContentsMargins(0, 0, 0, 0)
         
         # Create the PlotWidget
-        self.plot_widget = pg.PlotWidget(title="Object Locatie Kaart")
+        self.plot_widget = pg.PlotWidget(title="Object Locatie in 2D")
         self.layout.addWidget(self.plot_widget)
         
         # Lock the aspect ratio so the map doesn't look stretched
