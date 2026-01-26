@@ -227,7 +227,7 @@ class MainApp(QtWidgets.QMainWindow):
         
         self.alarm_sound = QSoundEffect(self)
 
-        sound_path = os.path.join(os.path.dirname(__file__), "res", "alarm.wav")
+        sound_path = os.path.join(os.path.dirname(__file__), "imgs", "alarm.wav")
         self.alarm_sound.setSource(QUrl.fromLocalFile(sound_path))
 
         if not self.alarm_sound.source().isValid():
@@ -286,7 +286,7 @@ class MainApp(QtWidgets.QMainWindow):
                 self.sidebar.stop_alarm_pulse()
     
     def setup_cameras(self, cameraL, cameraR, aimodel):
-      """Setup cameras and AI model. Delegates camera setup to CameraView."""
+        """Setup cameras and AI model. Delegates camera setup to CameraView."""
         self.cameraL = cameraL
         self.cameraR = cameraR
         self.aimodel = aimodel
@@ -334,7 +334,7 @@ class MainApp(QtWidgets.QMainWindow):
         """Update map with detected objects from AI model."""
 
         
-        """# Testing with fake object
+        """#Testing with fake object
         if self.aimodel is None:
             # Create/Update fake object track
             fake_id = 999
