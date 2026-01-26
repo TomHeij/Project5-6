@@ -659,13 +659,13 @@ class CameraView(QWidget):
         w_time = fm.horizontalAdvance(time_text) + 10
         
         # Left side status
-        painter.fillRect(QRect(20, 40, w_status, 20), Qt.white)
+        painter.fillRect(QRect(20, 38, w_status, 20), Qt.white)
         painter.setPen(Qt.black)
-        painter.drawText(QRect(20, 40, w_status, 20), Qt.AlignCenter, status_text)
+        painter.drawText(QRect(20, 38, w_status, 20), Qt.AlignCenter, status_text)
         
         # Right side time
-        painter.fillRect(QRect(w - 20 - w_time, 40, w_time, 20), Qt.white)
-        painter.drawText(QRect(w - 20 - w_time, 40, w_time, 20), Qt.AlignCenter, time_text)
+        painter.fillRect(QRect(w - 20 - w_time, 38, w_time, 20), Qt.white)
+        painter.drawText(QRect(w - 20 - w_time, 38, w_time, 20), Qt.AlignCenter, time_text)
         
         painter.end()
         return pixmap
