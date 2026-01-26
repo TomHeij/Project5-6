@@ -30,8 +30,12 @@ import os
 
 from PySide6 import QtCore, QtWidgets, QtGui
 from PySide6.QtUiTools import QUiLoader
-from PySide6.QtCore import QFile
+from PySide6.QtCore import QFile, QTimer
 from elements.ui_componenten import CameraView, MapView, MainContentArea, RightOffCanvas
+
+from PySide6.QtGui import QAction, QKeySequence
+from PySide6.QtMultimedia import QSoundEffect
+from PySide6.QtCore import QUrl
 
 # debug window class
 class DebugWindow(QtWidgets.QWidget):
@@ -126,7 +130,6 @@ class MainApp(QtWidgets.QMainWindow):
         # Load UI file
         ui_file_path = os.path.join(os.path.dirname(__file__), "MainWindow.ui")
         if not os.path.exists(ui_file_path):
-            # Try alternative path
             ui_file_path = os.path.join("elements", "MainWindow.ui")
         
         loader = QUiLoader()
@@ -155,7 +158,6 @@ class MainApp(QtWidgets.QMainWindow):
         # Create and add main content area
         self.main_content = MainContentArea(main_content_container)
         main_content_layout = QtWidgets.QVBoxLayout(main_content_container)
-
         main_content_layout.setContentsMargins(0, 0, 0, 0)
         main_content_layout.addWidget(self.main_content)
         
@@ -176,9 +178,67 @@ class MainApp(QtWidgets.QMainWindow):
         # Object tracking data
         self._object_id_map = {}  # Maps (xL, yL) to object_id
         self._next_object_id = 1
+        self.tracks = {} # Centralized tracking state: id -> {id, label, current_pos, history}
 
         # Install event filter to handle resize events
         self.ui.installEventFilter(self)
+
+        #alarm state (single source of truth)
+        self.alarm_muted = False
+        self.alarm_active = False          # derived from detections
+
+        self.alarm_should_sound = False    # derived from alarm_active and alarm_muted
+        self._prev_alarm_should_sound = False
+
+        #keyboard shortcuts(m)
+        self.toggle_alarm_action = QAction("Toggle alarm mute", self)
+        self.toggle_alarm_action.setShortcut("M")
+        self.toggle_alarm_action.triggered.connect(self.toggle_alarm_mute)
+        
+        self.addAction(self.toggle_alarm_action)
+
+        if self.sidebar and self.sidebar.btn_alarm:
+            self.sidebar.btn_alarm.clicked.connect(self.on_alarm_button_clicked)
+
+        self.filter_state = {
+            "drones": True,
+            "ships": True,
+            "unknown": False,
+            "trails": True,
+        }
+
+        sb = self.sidebar
+        if sb:
+            sb.cb_drones.toggled.connect(
+                lambda v: self.on_filter_toggled("drones", v)
+            )
+            sb.cb_ships.toggled.connect(
+                lambda v: self.on_filter_toggled("ships", v)
+            )
+            sb.cb_unknown.toggled.connect(
+                lambda v: self.on_filter_toggled("unknown", v)
+            )
+            sb.cb_trails.toggled.connect(
+                lambda v: self.on_filter_toggled("trails", v)
+            )
+
+
+        self.ALARM_CLASSES = {"drone", "ship", "boat", "chair"}
+        
+        self.alarm_sound = QSoundEffect(self)
+
+        sound_path = os.path.join(os.path.dirname(__file__), "res", "alarm.wav")
+        self.alarm_sound.setSource(QUrl.fromLocalFile(sound_path))
+
+        if not self.alarm_sound.source().isValid():
+            print("Warning: alarm sound file not found or invalid")
+
+        self.alarm_sound.setLoopCount(QSoundEffect.Infinite.value)
+        self.alarm_sound.setVolume(0.5)
+
+        #test the alarm sound without camera
+        #self.test_alarm(True)   # should start looping sound
+        #self.test_alarm(False)  # should stop sound
     
     def setup_cameras(self, cameraL, cameraR, aimodel):
       """Setup cameras and AI model. Delegates camera setup to CameraView."""
