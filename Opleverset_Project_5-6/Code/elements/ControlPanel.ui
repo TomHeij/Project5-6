@@ -99,7 +99,7 @@ QGroupBox::title {
          <string>Unknown Objects</string>
         </property>
         <property name="checked">
-         <bool>false</bool>
+         <bool>True</bool>
         </property>
        </widget>
       </item>
