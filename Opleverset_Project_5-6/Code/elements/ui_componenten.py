@@ -831,7 +831,7 @@ class MapView(QWidget):
             'chair': (50, 205, 50),       # Lime green
             'default': (169, 169, 169)      # Dark gray
         }
-        
+
         # Trail visibility flag
         self.trails_enabled = True
 
@@ -913,8 +913,6 @@ class MapView(QWidget):
             self.text_items[obj_id] = text_item
 
     
-
-
 class MainContentArea(QWidget):
     """Main content area with tear-off tabs."""
     
