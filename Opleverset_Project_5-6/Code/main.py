@@ -726,6 +726,7 @@ if __name__ == "__main__":
     try:
         camera_resolution = (1280, 720)
         cam_ids = (0, 2)  # raspberry pi
+        #cam_ids = (4, 2)  # laptop
        
         
         aimodel = AIModel(camera_resolution)
