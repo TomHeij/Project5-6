@@ -485,34 +485,6 @@ class MainApp(QtWidgets.QMainWindow):
             # Silently handle errors to avoid spam
             pass
 
-    def _prepare_map_objects(self, bound_pairs):
-        """Convert bound pairs from AIModel to map object format with tracking."""
-        map_objects = []
-        match_threshold = 50  # pixels for position matching
-        
-        for pair_data in bound_pairs:
-            (xL, yL), (xR, yR), cls_id, class_name, confidence, distance = pair_data
-            
-            # Skip invalid distances
-            if distance == float('inf') or distance <= 0:
-                continue
-            
-            # Track object ID based on position
-            obj_id = self._get_or_create_object_id((xL, yL), match_threshold)
-            
-            # Create map object data
-            map_objects.append({
-                'id': obj_id,
-                'x': xL,
-                'y': yL,
-                'depth': distance,
-                'label': class_name
-            })
-        
-        # Clean up stale object IDs
-        self._cleanup_stale_objects(bound_pairs, match_threshold)
-        
-        return map_objects
 
     def _get_or_create_object_id(self, position, match_threshold):
         """Get existing object ID or create new one based on position matching."""
