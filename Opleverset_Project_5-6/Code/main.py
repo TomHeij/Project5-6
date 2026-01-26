@@ -217,6 +217,8 @@ class AIModel:
         disparity = x_left - x_right
         if abs(disparity) < 0.5:
             return float('inf')
+        
+        print(f"disparity == {disparity}, x_left == {x_left}, x_right == {x_right}")
 
         distance = (fx * baseline) / disparity
         return abs(distance)
