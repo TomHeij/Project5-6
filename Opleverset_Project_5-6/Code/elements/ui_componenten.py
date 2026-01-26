@@ -644,8 +644,7 @@ class CameraView(QWidget):
         
         w, h = pixmap.width(), pixmap.height()
         
-        # UI Header bar background
-        painter.fillRect(0, 0, w, 60, QColor(0, 0, 0, 100))
+        
         
         # Scale-independent positioning
         margin = int(w * 0.02)  # 2% of width
