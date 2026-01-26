@@ -651,7 +651,7 @@ class CameraView(QWidget):
         margin = int(w * 0.02)  # 2% of width
         top_y = int(h * 0.03)   # 3% from top
         bar_height = int(h * 0.08)  # 8% of height
-        
+
         font = painter.font()
         font.setBold(True)
         painter.setFont(font)
@@ -664,13 +664,13 @@ class CameraView(QWidget):
         w_time = fm.horizontalAdvance(time_text) + 10
         
         # Left side status
-        painter.fillRect(QRect(20, 36, w_status, 20), Qt.white)
+        painter.fillRect(QRect(margin, top_y, w_status, box_height), Qt.white)
         painter.setPen(Qt.black)
-        painter.drawText(QRect(20, 36, w_status, 20), Qt.AlignCenter, status_text)
+        painter.drawText(QRect(margin, top_y, w_status, box_height), Qt.AlignCenter, status_text)
         
         # Right side time
-        painter.fillRect(QRect(w - 20 - w_time, 36, w_time, 20), Qt.white)
-        painter.drawText(QRect(w - 20 - w_time, 36, w_time, 20), Qt.AlignCenter, time_text)
+        painter.fillRect(QRect(w - margin - w_time, top_y, w_time, box_height), Qt.white)
+        painter.drawText(QRect(w - margin - w_time, top_y, w_time, box_height), Qt.AlignCenter, time_text)
         
         painter.end()
         return pixmap
