@@ -79,8 +79,15 @@ class DebugWindow(QtWidgets.QWidget):
 
     def start_capture(self):
         time_start = time.time()
-        captureL, captureR = self.model.predict([self.cameraL.get_frame(), self.cameraR.get_frame()])
-        blended = cv2.addWeighted(captureR, 0.5, captureL, 1 - 0.5, 0)
+        frameL = self.cameraL.get_frame()
+        frameR = self.cameraR.get_frame()
+
+        captureL, captureR = self.model.predict([frameL, frameR])
+
+        if captureL is None or captureR is None:
+            return
+
+        blended = cv2.addWeighted(captureR, 0.5, captureL, 0.5, 0)
         self.cam.setPixmap(self.cv2_to_qt(blended))
         time_end = time.time()
 
