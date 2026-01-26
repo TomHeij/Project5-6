@@ -12,6 +12,7 @@ from PySide6.QtUiTools import QUiLoader
 import pyqtgraph as pg
 import cv2
 from PySide6.QtCore import QPropertyAnimation, QEasingCurve
+from datetime import datetime
 
 # Ignore disconnect warnings for pyqtgraph specifically
 warnings.filterwarnings("ignore", message="Failed to disconnect")
@@ -635,6 +636,39 @@ class CameraView(QWidget):
         
         self.cameras_connected = False
         self.status_label.show()
+
+    def draw_overlay_on_pixmap(self, pixmap):
+        """Draw UI overlay on the pixmap."""
+        painter = QPainter(pixmap)
+        painter.setRenderHint(QPainter.Antialiasing)
+        
+        w, h = pixmap.width(), pixmap.height()
+        
+        # UI Header bar background
+        painter.fillRect(0, 0, w, 60, QColor(0, 0, 0, 100))
+        
+        font = painter.font()
+        font.setBold(True)
+        painter.setFont(font)
+        fm = painter.fontMetrics()
+        
+        status_text = "SYSTEM: ACTIVE"
+        time_text = datetime.now().strftime("%H:%M:%S")  # Real time: HH:MM:SS
+        
+        w_status = fm.horizontalAdvance(status_text) + 10
+        w_time = fm.horizontalAdvance(time_text) + 10
+        
+        # Left side status
+        painter.fillRect(QRect(20, 44, w_status, 20), Qt.white)
+        painter.setPen(Qt.black)
+        painter.drawText(QRect(20, 44, w_status, 20), Qt.AlignCenter, status_text)
+        
+        # Right side time
+        painter.fillRect(QRect(w - 20 - w_time, 44, w_time, 20), Qt.white)
+        painter.drawText(QRect(w - 20 - w_time, 44, w_time, 20), Qt.AlignCenter, time_text)
+        
+        painter.end()
+        return pixmap
     
     def update_camera_feed(self):
         """Update the camera feed display."""
@@ -660,6 +694,7 @@ class CameraView(QWidget):
             
             # Convert to QPixmap and display
             pixmap = self.cv2_to_qt(blended)
+            pixmap = self.draw_overlay_on_pixmap(pixmap)  
             self.camera_label.setPixmap(pixmap)
             
         except Exception as e:
@@ -705,8 +740,7 @@ class CameraView(QWidget):
         if self.cameras_connected:
             self.update_camera_feed()
     
-    def paintEvent(self, event):
-        """Paint UI overlay elements."""
+    """ def paintEvent(self, event):
         painter = QPainter(self)
         painter.setRenderHint(QPainter.Antialiasing)
         
@@ -748,15 +782,8 @@ class CameraView(QWidget):
             painter.fillRect(QRect(w - 20 - w_time, 44, w_time, 20), Qt.white)
             painter.drawText(QRect(w - 20 - w_time, 44, w_time, 20), Qt.AlignCenter, time_text)
         else:
-            # Draw camera feed
-            if self.current_pixmap and not self.current_pixmap.isNull():
-                x = (w - self.current_pixmap.width()) // 2
-                y = (h - self.current_pixmap.height()) // 2
-                painter.drawPixmap(x, y, self.current_pixmap)
-
             # Draw UI overlay on top of camera feed
             # UI Header bar background
-             # Draw camera feed
            
             painter.fillRect(0, 0, w, 60, QColor(0, 0, 0, 100))
             
@@ -779,7 +806,7 @@ class CameraView(QWidget):
             
             # Right side time
             painter.fillRect(QRect(w - 20 - w_time, 44, w_time, 20), Qt.white)
-            painter.drawText(QRect(w - 20 - w_time, 44, w_time, 20), Qt.AlignCenter, time_text)
+            painter.drawText(QRect(w - 20 - w_time, 44, w_time, 20), Qt.AlignCenter, time_text) """
         
 class MapView(QWidget):
     """2D Map Visualization with PyQtGraph for displaying object positions and trails."""
