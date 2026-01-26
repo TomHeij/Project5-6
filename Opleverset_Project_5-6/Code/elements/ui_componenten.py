@@ -884,7 +884,7 @@ class MainContentArea(QWidget):
         self.active_tab = self.TAB_CAMERA
         self.floating_pane = None
         # Logo setup
-        logo_path = os.path.join(os.path.dirname(__file__), "..", "imgs", "Logo-Tidalis.jpg")
+        logo_path = os.path.join(os.path.dirname(__file__), "..", "imgs", "Logo-Tidalis2.jpg")
         if os.path.exists(logo_path):
             pixmap = QPixmap(logo_path)
             self.company_logo = QLabel(self)
