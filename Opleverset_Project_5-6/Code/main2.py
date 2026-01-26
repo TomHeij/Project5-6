@@ -106,6 +106,54 @@ class DebugWindow(QtWidgets.QWidget):
         scaled_pixmap = pixmap.scaled(self.cameraResolution[0], self.cameraResolution[1], QtCore.Qt.AspectRatioMode.KeepAspectRatio)
         return scaled_pixmap
     
+
+# main application class
+
+class MainApp(QtWidgets.QMainWindow):
+    def __init__(self):
+        super(MainApp, self).__init__()
+        self.setWindowTitle("Main Application")
+        self.setGeometry(100, 100, 800, 600)
+        # hier komt alleen die map met punten
+
+# stereo camera class
+
+class StereoCamera:
+    def __init__(self, index, resolution):
+        self.cam = cv2.VideoCapture(index, cv2.CAP_V4L2)
+        if not self.cam.isOpened():
+            print(f"Camera {index} failed to open")
+            return None
+        self.cam.set(cv2.CAP_PROP_FRAME_WIDTH, resolution[0])
+        self.cam.set(cv2.CAP_PROP_FRAME_HEIGHT, resolution[1])
+        self.cam.set(cv2.CAP_PROP_FOURCC, cv2.VideoWriter_fourcc(*'MJPG'))
+        # self.cam.set(cv2.CAP_PROP_FPS, 10.0)
+        self.cam.set(cv2.CAP_PROP_AUTOFOCUS, 1)
+        print(f"Stereo Camera {index} initialized.")
+        
+    def get_frame(self):
+        ret, frame = self.cam.read()
+        if not ret:
+            print("Failed to grab frame")
+            return None
+        # cv2.initUndistortRectifyMap(frame, None, None, None, (frame.shape[1], frame.shape[0]), cv2.CV_32FC1)
+        # cv2.remap(frame, None, None, cv2.INTER_LINEAR)
+        # frame = cv2.resize(frame, (1920, 1080), interpolation=cv2.INTER_LINEAR)
+        return frame
+    
+   
+    
+class AIModel:
+    def __init__(self, screen_resolution):
+        # os.environ["OMP_NUM_THREADS"] = "4"  # Set number of threads for OpenMP
+        # os.environ["NCNN_NUM_THREADS"] = "4"  # Set number of threads for ncnn
+        self.model = YOLO(model="./yolo11n.pt", task="detect")  # load a model
+        self.model.to("cuda")
+        self.confidence_threshold = 0.8
+        self.distance_threshold = 200  # in pixels
+        self.screen_resolution = screen_resolution
+        self.init_rectification()
+
     def init_rectification(self):
         # === Intrinsics ===
         self.K0 = np.array([
@@ -175,56 +223,6 @@ class DebugWindow(QtWidgets.QWidget):
         )
 
         print("Stereo rectification initialized.")
-
-    
-    
-
-# main application class
-
-class MainApp(QtWidgets.QMainWindow):
-    def __init__(self):
-        super(MainApp, self).__init__()
-        self.setWindowTitle("Main Application")
-        self.setGeometry(100, 100, 800, 600)
-        # hier komt alleen die map met punten
-
-# stereo camera class
-
-class StereoCamera:
-    def __init__(self, index, resolution):
-        self.cam = cv2.VideoCapture(index, cv2.CAP_V4L2)
-        if not self.cam.isOpened():
-            print(f"Camera {index} failed to open")
-            return None
-        self.cam.set(cv2.CAP_PROP_FRAME_WIDTH, resolution[0])
-        self.cam.set(cv2.CAP_PROP_FRAME_HEIGHT, resolution[1])
-        self.cam.set(cv2.CAP_PROP_FOURCC, cv2.VideoWriter_fourcc(*'MJPG'))
-        # self.cam.set(cv2.CAP_PROP_FPS, 10.0)
-        self.cam.set(cv2.CAP_PROP_AUTOFOCUS, 1)
-        print(f"Stereo Camera {index} initialized.")
-        
-    def get_frame(self):
-        ret, frame = self.cam.read()
-        if not ret:
-            print("Failed to grab frame")
-            return None
-        # cv2.initUndistortRectifyMap(frame, None, None, None, (frame.shape[1], frame.shape[0]), cv2.CV_32FC1)
-        # cv2.remap(frame, None, None, cv2.INTER_LINEAR)
-        # frame = cv2.resize(frame, (1920, 1080), interpolation=cv2.INTER_LINEAR)
-        return frame
-    
-   
-    
-class AIModel:
-    def __init__(self, screen_resolution):
-        # os.environ["OMP_NUM_THREADS"] = "4"  # Set number of threads for OpenMP
-        # os.environ["NCNN_NUM_THREADS"] = "4"  # Set number of threads for ncnn
-        self.model = YOLO(model="./yolo11n.pt", task="detect")  # load a model
-        self.model.to("cuda")
-        self.confidence_threshold = 0.8
-        self.distance_threshold = 200  # in pixels
-        self.screen_resolution = screen_resolution
-        self.init_rectification()
 
     # veranderen zodat het de middelpunten van die boxes pakt van beide cameras
     # kijken of we de frames kunnen overlappen en daar een vast object uit kunnen halen
