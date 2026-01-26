@@ -154,6 +154,7 @@ class RightOffCanvas(QWidget):
             self.cb_grid = self.contentWidget.findChild(QCheckBox, "cb_grid") if self.contentWidget else None
             self.cb_radar = self.contentWidget.findChild(QCheckBox, "cb_radar") if self.contentWidget else None
             self.cb_direction = self.contentWidget.findChild(QCheckBox, "cb_direction") if self.contentWidget else None
+            self.btn_alarm = self.contentWidget.findChild(QPushButton, "btn_alarm") if self.contentWidget else None
         else:
             # Fallback: create simple widget if UI file not found
             self.contentWidget = QWidget(self)
@@ -180,6 +181,74 @@ class RightOffCanvas(QWidget):
         self.anim.setEasingCurve(QEasingCurve.InOutCubic)
 
         self.reposition()
+
+        # Alarm button
+        if not self.btn_alarm:
+            return
+        
+        base = os.path.join(os.path.dirname(__file__), "..", "res")
+        self._alarm_icon_on = QIcon(os.path.join(base, "alarm-on.png"))
+        self._alarm_icon_off = QIcon(os.path.join(base, "alarm-off.png"))
+
+        self.btn_alarm.setCheckable(True)
+        self.btn_alarm.setChecked(False)
+        
+
+        self.btn_alarm.toggled.connect(self.update_alarm_icon)
+        self.update_alarm_icon(self.btn_alarm.isChecked())
+
+        # Glow pulse effect using drop shadow
+        self._pulse_effect = QGraphicsDropShadowEffect(self.btn_alarm)
+        self._pulse_effect.setBlurRadius(0)
+        self._pulse_effect.setColor(QColor(255, 60, 60))  # Red glow
+        self._pulse_effect.setOffset(0, 0)
+        self._pulse_effect.setEnabled(False)
+        self.btn_alarm.setGraphicsEffect(self._pulse_effect)
+
+        self._pulse_anim = QPropertyAnimation(self._pulse_effect, b"blurRadius")
+        self._pulse_anim.setDuration(800)
+        self._pulse_anim.setEasingCurve(QEasingCurve.InOutSine)
+        self._pulse_anim.setLoopCount(-1)
+        
+        
+    def update_alarm_icon(self, checked: bool):
+        if not self.btn_alarm:
+            return
+
+        if checked:
+            self.btn_alarm.setIcon(self._alarm_icon_on)
+        else:
+            self.btn_alarm.setIcon(self._alarm_icon_off)
+
+    def set_alarm_muted(self, is_muted: bool):
+        if not self.btn_alarm:
+            return
+
+        self.btn_alarm.setChecked(not is_muted)
+
+    def start_alarm_pulse(self):
+        if not self.btn_alarm:
+            return
+
+        # If already running, don't restart (prevents stuttering on frequent updates)
+        if self._pulse_anim.state() == QPropertyAnimation.State.Running:
+            return
+
+        self._pulse_effect.setEnabled(True)
+        self._pulse_anim.setStartValue(0)
+        self._pulse_anim.setEndValue(25)
+        self._pulse_anim.start()
+
+
+    def stop_alarm_pulse(self):
+        if not self.btn_alarm:
+            return
+
+        self._pulse_anim.stop()
+        self._pulse_effect.setBlurRadius(0)
+        self._pulse_effect.setEnabled(False)
+
+
 
     def reposition(self):
         p = self.parent().rect()
