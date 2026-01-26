@@ -596,10 +596,9 @@ class CameraView(QWidget):
         self.cameras_connected = False
         
         # Camera feed label
-        self.camera_label = QLabel(self)
-        self.camera_label.setAlignment(Qt.AlignCenter)
-        self.camera_label.setScaledContents(True)
-        self.camera_label.setStyleSheet("background: transparent;")
+        # Camera feed pixmap
+        self._current_pixmap = None
+        self.setAttribute(Qt.WA_OpaquePaintEvent) # Optimization
         
         # Status label for "not connected" message
         self.status_label = QLabel("Stereo camera is not connected", self)
@@ -659,8 +658,8 @@ class CameraView(QWidget):
             blended = cv2.addWeighted(frameR, 0.5, frameL, 1 - 0.5, 0)
             
             # Convert to QPixmap and display
-            pixmap = self.cv2_to_qt(blended)
-            self.camera_label.setPixmap(pixmap)
+            self._current_pixmap = self.cv2_to_qt(blended)
+            self.update()
             
         except Exception as e:
             print(f"Error updating camera feed: {e}")
@@ -688,9 +687,6 @@ class CameraView(QWidget):
         """Handle widget resize to update camera label and status label positions."""
         super().resizeEvent(event)
         w, h = self.width(), self.height()
-        
-        # Update camera label size
-        self.camera_label.setGeometry(0, 0, w, h)
         
         # Update status label position (centered)
         status_w, status_h = 400, 50
@@ -748,6 +744,10 @@ class CameraView(QWidget):
             painter.fillRect(QRect(w - 20 - w_time, 44, w_time, 20), Qt.white)
             painter.drawText(QRect(w - 20 - w_time, 44, w_time, 20), Qt.AlignCenter, time_text)
         else:
+            # Draw camera feed
+            if self._current_pixmap and not self._current_pixmap.isNull():
+                painter.drawPixmap(0, 0, self._current_pixmap)
+
             # Draw UI overlay on top of camera feed
             # UI Header bar background
             painter.fillRect(0, 0, w, 60, QColor(0, 0, 0, 100))
