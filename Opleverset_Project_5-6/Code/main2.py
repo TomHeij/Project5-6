@@ -229,7 +229,7 @@ class AIModel:
     def predict(self, captures):
         left  = cv2.remap(captures[0], self.map0x, self.map0y, cv2.INTER_LINEAR)
         right = cv2.remap(captures[1], self.map1x, self.map1y, cv2.INTER_LINEAR)
-        captures = [left, right]
+        results = [left, right]
 
         objects = [[], []]
         
