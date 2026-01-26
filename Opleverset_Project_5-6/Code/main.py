@@ -735,7 +735,7 @@ if __name__ == "__main__":
         print("Het Systeem werkt goed")
     except Exception as e:
         print(f"Warning: Kan camera's niet initialiseren {e}")
-    main_window.setup_cameras(cameraL, cameraR, aimodel)
 
+    main_window.setup_cameras(cameraL, cameraR, aimodel)
     main_window.show()
     sys.exit(app.exec())
