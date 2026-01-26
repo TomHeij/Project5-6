@@ -186,7 +186,7 @@ class RightOffCanvas(QWidget):
         if not self.btn_alarm:
             return
         
-        base = os.path.join(os.path.dirname(__file__), "..", "res")
+        base = os.path.join(os.path.dirname(__file__), "..", "imgs")
         self._alarm_icon_on = QIcon(os.path.join(base, "alarm-on.png"))
         self._alarm_icon_off = QIcon(os.path.join(base, "alarm-off.png"))
 
