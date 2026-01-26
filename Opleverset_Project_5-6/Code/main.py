@@ -238,20 +238,12 @@ class MainApp(QtWidgets.QMainWindow):
         self.alarm_sound.setLoopCount(QSoundEffect.Infinite.value)
         self.alarm_sound.setVolume(0.5)
 
-        #test the alarm sound without camera
-        #self.test_alarm(True)   # should start looping sound
-        #self.test_alarm(False)  # should stop sound
-    
+
 
     def on_filter_toggled(self, key: str, enabled: bool):
         self.filter_state[key] = enabled
-      
-
-
-    def test_alarm(self, active: bool):
-        self.alarm_active = active
-        self._update_alarm_sound()
-
+    
+    
     def on_alarm_button_clicked(self):
         self.toggle_alarm_mute()
 
@@ -267,7 +259,6 @@ class MainApp(QtWidgets.QMainWindow):
     def _update_alarm_sound(self):
         # derive should-sound
         self.alarm_should_sound = self.alarm_active and not self.alarm_muted
-
 
         # edge detection
         if self.alarm_should_sound and not self._prev_alarm_should_sound:
@@ -286,6 +277,7 @@ class MainApp(QtWidgets.QMainWindow):
                 self.sidebar.start_alarm_pulse()
             else:
                 self.sidebar.stop_alarm_pulse()
+                
     
     def setup_cameras(self, cameraL, cameraR, aimodel):
         """Setup cameras and AI model. Delegates camera setup to CameraView."""
