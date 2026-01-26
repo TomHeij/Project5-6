@@ -781,7 +781,7 @@ class CameraView(QWidget):
             painter.drawEllipse(QPoint(cx, cy), 100, 100)
             
             painter.setPen(QColor(0, 255, 136))
-            #painter.drawText(rect, Qt.AlignCenter, "REC ● LIVE CAMERA FEED")
+            painter.drawText(rect, Qt.AlignCenter, "REC ● LIVE CAMERA FEED")
 
 
 class MapView(QWidget):
