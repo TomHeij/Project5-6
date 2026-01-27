@@ -20,8 +20,8 @@
 # onnx
 # yolo11n
 
-from cv2_enumerate_cameras import enumerate_cameras
-from ultralytics import YOLO
+# from cv2_enumerate_cameras import enumerate_cameras
+# from ultralytics import YOLO
 import numpy as np
 import math
 import yaml
@@ -32,43 +32,110 @@ import os
 
 from PySide6 import QtCore, QtWidgets, QtGui
 from PySide6.QtUiTools import QUiLoader
-from PySide6.QtCore import QFile, QTimer
-from PySide6.QtGui import QAction, QKeySequence
+from PySide6.QtCore import QFile, QTimer, QUrl
+from PySide6.QtGui import QAction, QKeySequence, QPixmap
 from PySide6.QtMultimedia import QSoundEffect
-from PySide6.QtCore import QUrl
-from elements.ui_componenten import CameraView, MapView, MainContentArea, RightOffCanvas
+from PySide6.QtWidgets import QWidget, QVBoxLayout, QSizePolicy, QLabel
+
+from elements.SideBar import RightOffCanvas
+from elements.TearOffTabs import TearOffTabManager
+from elements.CameraView import CameraView
+from elements.MapView import MapView
 
 # main application class
 
 class MainApp(QtWidgets.QMainWindow):
     def __init__(self):
-        return
+        # load yaml config
+        with open("config.yaml", 'r') as file:
+            self.config = yaml.safe_load(file)
+        
+        # initialize main window
+        super(MainApp, self).__init__()
+        self.setWindowTitle("Stereo Camera Object Detection")
+        self.setGeometry(0, 0, self.config['UiResolution']['width'], self.config['UiResolution']['height'])
+        self.setStyleSheet("background: #2c3e50;")
+        self.layout = QtWidgets.QHBoxLayout(self)
+        self.layout.setContentsMargins(0, 0, 0, 0)
+        
+        # Main content area widget
+        self.mainContentArea = QWidget()
+        self.mainContentArea.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
+        self.mainContentArea.layout = QVBoxLayout(self.mainContentArea)
+        self.mainContentArea.layout.setSpacing(0)
+        self.mainContentArea.layout.setContentsMargins(0, 0, 0, 0)
+        self.layout.addWidget(self.mainContentArea)
+        self.setCentralWidget(self.mainContentArea)
+        
+        # company logo
+        self.company_logo = QLabel(self)
+        self.company_logo.setScaledContents(True)
+        self.company_logo.setFixedSize(140, 44)
+        logo_path = os.path.join("imgs", "Logo-Tidalis.jpg")
+        if os.path.exists(logo_path):
+           self.company_logo.setPixmap(QPixmap(logo_path))
+           self.company_logo.show()
+        else:
+           print(f"Warning: Logo not found at {logo_path}")
+           self.company_logo = None
                 
-    def start_capture(self):
-        return
+        # sidebar
+        self.sidebar = RightOffCanvas(self, width=280)
+        # self.sidebar.raise_()
+        
+        # Create tear off tab manager
+        self.tab_manager = TearOffTabManager(self.mainContentArea)
+        
+        # Create camera and map views
+        self.camera_view = CameraView()
+        self.map_view = MapView()
     
-    def update_map(self):
-        return
+        self.tab_manager.add_view("Camera", self.camera_view)
+        self.tab_manager.add_view("Map", self.map_view)
+        self.mainContentArea.layout.addWidget(self.tab_manager)
+        
+        
+        # setup stereo camera
+        cameraName = self.config['cameraName']
+        cameraIDs = getCameraId(cameraName)
+        
+        self.cameraL = StereoCamera(cameraIDs[0], self.config)
+        self.cameraR = StereoCamera(cameraIDs[1], self.config)
+        
+        # timer for capture updates
+        self.timer = QtCore.QTimer(self)
+        self.timer.timeout.connect(self.start_capture)
+        self.timer.start(self.config['UiRefreshRate'])  # Update every X ms
+        
+
+    def start_capture(self):
+        pass
     
     def update_metrics(self):
-        return
-        
+        pass
     
-
+    def resizeEvent(self, event):
+        super().resizeEvent(event)
+        if self.company_logo:
+            self.company_logo.move(self.width() - self.company_logo.width() - 10, 0)
+            self.company_logo.raise_()
+        if self.sidebar:
+            self.sidebar.reposition()
+            self.sidebar.raise_()
 
 
 # stereo camera class
 class StereoCamera:
-    def __init__(self, index, resolution):
+    def __init__(self, index, config=None):
         self.cam = cv2.VideoCapture(index, cv2.CAP_V4L2)
         if not self.cam.isOpened():
             print(f"Camera {index} failed to open")
             return None
-        self.cam.set(cv2.CAP_PROP_FRAME_WIDTH, resolution[0])
-        self.cam.set(cv2.CAP_PROP_FRAME_HEIGHT, resolution[1])
+        self.cam.set(cv2.CAP_PROP_FRAME_WIDTH, config['resolution']['width'])
+        self.cam.set(cv2.CAP_PROP_FRAME_HEIGHT, config['resolution']['height'])
         self.cam.set(cv2.CAP_PROP_FOURCC, cv2.VideoWriter_fourcc(*'MJPG'))
-        # self.cam.set(cv2.CAP_PROP_FPS, 10.0)
-        self.cam.set(cv2.CAP_PROP_AUTOFOCUS, 1)
+        self.cam.set(cv2.CAP_PROP_FPS, config['cameraFPS'])
+        self.cam.set(cv2.CAP_PROP_AUTOFOCUS, config['cameraAutoFocus'])
         print(f"Stereo Camera {index} initialized.")
         
     def get_frame(self):
@@ -96,6 +163,7 @@ def getCameraId():
 class AIModel:
     def __init__(self, screen_resolution):
         self.convertToOnnx()
+        # try catch block toevoegen
         self.model = YOLO(model="./yolo11n.onnx", task="detect")  # load a model
         self.model.to("cuda")
         self.confidence_threshold = 0.8
@@ -180,8 +248,8 @@ class AIModel:
     
     
 if __name__ == "__main__":
-    # app = QtWidgets.QApplication(sys.argv)
-    # window = DebugWindow()
-    # window.show()
-    # sys.exit(app.exec())
+    app = QtWidgets.QApplication(sys.argv)
+    window = MainApp()
+    window.show()
+    sys.exit(app.exec())
     pass

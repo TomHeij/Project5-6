@@ -32,8 +32,8 @@ T: [[0.09989935331835486],[-0.00020611071609860532],[0.023616168280136174]]
 
 # UI settings
 UiResolution:
-  width: 1920
-  height: 1080
+  width: 1200
+  height: 800
 UiRefreshRate: 100
 alarmVolume: 0.5
 alarmSoundPath: ./alarm_sound.wav

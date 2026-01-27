@@ -39,11 +39,10 @@ class DebugWindow(QtWidgets.QWidget):
         super(DebugWindow, self).__init__()
 
         ui_path = os.path.join("elements", "DebugWindow.ui")
-        loader = QUiLoader()
         ui_file = QFile(ui_path)
         if not ui_file.open(QFile.ReadOnly):
             raise RuntimeError(f"Failed to open UI file: {ui_path}")
-        self.ui = loader.load(ui_file, None)
+        self.ui = QUiLoader().load(ui_file, None)
         ui_file.close()
         if self.ui is None:
             raise RuntimeError(f"Failed to load UI from: {ui_path}")
@@ -121,6 +120,10 @@ class MainApp(QtWidgets.QMainWindow):
         super(MainApp, self).__init__()
         self.setWindowTitle("Main Application")
         self.setGeometry(100, 100, 800, 600)
+        
+        
+        
+        
         # hier komt alleen die map met punten
 
 # stereo camera class

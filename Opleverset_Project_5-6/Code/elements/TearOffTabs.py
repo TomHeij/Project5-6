@@ -1,23 +1,12 @@
-"""
-Tearoff Tab System - Reusable component for tabbed interface with drag-to-float capability.
-
-Usage:
-    1. Create a TearOffTabManager instance
-    2. Add views with manager.add_view(name, widget)
-    3. Connect callbacks for tab changes and tearoff events
-"""
-
 import os
 from PySide6.QtCore import Qt, QRect, QPropertyAnimation, QEasingCurve, QPoint, QPointF
 from PySide6.QtGui import QPainter, QPolygon, QColor, QPainterPath
-from PySide6.QtWidgets import (
-    QWidget, QVBoxLayout, QHBoxLayout, QLabel, QPushButton, QGraphicsDropShadowEffect
-)
+from PySide6.QtWidgets import QWidget, QVBoxLayout, QHBoxLayout, QLabel, QPushButton, QGraphicsDropShadowEffect
+
 
 
 class TearOffTab(QWidget):
     """Individual tab that can be clicked or dragged to tear off."""
-    
     def __init__(self, name, index, is_last, parent=None):
         super().__init__(parent)
         self.name = name
@@ -327,7 +316,6 @@ class TearOffTabManager(QWidget):
         main_layout.addWidget(self.view_container)
     
     def add_view(self, name, widget):
-        """Add a new tab view."""
         index = self.next_index
         self.next_index += 1
         
@@ -345,7 +333,6 @@ class TearOffTabManager(QWidget):
         return index
     
     def activateTab(self, index):
-        """Switch to a specific tab."""
         if self.floating_pane and self.floating_pane.tab_index == index:
             return  # This tab is floating
         
@@ -354,7 +341,6 @@ class TearOffTabManager(QWidget):
         self._showMainView(index)
     
     def _showMainView(self, index):
-        """Display the view for a specific tab in the main area."""
         # Clear current view
         while self.view_layout.count():
             item = self.view_layout.takeAt(0)
@@ -367,7 +353,6 @@ class TearOffTabManager(QWidget):
         self.view_layout.addWidget(view)
     
     def tearOffTab(self, index):
-        """Tear off a tab into a floating pane."""
         view = self.views[index]
         
         # Create floating pane
@@ -384,7 +369,6 @@ class TearOffTabManager(QWidget):
             self.activateTab(other_tab)
     
     def returnFloatingPane(self, pane):
-        """Return a floating pane back to the tab bar."""
         view = pane.content_widget
         tab_index = pane.tab_index
         
@@ -401,39 +385,3 @@ class TearOffTabManager(QWidget):
         
         # Activate this tab
         self.activateTab(tab_index)
-
-
-# Demo Application
-if __name__ == "__main__":
-    from PySide6.QtWidgets import QApplication, QMainWindow, QTextEdit
-    import sys
-    
-    app = QApplication(sys.argv)
-    
-    # Create main window
-    window = QMainWindow()
-    window.setWindowTitle("Tearoff Tab Demo")
-    window.setGeometry(100, 100, 1000, 600)
-    
-    # Create tab manager
-    manager = TearOffTabManager()
-    
-    # Add example views
-    view1 = QTextEdit()
-    view1.setPlainText("This is Tab 1\n\nYou can drag this tab to tear it off into a floating window.")
-    manager.add_view("Tab 1", view1)
-    
-    view2 = QTextEdit()
-    view2.setPlainText("This is Tab 2\n\nThe floating pane can be moved and resized.")
-    manager.add_view("Tab 2", view2)
-    
-    view3 = QTextEdit()
-    view3.setPlainText("This is Tab 3\n\nClick the X button to return the tab to the bar.")
-    manager.add_view("Tab 3", view3)
-    
-    # Set manager as central widget
-    window.setCentralWidget(manager)
-    window.show()
-    
-    sys.exit(app.exec())
-

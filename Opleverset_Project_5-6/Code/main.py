@@ -20,7 +20,7 @@
 # onnx
 # yolo11n
 
-from ultralytics import YOLO
+# from ultralytics import YOLO
 import numpy as np
 import math
 import time
@@ -553,9 +553,9 @@ class StereoCamera:
     
 class AIModel:
     def __init__(self, screen_resolution):
-        self.model = YOLO(model="./yolo11n.pt", task="detect")  # load a model
+        # self.model = YOLO(model="./yolo11n.pt", task="detect")  # load a model
         #self.model.to('cuda')  # force to use GPU
-        self.model.to('cpu')  # force to use GPU
+        # self.model.to('cpu')  # force to use GPU
         self.confidence_threshold = 0.8
         self.distance_threshold = 200  # in pixels
         self.screen_resolution = screen_resolution
