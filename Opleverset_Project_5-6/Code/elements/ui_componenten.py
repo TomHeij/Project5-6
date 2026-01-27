@@ -631,7 +631,7 @@ class CameraView(QWidget):
                    self.cameraR.cam and self.cameraR.cam.isOpened():
                     self.cameras_connected = True
                     self.status_label.hide()
-                    self.timer.start(50)  # Update every 50ms = (20 frames per second)
+                    self.timer.start(50)  # Update every 50ms = 20 frames per second
                     return
         
         self.cameras_connected = False
@@ -693,9 +693,9 @@ class CameraView(QWidget):
                 frameL, frameR = self.aimodel.predict([frameL, frameR])
             
             # Blend the two camera feeds
-            #blended = cv2.addWeighted(frameR, 0.5, frameL, 1 - 0.5, 0) #for testing and debugging only
+            blended = cv2.addWeighted(frameR, 0.5, frameL, 0.5, 0) #blend the two camera feeds
             
-            display_frame = frameL #show left camera feed only (for the eindmark)
+            display_frame = blended 
             
             # Convert to QPixmap and display
             pixmap = self.cv2_to_qt(display_frame)
