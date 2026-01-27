@@ -309,10 +309,11 @@ class AIModel:
         return detectedObjects
     
 
-    def get_distance(self, x_left, y_left, x_right, y_right, y_tolerance=20):
+    def get_distance(self, x_left, y_left, x_right, y_right, y_tolerance=50):
         # Epipolar constraint: matched points should have similar y-coordinates
         y_diff = abs(y_left - y_right)
         if y_diff > y_tolerance:
+            print(f"Rejecting: y_diff={y_diff}")
             return float('inf')
 
         disparity = x_left - x_right
@@ -327,7 +328,7 @@ class AIModel:
         if distance < 0.1 or distance > 100:
             return float('inf')
         
-        print(f"Disparity: {disparity:.1f}, Distance: {distance:.2f}m")
+        print(f"Disparity: {disparity:.1f}, Distance: {distance:.2f}m, y_diff: {y_diff}")
         return distance
 
     
