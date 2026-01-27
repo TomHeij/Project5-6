@@ -150,7 +150,6 @@ class AIModel:
         self.model = YOLO(model="./yolo11n.pt", task="detect")  # load a model
         self.model.to("cpu")
         self.confidence_threshold = 0.8
-        self.distance_threshold = 200  # in pixels
         self.screen_resolution = screen_resolution
 
         # ------------------------------------------------------------------
@@ -288,35 +287,69 @@ class AIModel:
 
     
     def bind_objects(self, objectsL, objectsR):
-        #! ergens een buffer plaatsen voor als er geen object in 1 van de cameras is
-        
+        """
+        Match objects from left and right cameras using epipolar constraint.
+        Objects should be at same Y coordinate (after rectification) with small X difference.
+        """
         detectedObjects = []
+        matched_right = set()
         
-        for (x1, y1) in objectsL:
-                closest_obj = None
-                closest_dist = float('inf')
-                for (x2, y2) in objectsR:
-                    dist = abs(x1 - x2)
-                    if dist < closest_dist and dist < self.distance_threshold:
-                        closest_dist = dist
-                        closest_obj = (x2, y2)
-                if closest_obj is not None:
-                    detectedObjects.append([(x1, y1), closest_obj])
+        # Epipolar constraint: Y coordinates should be very similar after rectification
+        y_threshold = 10  # pixels (small threshold)
+        # X difference (disparity) should be positive but not too large
+        x_min_disparity = 1    # pixels (minimum disparity to avoid division by zero)
+        x_max_disparity = 300  # pixels (maximum reasonable disparity)
+        
+        for (x_left, y_left) in objectsL:
+            best_match = None
+            best_score = float('inf')
+            
+            for idx, (x_right, y_right) in enumerate(objectsR):
+                if idx in matched_right:
+                    continue
+                
+                # Check epipolar constraint: Y coordinates must be similar
+                y_diff = abs(y_left - y_right)
+                if y_diff > y_threshold:
+                    continue
+                
+                # Disparity should be positive (x_left > x_right after rectification)
+                disparity = x_left - x_right
+                if disparity < x_min_disparity or disparity > x_max_disparity:
+                    continue
+                
+                # Score: prefer matches with small Y difference and large (realistic) disparity
+                score = y_diff + 0.1 * (x_max_disparity - disparity)
+                
+                if score < best_score:
+                    best_score = score
+                    best_match = (x_right, y_right, idx)
+            
+            if best_match is not None:
+                x_right, y_right, idx = best_match
+                detectedObjects.append([(x_left, y_left), (x_right, y_right)])
+                matched_right.add(idx)
                     
         return detectedObjects
     
 
     def get_distance(self, x_left, x_right):
-        fx = 1052.42              # uit camera 0 intrinsic
-        baseline = 0.1026         # meters, uit ||T||
-
+        """
+        Calculate distance using stereo disparity formula.
+        Distance = (focal_length * baseline) / disparity
+        """
         disparity = x_left - x_right
-        if abs(disparity) < 1.0:
+        
+        # Validate disparity
+        if disparity < 1.0:
+            print(f"Warning: disparity too small ({disparity}), returning inf")
             return float('inf')
         
-        print(f"disparity == {disparity}")
-
+        # Calculate distance
         distance = (self.fx * self.baseline) / disparity
+        
+        print(f"Distance calc: x_left={x_left}, x_right={x_right}, disparity={disparity:.2f}, fx={self.fx:.2f}, baseline={self.baseline:.4f}, distance={distance:.2f}m")
+        
         return abs(distance)
 
     # werkt blijkbaar
