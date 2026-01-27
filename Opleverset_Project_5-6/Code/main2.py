@@ -70,8 +70,8 @@ class DebugWindow(QtWidgets.QWidget):
         self.cam.setSizePolicy(QtWidgets.QSizePolicy.Policy.Fixed, QtWidgets.QSizePolicy.Policy.Fixed)
         self.cam.setScaledContents(True)
         
-        self.cameraL = StereoCamera(self.camIds[1], self.cameraResolution)
-        self.cameraR = StereoCamera(self.camIds[0], self.cameraResolution)
+        self.cameraL = StereoCamera(self.camIds[0], self.cameraResolution)
+        self.cameraR = StereoCamera(self.camIds[1], self.cameraResolution)
 
         self.timer = QtCore.QTimer(self)
         self.timer.timeout.connect(self.start_capture)
@@ -313,7 +313,6 @@ class AIModel:
         # Epipolar constraint: matched points should have similar y-coordinates
         y_diff = abs(y_left - y_right)
         if y_diff > y_tolerance:
-            print(f"Rejecting: y_diff={y_diff}")
             return float('inf')
 
         disparity = x_left - x_right
