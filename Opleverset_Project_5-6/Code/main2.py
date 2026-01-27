@@ -159,31 +159,31 @@ class AIModel:
     def init_rectification(self):
         # === Intrinsics ===
         self.K0 = np.array([
-            [1052.4219536166813, 0.0, 681.9634335914714],
-            [0.0, 1051.5187400367643, 380.8685371438116],
-            [0.0, 0.0, 1.0]
-        ])
-
-        self.D0 = np.array([
-            0.11359968087890648,
-            -0.0921029136881586,
-            -0.0015383690261600849,
-            0.0012506552528492572,
-            -0.30866362350370624
-        ])
-
-        self.K1 = np.array([
             [1067.5229248013413, 0.0, 653.7213851610588],
             [0.0, 1066.229878987921, 383.0417876976793],
             [0.0, 0.0, 1.0]
         ])
 
-        self.D1 = np.array([
+        self.D0 = np.array([
             0.1182883082976157,
             0.016775367625258854,
             -0.001177125559163524,
             -0.0016086357118690092,
             -0.8145662439392812
+        ])
+
+        self.K1 = np.array([
+            [1052.4219536166813, 0.0, 681.9634335914714],
+            [0.0, 1051.5187400367643, 380.8685371438116],
+            [0.0, 0.0, 1.0]
+        ])
+
+        self.D1 = np.array([
+            0.11359968087890648,
+            -0.0921029136881586,
+            -0.0015383690261600849,
+            0.0012506552528492572,
+            -0.30866362350370624
         ])
 
         # === Extrinsics ===
@@ -231,8 +231,8 @@ class AIModel:
             return captures[0], captures[1]
 
         # 1️⃣ Rectificeer frames
-        left_img  = cv2.remap(captures[0], self.map0x, self.map0y, cv2.INTER_LINEAR)
-        right_img = cv2.remap(captures[1], self.map1x, self.map1y, cv2.INTER_LINEAR)
+        left_img  = cv2.remap(captures[1], self.map0x, self.map0y, cv2.INTER_LINEAR)
+        right_img = cv2.remap(captures[0], self.map1x, self.map1y, cv2.INTER_LINEAR)
 
         draw_left  = left_img.copy()
         draw_right = right_img.copy()
