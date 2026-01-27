@@ -78,19 +78,9 @@ class DebugWindow(QtWidgets.QWidget):
         self.timer.start(10)  # Update every X ms
 
     def start_capture(self):
-        # -----------------------------------------------------------------------------------
-        # DEZE FUNCTIE IS OOK DOOR MIJ (TOM) AANGEPAST, HOEWEL IK NIET WEET OF DIT NODIG IS.
-        # -----------------------------------------------------------------------------------
         time_start = time.time()
-        frameL = self.cameraL.get_frame()
-        frameR = self.cameraR.get_frame()
-
-        captureL, captureR = self.model.predict([frameL, frameR])
-
-        if captureL is None or captureR is None:
-            return
-
-        blended = cv2.addWeighted(captureR, 0.5, captureL, 0.5, 0)
+        captureL, captureR = self.model.predict([self.cameraL.get_frame(), self.cameraR.get_frame()])
+        blended = cv2.addWeighted(captureR, 0.5, captureL, 1 - 0.5, 0)
         self.cam.setPixmap(self.cv2_to_qt(blended))
         time_end = time.time()
 
@@ -241,70 +231,42 @@ class AIModel:
     # veranderen zodat het de middelpunten van die boxes pakt van beide cameras
     # kijken of we de frames kunnen overlappen en daar een vast object uit kunnen halen
     def predict(self, captures):
-        # -----------------------------------------------------------------------------------
-        # DEZE FUNCTIE IS OOK DOOR MIJ (TOM) AANGEPAST, HOEWEL IK NIET WEET OF DIT NODIG IS.
-        # -----------------------------------------------------------------------------------
-        if captures[0] is None or captures[1] is None:
-            return captures[0], captures[1]
-
-        # 1️⃣ Rectificeer frames
-        left_img  = cv2.remap(captures[0], self.map0x, self.map0y, cv2.INTER_LINEAR)
-        right_img = cv2.remap(captures[1], self.map1x, self.map1y, cv2.INTER_LINEAR)
-
-        draw_left  = left_img.copy()
-        draw_right = right_img.copy()
-
-        # 2️⃣ YOLO inference
-        results_left  = self.model(left_img,  verbose=False, conf=self.confidence_threshold)
-        results_right = self.model(right_img, verbose=False, conf=self.confidence_threshold)
+        left  = cv2.remap(captures[0], self.map0x, self.map0y, cv2.INTER_LINEAR)
+        right = cv2.remap(captures[1], self.map1x, self.map1y, cv2.INTER_LINEAR)
+        captures = [left, right]
 
         objects = [[], []]
-
-    # 3️⃣ Verwerk links
-        for r in results_left:
-            for box in r.boxes:
-                x1, y1, x2, y2 = box.xyxy[0].cpu().numpy()
-                cx = int((x1 + x2) / 2)
-                cy = int((y1 + y2) / 2)
-
-                objects[0].append((cx, cy))
-
-                cv2.rectangle(draw_left, (int(x1), int(y1)), (int(x2), int(y2)), (255, 0, 0), 1)
-                cv2.circle(draw_left, (cx, cy), 4, (0, 255, 0), -1)
-
-        # 4️⃣ Verwerk rechts
-        for r in results_right:
-            for box in r.boxes:
-                x1, y1, x2, y2 = box.xyxy[0].cpu().numpy()
-                cx = int((x1 + x2) / 2)
-                cy = int((y1 + y2) / 2)
-
-                objects[1].append((cx, cy))
-
-                cv2.rectangle(draw_right, (int(x1), int(y1)), (int(x2), int(y2)), (255, 0, 0), 1)
-                cv2.circle(draw_right, (cx, cy), 4, (0, 0, 255), -1)
-
-        # 5️⃣ Match objecten
+        
+        for result in results:
+            for r in result:
+                capture = captures[0] if result == results[0] else captures[1]
+                boxes = r.boxes
+                for box in boxes:
+                    x1, y1, x2, y2 = box.xyxy[0].cpu().numpy()
+                    cx = int((x1 + x2) / 2)
+                    cy = int((y1 + y2) / 2)
+                    objects[0 if result == results[0] else 1].append((cx, cy))
+                    
+                    # tekent vierkant om object
+                    cv2.rectangle(capture, (int(x1), int(y1)), (int(x2), int(y2)), (255, 0, 0), 1)
+                    
+                    # tekent midden punt en afstand
+                    if capture is captures[0]:
+                        cv2.circle(capture, (cx, cy), 4, (0, 255, 0), -1)
+                    else:
+                        cv2.circle(capture, (cx, cy), 4, (0, 0, 255), -1)        
+                
+                capture = r.plot()
+                
         detectedObjects = self.bind_objects(objects[0], objects[1])
-
-        # 6️⃣ Afstand + visualisatie
+          
         for ((xL, yL), (xR, yR)) in detectedObjects:
             distance = self.get_distance(xL, xR)
-
-            cv2.line(draw_left,  (xL, yL), (xR, yR), (255, 255, 0), 1)
-            cv2.line(draw_right, (xL, yL), (xR, yR), (255, 255, 0), 1)
-
-            cv2.putText(
-                draw_right,
-                f"{distance:.2f} m",
-                (xR, yR - 10),
-                cv2.FONT_HERSHEY_SIMPLEX,
-                0.8,
-                (0, 255, 255),
-                2
-            )
-
-        return draw_left, draw_right
+            cv2.line(captures[0], (xL, yL), (xR, yR), (255, 255, 0), 1)
+            cv2.line(captures[1], (xL, yL), (xR, yR), (255, 255, 0), 1)
+            cv2.putText(captures[1], f"{distance:.2f}m", (xL, yL - 10), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 255), 2)
+          
+        return captures[0], captures[1]
 
     
     def bind_objects(self, objectsL, objectsR):
