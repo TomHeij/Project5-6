@@ -274,7 +274,7 @@ class AIModel:
 
         # 6️⃣ Afstand + visualisatie
         for ((xL, yL), (xR, yR)) in detectedObjects:
-            distance = self.get_distance(xL, yL, xR, yR)
+            distance = self.get_distance(xL, xR)
 
             cv2.line(draw_left,  (xL, yL), (xR, yR), (255, 255, 0), 1)
             cv2.line(draw_right, (xL, yL), (xR, yR), (255, 255, 0), 1)
