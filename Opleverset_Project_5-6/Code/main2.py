@@ -307,23 +307,28 @@ class AIModel:
         return detectedObjects
     
 
-    def get_distance(self, x_left, y_left, x_right, y_right, y_tolerance=5):
+    def get_distance(self, x_left, y_left, x_right, y_right, y_tolerance=10):
         # Epipolar constraint: matched points should have similar y-coordinates
-        if abs(y_left - y_right) > y_tolerance:
+        y_diff = abs(y_left - y_right)
+        if y_diff > y_tolerance:
+            print(f"DEBUG: Y diff too large: {y_diff} > {y_tolerance}")
             return float('inf')
 
         disparity = x_left - x_right
         
         # Disparity must be positive (right point left of left point)
         if disparity <= 0.5:
+            print(f"DEBUG: Disparity too small: {disparity}")
             return float('inf')
 
         distance = (self.fx * self.baseline) / disparity
         
         # Validate distance is in reasonable range (10cm to 100m)
         if distance < 0.1 or distance > 100:
+            print(f"DEBUG: Distance out of range: {distance:.2f}m")
             return float('inf')
         
+        print(f"DEBUG: Valid distance {distance:.2f}m (disparity={disparity:.1f}, y_diff={y_diff})")
         return distance
 
     
