@@ -154,6 +154,8 @@ class AIModel:
         self.confidence_threshold = 0.8
         self.distance_threshold = 200  # in pixels
         self.screen_resolution = screen_resolution
+        self.distance_buffer_size = 5  # average last 5 frames
+        self.distance_history = {}  # track per object
         self.init_rectification()
 
     def init_rectification(self):
@@ -274,7 +276,22 @@ class AIModel:
 
         # 6️⃣ Afstand + visualisatie
         for ((xL, yL), (xR, yR)) in detectedObjects:
-            distance = self.get_distance(xL, xR)
+            raw_distance = self.get_distance(xL, xR)
+            
+            # Create object ID based on position
+            obj_id = (xL, xR)
+            
+            if obj_id not in self.distance_history:
+                self.distance_history[obj_id] = []
+            
+            # Keep last N measurements
+            self.distance_history[obj_id].append(raw_distance)
+            if len(self.distance_history[obj_id]) > self.distance_buffer_size:
+                self.distance_history[obj_id].pop(0)
+            
+            # Average valid measurements (filter out inf)
+            valid_distances = [d for d in self.distance_history[obj_id] if d != float('inf')]
+            distance = np.mean(valid_distances) if valid_distances else float('inf')
 
             cv2.line(draw_left,  (xL, yL), (xR, yR), (255, 255, 0), 1)
             cv2.line(draw_right, (xL, yL), (xR, yR), (255, 255, 0), 1)
