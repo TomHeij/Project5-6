@@ -159,26 +159,12 @@ class AIModel:
     def init_rectification(self):
         # === Intrinsics ===
         self.K0 = np.array([
-            [1067.5229248013413, 0.0, 653.7213851610588],
-            [0.0, 1066.229878987921, 383.0417876976793],
-            [0.0, 0.0, 1.0]
-        ])
-
-        self.D0 = np.array([
-            0.1182883082976157,
-            0.016775367625258854,
-            -0.001177125559163524,
-            -0.0016086357118690092,
-            -0.8145662439392812
-        ])
-
-        self.K1 = np.array([
             [1052.4219536166813, 0.0, 681.9634335914714],
             [0.0, 1051.5187400367643, 380.8685371438116],
             [0.0, 0.0, 1.0]
         ])
 
-        self.D1 = np.array([
+        self.D0 = np.array([
             0.11359968087890648,
             -0.0921029136881586,
             -0.0015383690261600849,
@@ -186,17 +172,31 @@ class AIModel:
             -0.30866362350370624
         ])
 
+        self.K1 = np.array([
+            [1067.5229248013413, 0.0, 653.7213851610588],
+            [0.0, 1066.229878987921, 383.0417876976793],
+            [0.0, 0.0, 1.0]
+        ])
+
+        self.D1 = np.array([
+            0.1182883082976157,
+            0.016775367625258854,
+            -0.001177125559163524,
+            -0.0016086357118690092,
+            -0.8145662439392812
+        ])
+
         # === Extrinsics ===
         R = np.array([
-            [-0.9998445912290095, -0.0031186362949716284, -0.01735129671680792],
-            [0.003441895279016866, -0.9998204907099931, -0.018631685734704088],
-            [-0.017290076546484838, -0.018688511553576974, 0.9996758438558614]
+            [ 0.9998445912290095,  0.0031186362949716284,  0.01735129671680792],
+            [-0.003441895279016866, 0.9998204907099931,  0.018631685734704088],
+            [-0.017290076546484838,-0.018688511553576974, 0.9996758438558614]
         ])
 
         T = np.array([
-            [-9.989935331835486],
-            [0.020611071609860532],
-            [-2.3616168280136174]
+            [9.989935331835486],
+            [-0.020611071609860532],
+            [2.3616168280136174]
         ]) / 100.0  # cm → meters
 
         self.baseline = np.linalg.norm(T)
@@ -309,28 +309,14 @@ class AIModel:
         return detectedObjects
     
 
-    def get_distance(self, x_left, y_left, x_right, y_right, y_tolerance=50):
-        # Epipolar constraint: matched points should have similar y-coordinates
-        y_diff = abs(y_left - y_right)
-        if y_diff > y_tolerance:
-            return float('inf')
-
+    def get_distance(self, x_left, x_right):
         disparity = x_left - x_right
-        
-        # Disparity must be positive (right point left of left point)
-        if disparity <= 0.5:
+        if abs(disparity) < 1.0:
             return float('inf')
 
         distance = (self.fx * self.baseline) / disparity
-        
-        # Validate distance is in reasonable range (10cm to 100m)
-        if distance < 0.1 or distance > 100:
-            return float('inf')
-        
-        print(f"Disparity: {disparity:.1f}, Distance: {distance:.2f}m, y_diff: {y_diff}")
-        return distance
+        return abs(distance)
 
-    
     
 if __name__ == "__main__":
     app = QtWidgets.QApplication(sys.argv)
