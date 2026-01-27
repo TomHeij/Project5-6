@@ -332,6 +332,7 @@ class AIModel:
             return float('inf')
 
         distance = (self.fx * self.baseline) / disparity
+        print(f"Disparity: {disparity}, Distance: {distance} m")
         return abs(distance)
 
     
