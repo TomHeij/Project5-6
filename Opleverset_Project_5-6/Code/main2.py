@@ -49,8 +49,8 @@ class DebugWindow(QtWidgets.QWidget):
             raise RuntimeError(f"Failed to load UI from: {ui_path}")
         
         self.cameraResolution = (1280, 720)
-        self.camIds = (0, 2) # raspberry pi
-        # self.camIds = (4, 2) # laptop
+        # self.camIds = (0, 2) # raspberry pi
+        self.camIds = (4, 2) # laptop
         
         self.model = AIModel(self.cameraResolution)
 
@@ -79,8 +79,15 @@ class DebugWindow(QtWidgets.QWidget):
 
     def start_capture(self):
         time_start = time.time()
-        captureL, captureR = self.model.predict([self.cameraL.get_frame(), self.cameraR.get_frame()])
-        blended = cv2.addWeighted(captureR, 0.5, captureL, 1 - 0.5, 0)
+        frameL = self.cameraL.get_frame()
+        frameR = self.cameraR.get_frame()
+
+        captureL, captureR = self.model.predict([frameL, frameR])
+
+        if captureL is None or captureR is None:
+            return
+
+        blended = cv2.addWeighted(captureR, 0.5, captureL, 0.5, 0)
         self.cam.setPixmap(self.cv2_to_qt(blended))
         time_end = time.time()
 
@@ -128,7 +135,7 @@ class StereoCamera:
         self.cam.set(cv2.CAP_PROP_FRAME_HEIGHT, resolution[1])
         self.cam.set(cv2.CAP_PROP_FOURCC, cv2.VideoWriter_fourcc(*'MJPG'))
         # self.cam.set(cv2.CAP_PROP_FPS, 10.0)
-        self.cam.set(cv2.CAP_PROP_AUTOFOCUS, 0)
+        self.cam.set(cv2.CAP_PROP_AUTOFOCUS, 1)
         print(f"Stereo Camera {index} initialized.")
         
     def get_frame(self):
@@ -136,24 +143,17 @@ class StereoCamera:
         if not ret:
             print("Failed to grab frame")
             return None
-        # cv2.initUndistortRectifyMap(frame, None, None, None, (frame.shape[1], frame.shape[0]), cv2.CV_32FC1)
-        # cv2.remap(frame, None, None, cv2.INTER_LINEAR)
-        # frame = cv2.resize(frame, (1920, 1080), interpolation=cv2.INTER_LINEAR)
         return frame
     
    
     
 class AIModel:
     def __init__(self, screen_resolution):
-        # os.environ["OMP_NUM_THREADS"] = "4"  # Set number of threads for OpenMP
-        # os.environ["NCNN_NUM_THREADS"] = "4"  # Set number of threads for ncnn
         self.model = YOLO(model="./yolo11n.pt", task="detect")  # load a model
         self.model.to("cpu")
         self.confidence_threshold = 0.8
+        self.distance_threshold = 200  # in pixels
         self.screen_resolution = screen_resolution
-
-        # ------------------------------------------------------------------
-        # HET MAIN RECTIFICATION GEBEUREN, WAAR DE KALIBRATIE IS TOEGEPAST.
         self.init_rectification()
 
     def init_rectification(self):
@@ -225,23 +225,25 @@ class AIModel:
         )
 
         print("Stereo rectification initialized.")
-        # ------------------------------------------------------------------------
 
-    # veranderen zodat het de middelpunten van die boxes pakt van beide cameras
-    # kijken of we de frames kunnen overlappen en daar een vast object uit kunnen halen
     def predict(self, captures):
+        if captures[0] is None or captures[1] is None:
+            return captures[0], captures[1]
 
+        # 1️⃣ Rectificeer frames
         left_img  = cv2.remap(captures[0], self.map0x, self.map0y, cv2.INTER_LINEAR)
         right_img = cv2.remap(captures[1], self.map1x, self.map1y, cv2.INTER_LINEAR)
 
         draw_left  = left_img.copy()
         draw_right = right_img.copy()
 
+        # 2️⃣ YOLO inference
         results_left  = self.model(left_img,  verbose=False, conf=self.confidence_threshold, device="cpu")
         results_right = self.model(right_img, verbose=False, conf=self.confidence_threshold, device="cpu")
 
         objects = [[], []]
 
+        # 3️⃣ Verwerk links
         for r in results_left:
             for box in r.boxes:
                 x1, y1, x2, y2 = box.xyxy[0].cpu().numpy()
@@ -253,6 +255,7 @@ class AIModel:
                 cv2.rectangle(draw_left, (int(x1), int(y1)), (int(x2), int(y2)), (255, 0, 0), 1)
                 cv2.circle(draw_left, (cx, cy), 4, (0, 255, 0), -1)
 
+        # 4️⃣ Verwerk rechts
         for r in results_right:
             for box in r.boxes:
                 x1, y1, x2, y2 = box.xyxy[0].cpu().numpy()
@@ -264,8 +267,10 @@ class AIModel:
                 cv2.rectangle(draw_right, (int(x1), int(y1)), (int(x2), int(y2)), (255, 0, 0), 1)
                 cv2.circle(draw_right, (cx, cy), 4, (0, 0, 255), -1)
 
+        # 5️⃣ Match objecten
         detectedObjects = self.bind_objects(objects[0], objects[1])
 
+        # 6️⃣ Afstand + visualisatie
         for ((xL, yL), (xR, yR)) in detectedObjects:
             distance = self.get_distance(xL, xR)
 
@@ -284,93 +289,35 @@ class AIModel:
 
         return draw_left, draw_right
 
-
     
     def bind_objects(self, objectsL, objectsR):
-        """
-        Match objects from left and right cameras using epipolar constraint.
-        Objects should be at same Y coordinate (after rectification) with small X difference.
-        """
         detectedObjects = []
-        matched_right = set()
         
-        # Epipolar constraint: Y coordinates should be very similar after rectification
-        y_threshold = 10  # pixels (small threshold)
-        # X difference (disparity) should be positive but not too large
-        x_min_disparity = 1    # pixels (minimum disparity to avoid division by zero)
-        x_max_disparity = 300  # pixels (maximum reasonable disparity)
-        
-        for (x_left, y_left) in objectsL:
-            best_match = None
-            best_score = float('inf')
-            
-            for idx, (x_right, y_right) in enumerate(objectsR):
-                if idx in matched_right:
-                    continue
-                
-                # Check epipolar constraint: Y coordinates must be similar
-                y_diff = abs(y_left - y_right)
-                if y_diff > y_threshold:
-                    continue
-                
-                # Disparity should be positive (x_left > x_right after rectification)
-                disparity = x_left - x_right
-                if disparity < x_min_disparity or disparity > x_max_disparity:
-                    continue
-                
-                # Score: prefer matches with small Y difference and large (realistic) disparity
-                score = y_diff + 0.1 * (x_max_disparity - disparity)
-                
-                if score < best_score:
-                    best_score = score
-                    best_match = (x_right, y_right, idx)
-            
-            if best_match is not None:
-                x_right, y_right, idx = best_match
-                detectedObjects.append([(x_left, y_left), (x_right, y_right)])
-                matched_right.add(idx)
+        for (x1, y1) in objectsL:
+            closest_obj = None
+            closest_dist = float('inf')
+            for (x2, y2) in objectsR:
+                dist = abs(x1 - x2)
+                if dist < closest_dist and dist < self.distance_threshold:
+                    closest_dist = dist
+                    closest_obj = (x2, y2)
+            if closest_obj is not None:
+                detectedObjects.append([(x1, y1), closest_obj])
                     
         return detectedObjects
     
 
     def get_distance(self, x_left, x_right):
-        """
-        Calculate distance using stereo disparity formula.
-        Distance = (focal_length * baseline) / disparity
-        """
+        fx = 1052.42              # uit camera 0 intrinsic
+        baseline = 0.1026         # meters, uit ||T||
+
         disparity = x_left - x_right
-        
-        # Validate disparity
-        if disparity < 1.0:
-            print(f"Warning: disparity too small ({disparity}), returning inf")
+        if abs(disparity) < 1.0:
             return float('inf')
-        
-        # Calculate distance
+
         distance = (self.fx * self.baseline) / disparity
-        
-        print(f"Distance calc: x_left={x_left}, x_right={x_right}, disparity={disparity:.2f}, fx={self.fx:.2f}, baseline={self.baseline:.4f}, distance={distance:.2f}m")
-        
         return abs(distance)
 
-    # werkt blijkbaar
-    # def get_distance(self, x1, x2):
-    #     baseline = 0.099    # distance between the two cameras in meters
-    #     # fx = 1063.9      # focal length in pixels
-    #     width_px = self.screen_resolution[0]    # camera resolution width in pixels
-    #     fov_deg = 60        # camera field of view in degrees
-
-    #     theta_rad = math.radians(fov_deg)
-    #     # f = (width_px / 2) / math.tan(theta_rad / 2)
-    #     f = width_px / (2 * math.tan(theta_rad / 2))
-
-    #     disparity = x1 - x2
-    #     if abs(disparity) < 0.001:
-    #         return float('inf')
-        
-    #     distance = (f * baseline) / disparity
-    #     return abs(distance) 
-
-    
     
     
 if __name__ == "__main__":
