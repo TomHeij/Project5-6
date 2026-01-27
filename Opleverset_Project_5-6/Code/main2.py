@@ -49,8 +49,8 @@ class DebugWindow(QtWidgets.QWidget):
             raise RuntimeError(f"Failed to load UI from: {ui_path}")
         
         self.cameraResolution = (1280, 720)
-        self.camIds = (0, 2) # raspberry pi
-        # self.camIds = (4, 2) # laptop
+        # self.camIds = (0, 2) # raspberry pi
+        self.camIds = (4, 2) # laptop
         
         self.model = AIModel(self.cameraResolution)
 
@@ -135,7 +135,7 @@ class StereoCamera:
         self.cam.set(cv2.CAP_PROP_FRAME_HEIGHT, resolution[1])
         self.cam.set(cv2.CAP_PROP_FOURCC, cv2.VideoWriter_fourcc(*'MJPG'))
         # self.cam.set(cv2.CAP_PROP_FPS, 10.0)
-        self.cam.set(cv2.CAP_PROP_AUTOFOCUS, 1)
+        self.cam.set(cv2.CAP_PROP_AUTOFOCUS, 0)
         print(f"Stereo Camera {index} initialized.")
         
     def get_frame(self):
@@ -150,7 +150,7 @@ class StereoCamera:
 class AIModel:
     def __init__(self, screen_resolution):
         self.model = YOLO(model="./yolo11n.pt", task="detect")  # load a model
-        self.model.to("cpu")
+        self.model.to("cuda")
         self.confidence_threshold = 0.8
         self.distance_threshold = 200  # in pixels
         self.screen_resolution = screen_resolution
@@ -238,8 +238,8 @@ class AIModel:
         draw_right = right_img.copy()
 
         # 2️⃣ YOLO inference
-        results_left  = self.model(left_img,  verbose=False, conf=self.confidence_threshold, device="cpu")
-        results_right = self.model(right_img, verbose=False, conf=self.confidence_threshold, device="cpu")
+        results_left  = self.model(left_img,  verbose=False, conf=self.confidence_threshold)
+        results_right = self.model(right_img, verbose=False, conf=self.confidence_threshold)
 
         objects = [[], []]
 
@@ -272,7 +272,7 @@ class AIModel:
 
         # 6️⃣ Afstand + visualisatie
         for ((xL, yL), (xR, yR)) in detectedObjects:
-            distance = self.get_distance(xL, xR)
+            distance = self.get_distance(xL, yL, xR, yR)
 
             cv2.line(draw_left,  (xL, yL), (xR, yR), (255, 255, 0), 1)
             cv2.line(draw_right, (xL, yL), (xR, yR), (255, 255, 0), 1)
@@ -307,16 +307,24 @@ class AIModel:
         return detectedObjects
     
 
-    def get_distance(self, x_left, x_right):
-        fx = 1052.42              # uit camera 0 intrinsic
-        baseline = 0.1026         # meters, uit ||T||
+    def get_distance(self, x_left, y_left, x_right, y_right, y_tolerance=5):
+        # Epipolar constraint: matched points should have similar y-coordinates
+        if abs(y_left - y_right) > y_tolerance:
+            return float('inf')
 
         disparity = x_left - x_right
-        if abs(disparity) < 1.0:
+        
+        # Disparity must be positive (right point left of left point)
+        if disparity <= 0.5:
             return float('inf')
 
         distance = (self.fx * self.baseline) / disparity
-        return abs(distance)
+        
+        # Validate distance is in reasonable range (10cm to 100m)
+        if distance < 0.1 or distance > 100:
+            return float('inf')
+        
+        return distance
 
     
     
