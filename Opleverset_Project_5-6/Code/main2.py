@@ -267,6 +267,8 @@ class AIModel:
                 cv2.rectangle(draw_right, (int(x1), int(y1)), (int(x2), int(y2)), (255, 0, 0), 1)
                 cv2.circle(draw_right, (cx, cy), 4, (0, 0, 255), -1)
 
+        print(f"Left objects: {objects[0]}, Right objects: {objects[1]}")
+
         # 5️⃣ Match objecten
         detectedObjects = self.bind_objects(objects[0], objects[1])
 
@@ -307,7 +309,7 @@ class AIModel:
         return detectedObjects
     
 
-    def get_distance(self, x_left, y_left, x_right, y_right, y_tolerance=10):
+    def get_distance(self, x_left, y_left, x_right, y_right, y_tolerance=20):
         # Epipolar constraint: matched points should have similar y-coordinates
         y_diff = abs(y_left - y_right)
         if y_diff > y_tolerance:
