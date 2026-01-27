@@ -154,7 +154,7 @@ class AIModel:
         self.confidence_threshold = 0.8
         self.distance_threshold = 200  # in pixels
         self.screen_resolution = screen_resolution
-        self.distance_buffer_size = 5  # average last 5 frames
+        self.distance_buffer_size = 10  # average last 5 frames
         self.distance_history = {}  # track per object
         self.init_rectification()
 
@@ -232,20 +232,17 @@ class AIModel:
         if captures[0] is None or captures[1] is None:
             return captures[0], captures[1]
 
-        # 1️⃣ Rectificeer frames
         left_img  = cv2.remap(captures[1], self.map0x, self.map0y, cv2.INTER_LINEAR)
         right_img = cv2.remap(captures[0], self.map1x, self.map1y, cv2.INTER_LINEAR)
 
         draw_left  = left_img.copy()
         draw_right = right_img.copy()
 
-        # 2️⃣ YOLO inference
         results_left  = self.model(left_img,  verbose=False, conf=self.confidence_threshold)
         results_right = self.model(right_img, verbose=False, conf=self.confidence_threshold)
 
         objects = [[], []]
 
-        # 3️⃣ Verwerk links
         for r in results_left:
             for box in r.boxes:
                 x1, y1, x2, y2 = box.xyxy[0].cpu().numpy()
@@ -257,7 +254,6 @@ class AIModel:
                 cv2.rectangle(draw_left, (int(x1), int(y1)), (int(x2), int(y2)), (255, 0, 0), 1)
                 cv2.circle(draw_left, (cx, cy), 4, (0, 255, 0), -1)
 
-        # 4️⃣ Verwerk rechts
         for r in results_right:
             for box in r.boxes:
                 x1, y1, x2, y2 = box.xyxy[0].cpu().numpy()
@@ -271,10 +267,8 @@ class AIModel:
 
         print(f"Left objects: {objects[0]}, Right objects: {objects[1]}")
 
-        # 5️⃣ Match objecten
         detectedObjects = self.bind_objects(objects[0], objects[1])
 
-        # 6️⃣ Afstand + visualisatie
         for ((xL, yL), (xR, yR)) in detectedObjects:
             raw_distance = self.get_distance(xL, xR)
             
