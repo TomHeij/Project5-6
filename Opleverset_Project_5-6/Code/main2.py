@@ -78,6 +78,9 @@ class DebugWindow(QtWidgets.QWidget):
         self.timer.start(10)  # Update every X ms
 
     def start_capture(self):
+        # -----------------------------------------------------------------------------------
+        # DEZE FUNCTIE IS OOK DOOR MIJ (TOM) AANGEPAST, HOEWEL IK NIET WEET OF DIT NODIG IS.
+        # -----------------------------------------------------------------------------------
         time_start = time.time()
         frameL = self.cameraL.get_frame()
         frameR = self.cameraR.get_frame()
@@ -159,6 +162,9 @@ class AIModel:
         self.confidence_threshold = 0.8
         self.distance_threshold = 200  # in pixels
         self.screen_resolution = screen_resolution
+
+        # ------------------------------------------------------------------
+        # HET MAIN RECTIFICATION GEBEUREN, WAAR DE KALIBRATIE IS TOEGEPAST.
         self.init_rectification()
 
     def init_rectification(self):
@@ -230,10 +236,14 @@ class AIModel:
         )
 
         print("Stereo rectification initialized.")
+        # ------------------------------------------------------------------------
 
     # veranderen zodat het de middelpunten van die boxes pakt van beide cameras
     # kijken of we de frames kunnen overlappen en daar een vast object uit kunnen halen
     def predict(self, captures):
+        # -----------------------------------------------------------------------------------
+        # DEZE FUNCTIE IS OOK DOOR MIJ (TOM) AANGEPAST, HOEWEL IK NIET WEET OF DIT NODIG IS.
+        # -----------------------------------------------------------------------------------
         if captures[0] is None or captures[1] is None:
             return captures[0], captures[1]
 

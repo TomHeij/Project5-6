@@ -215,9 +215,10 @@ class AIModel:
         baseline = 0.1026         # meters, uit ||T||
 
         disparity = x_left - x_right
-        if abs(disparity) < 0.5:
+        if abs(disparity) < 1.0:
             return float('inf')
         
+        # EEN DISPARITY CHECK
         print(f"disparity == {disparity}, x_left == {x_left}, x_right == {x_right}")
 
         distance = (fx * baseline) / disparity
