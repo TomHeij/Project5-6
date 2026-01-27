@@ -52,7 +52,7 @@ class DebugWindow(QtWidgets.QWidget):
         if self.ui is None:
             raise RuntimeError(f"Failed to load UI from: {ui_path}")
         
-        self.cameraResolution = (1920, 1080)
+        self.cameraResolution = (1280, 720)
         self.camIds = (0, 2) # raspberry pi
         # self.camIds = (4, 2) # laptop
         
@@ -528,7 +528,7 @@ class MainApp(QtWidgets.QMainWindow):
 # stereo camera class
 class StereoCamera:
     def __init__(self, index, resolution):
-        self.cam = cv2.VideoCapture(index)
+        self.cam = cv2.VideoCapture(index, cv2.CAP_V4L2)
         if not self.cam.isOpened():
             print(f"Camera {index} failed to open")
             return None
@@ -680,7 +680,7 @@ class AIModel:
                 closest_dist = float('inf')
                 for (x2, y2) in objectsR:
                     dist = math.sqrt((x1 - x2) ** 2 + (y1 - y2) ** 2)
-                    if dist < closest_dist and dist < self.distance_threshold:  # threshold of 150 pixels
+                    if dist < closest_dist and dist < self.distance_threshold:
                         closest_dist = dist
                         closest_obj = (x2, y2)
                 if closest_obj is not None:
@@ -688,23 +688,38 @@ class AIModel:
                     
         return detectedObjects
     
-    # werkt blijkbaar
-    def get_distance(self, x1, x2):
-        baseline = 0.099    # distance between the two cameras in meters
-        # fx = 1063.9      # focal length in pixels
-        width_px = self.screen_resolution[0]    # camera resolution width in pixels
-        fov_deg = 60        # camera field of view in degrees
 
-        theta_rad = math.radians(fov_deg)
-        # f = (width_px / 2) / math.tan(theta_rad / 2)
-        f = width_px / (2 * math.tan(theta_rad / 2))
+    def get_distance(self, x_left, x_right):
+        fx = 1052.42              # uit camera 0 intrinsic
+        baseline = 0.1026         # meters, uit ||T||
 
-        disparity = x1 - x2
-        if abs(disparity) < 0.5:
+        disparity = x_left - x_right
+        if abs(disparity) < 1.0:
             return float('inf')
         
-        distance = (f * baseline) / disparity
-        return abs(distance) 
+        # EEN DISPARITY CHECK
+        print(f"disparity == {disparity}, x_left == {x_left}, x_right == {x_right}")
+
+        distance = (fx * baseline) / disparity
+        return abs(distance)
+
+    # werkt blijkbaar
+    # def get_distance(self, x1, x2):
+    #     baseline = 0.099    # distance between the two cameras in meters
+    #     # fx = 1063.9      # focal length in pixels
+    #     width_px = self.screen_resolution[0]    # camera resolution width in pixels
+    #     fov_deg = 60        # camera field of view in degrees
+
+    #     theta_rad = math.radians(fov_deg)
+    #     # f = (width_px / 2) / math.tan(theta_rad / 2)
+    #     f = width_px / (2 * math.tan(theta_rad / 2))
+
+    #     disparity = x1 - x2
+    #     if abs(disparity) < 0.001:
+    #         return float('inf')
+        
+    #     distance = (f * baseline) / disparity
+    #     return abs(distance) 
 
     
     
