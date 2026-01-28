@@ -76,7 +76,11 @@ class MainContentArea(QWidget):
         self._showMainView(index)
     
     def _showMainView(self, index):
-         # Clear current view
+        # Don't show a view that's floating
+        if self.floating_pane and self.floating_pane.tab_index == index:
+            return
+        
+        # Clear current view
         while self.view_layout.count():
             item = self.view_layout.takeAt(0)
             if item.widget():
@@ -84,7 +88,8 @@ class MainContentArea(QWidget):
         
         # Add new view
         view = self.views[index]
-        view.setParent(self.view_container)
+        if view.parent() != self.view_container:
+            view.setParent(self.view_container)
         self.view_layout.addWidget(view)
     
     def tearOffTab(self, index):

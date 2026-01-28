@@ -809,19 +809,12 @@ class MapView(QWidget):
     
 
     def update_object_positions(self, tracks):
-        
         self.plot_widget.clear()
-        
-        # Remove old text items
-        for text_item in self.text_items.values():
-            self.plot_widget.removeItem(text_item)
         self.text_items.clear()
-        
 
         if not tracks:
             return
     
-        # Process extracted tracks
         for track in tracks:
             if not isinstance(track, dict):
                 continue
@@ -829,48 +822,30 @@ class MapView(QWidget):
             obj_id = track.get('id', 0)
             label = track.get('label', 'unknown')
             history = track.get('history', [])
-            current_pos = track.get('current_pos', (0, 0))
+            lateral, forward = track.get('current_pos', (0, 0))
             
-            lateral, forward = current_pos
-            
-    
-            # Get color for this object class
             color = self._get_class_color(label)
             
-            # Plot trail (history) if trails are enabled
+            # Plot trail as a single line if trails are enabled
             if self.trails_enabled and len(history) > 1:
-                trail_x = [pos[0] for pos in history]
-                trail_y = [pos[1] for pos in history]
-                # Create gradient effect - older points are more transparent
-                for i in range(len(trail_x) - 1):
-                    alpha = int(100 + (155 * i / len(trail_x)))
-                    pen = pg.mkPen(color=color, width=2, style=Qt.SolidLine)
-                    self.plot_widget.plot(
-                        [trail_x[i], trail_x[i+1]], 
-                        [trail_y[i], trail_y[i+1]], 
-                        pen=pen
-                    )
+                trail_x, trail_y = zip(*[(pos[0], pos[1]) for pos in history])
+                self.plot_widget.plot(
+                    trail_x, trail_y,
+                    pen=pg.mkPen(color=color, width=2, style=Qt.SolidLine)
+                )
             
             # Plot current position as circle
             self.plot_widget.plot(
-                [lateral], 
-                [forward], 
-                symbol='o', 
-                symbolSize=15, 
+                [lateral], [forward], 
+                symbol='o', symbolSize=15, 
                 symbolBrush=pg.mkBrush(color=color),
                 pen=pg.mkPen(color=(0, 0, 0), width=1)
             )
             
-            # Add text label with object info
-            # Use the most recent distance from history if available for display
+            # Add text label
             display_depth = history[-1][3] if history else forward
-            
             label_text = f"{label}\nID:{obj_id}\n{display_depth:.2f}m"
-            text_item = pg.TextItem(
-                text=label_text,
-                color=(0, 0, 0),
-                anchor=(0.5, 1.5)  # Position below the point
-            )
+            text_item = pg.TextItem(text=label_text, color=(0, 0, 0), anchor=(0.5, 1.5))
             text_item.setPos(lateral, forward)
             self.plot_widget.addItem(text_item)
             self.text_items[obj_id] = text_item
@@ -946,7 +921,11 @@ class MainContentArea(QWidget):
         self._showMainView(index)
     
     def _showMainView(self, index):
-         # Clear current view
+        # Don't show a view that's floating
+        if self.floating_pane and self.floating_pane.tab_index == index:
+            return
+        
+        # Clear current view
         while self.view_layout.count():
             item = self.view_layout.takeAt(0)
             if item.widget():
@@ -954,7 +933,8 @@ class MainContentArea(QWidget):
         
         # Add new view
         view = self.views[index]
-        view.setParent(self.view_container)
+        if view.parent() != self.view_container:
+            view.setParent(self.view_container)
         self.view_layout.addWidget(view)
     
     def tearOffTab(self, index):

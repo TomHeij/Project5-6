@@ -4,11 +4,14 @@ cameraResolution:
   width: 1280
   height: 720
 cameraFPS: 30
-cameraAutoFocus: true
+cameraAutoFocus: 0
 
 # Intrinsic parameters of the camera
-fx: 1052.42
+fxL: 1052.4219536166813
+fxR: 1067.5229248013413
 baseline: 0.1026
+disparity: 0.0
+
 K0: [
   [1052.4219536166813, 0.0, 681.9634335914714],
   [0.0, 1051.5187400367643, 380.8685371438116],
@@ -35,11 +38,11 @@ UiResolution:
   width: 1200
   height: 800
 UiRefreshRate: 100
-alarmVolume: 0.5
-alarmSoundPath: ./alarm_sound.wav
+
+MapScale: 20  # meters per grid square
 
 # AI settings
 modelPath: ./yolov8n.onnx
 AIProcessingType: gpu
 confidenceThreshold: 0.5
-matchingThreshold: 50
+matchingThreshold: 300

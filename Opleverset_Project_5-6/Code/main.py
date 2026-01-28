@@ -20,9 +20,11 @@
 # onnx
 # yolo11n
 
-# from ultralytics import YOLO
+from cv2_enumerate_cameras import enumerate_cameras
+from ultralytics import YOLO
 import numpy as np
 import math
+import yaml
 import time
 import cv2
 import sys
@@ -30,513 +32,133 @@ import os
 
 from PySide6 import QtCore, QtWidgets, QtGui
 from PySide6.QtUiTools import QUiLoader
-from PySide6.QtCore import QFile, QTimer
-from elements.ui_componenten import CameraView, MapView, MainContentArea, RightOffCanvas
-
-from PySide6.QtGui import QAction, QKeySequence
+from PySide6.QtCore import QFile, QTimer, QUrl
+from PySide6.QtGui import QAction, QKeySequence, QPixmap
 from PySide6.QtMultimedia import QSoundEffect
-from PySide6.QtCore import QUrl
+from PySide6.QtWidgets import QWidget, QVBoxLayout, QSizePolicy, QLabel
 
-# debug window class
-class DebugWindow(QtWidgets.QWidget):
-    def __init__(self):
-        super(DebugWindow, self).__init__()
-
-        ui_path = os.path.join("elements", "DebugWindow.ui")
-        loader = QUiLoader()
-        ui_file = QFile(ui_path)
-        if not ui_file.open(QFile.ReadOnly):
-            raise RuntimeError(f"Failed to open UI file: {ui_path}")
-        self.ui = loader.load(ui_file, None)
-        ui_file.close()
-        if self.ui is None:
-            raise RuntimeError(f"Failed to load UI from: {ui_path}")
-        
-        self.cameraResolution = (1280, 720)
-        self.camIds = (0, 2) # raspberry pi
-        # self.camIds = (4, 2) # laptop
-        
-        self.model = AIModel(self.cameraResolution)
-
-        self.ui.setParent(self)
-        self.ui.setMinimumWidth(self.cameraResolution[0])
-        layout = QtWidgets.QVBoxLayout(self)
-        layout.setContentsMargins(0, 0, 0, 0)
-        layout.addWidget(self.ui)
-
-        self.setWindowTitle("Debug Window")
-
-        self.cam = self.ui.findChild(QtWidgets.QLabel, "cam")
-        self.fpsLabel = self.ui.findChild(QtWidgets.QLabel, "fpsLabel")
-        self.frameTimeLabel = self.ui.findChild(QtWidgets.QLabel, "frameTimeLabel")
-            
-        self.cam.setMinimumSize(self.cameraResolution[0], self.cameraResolution[1])
-        self.cam.setSizePolicy(QtWidgets.QSizePolicy.Policy.Fixed, QtWidgets.QSizePolicy.Policy.Fixed)
-        self.cam.setScaledContents(True)
-        
-        self.cameraL = StereoCamera(self.camIds[1], self.cameraResolution)
-        self.cameraR = StereoCamera(self.camIds[0], self.cameraResolution)
-
-        self.timer = QtCore.QTimer(self)
-        self.timer.timeout.connect(self.start_capture)
-        self.timer.start(10)  # Update every X ms
-
-    def start_capture(self):
-        time_start = time.time()
-        captureL, captureR = self.model.predict([self.cameraL.get_frame(), self.cameraR.get_frame()])
-        blended = cv2.addWeighted(captureR, 0.5, captureL, 1 - 0.5, 0)
-        self.cam.setPixmap(self.cv2_to_qt(blended))
-        time_end = time.time()
-
-        self.update_metrics(time_start, time_end)
-        
-    def update_metrics(self, time_start=None, time_end=None):
-        if time_start is not None and time_end is not None:
-            frame_time = (time_end - time_start) * 1000  # in milliseconds
-            fps = 1000 / frame_time if frame_time > 0 else 0
-            self.fpsLabel.setText(f"FPS: {fps:.2f}")
-            self.frameTimeLabel.setText(f"Frame Time: {frame_time:.2f} ms")
-        else:
-            self.fpsLabel.setText("FPS: N/A")
-            self.frameTimeLabel.setText("Frame Time: N/A")
-
-    def cv2_to_qt(self, cv_img):
-        if cv_img is None:
-            return QtGui.QPixmap()
-        height, width, channel = cv_img.shape
-        bytes_per_line = 3 * width
-        q_img = QtGui.QImage(cv_img.data, width, height, bytes_per_line, QtGui.QImage.Format.Format_BGR888)
-        pixmap = QtGui.QPixmap.fromImage(q_img)
-        scaled_pixmap = pixmap.scaled(self.cameraResolution[0], self.cameraResolution[1], QtCore.Qt.AspectRatioMode.KeepAspectRatio)
-        return scaled_pixmap
-    
-    
+from elements.SideBar import RightOffCanvas
+from elements.TearOffTabs import TearOffTabManager
+from elements.CameraView import CameraView
+from elements.MapView import MapView
 
 # main application class
 
 class MainApp(QtWidgets.QMainWindow):
-    """ 
-    Doet: 
-    - Object-ID-tracking
-    - Detecties converteren naar kaartformaat
-    - De kaartweergave bijwerken
-    - Alarm afspelen
-    - Filteren van detecties
-    """
-    
     def __init__(self):
-        super().__init__()
-        #self.setWindowTitle("Main Application")
-        #self.setGeometry(100, 100, 800, 600)
-        # hier komt alleen die map met punten
-        # Load UI file
-        ui_file_path = os.path.join(os.path.dirname(__file__), "MainWindow.ui")
-        if not os.path.exists(ui_file_path):
-            ui_file_path = os.path.join("elements", "MainWindow.ui")
+        # load yaml config
+        with open("config.yaml", 'r') as file:
+            self.config = yaml.safe_load(file)
         
-        loader = QUiLoader()
-        ui_file = QFile(ui_file_path)
-        if not ui_file.open(QFile.ReadOnly):
-            raise RuntimeError(f"Failed to open UI file: {ui_file_path}")
+        # initialize main window
+        super(MainApp, self).__init__()
+        self.setWindowTitle("Stereo Camera Object Detection")
+        self.setGeometry(0, 0, self.config['UiResolution']['width'], self.config['UiResolution']['height'])
+        self.setStyleSheet("background: #2c3e50;")
+        self.layout = QtWidgets.QHBoxLayout(self)
+        self.layout.setContentsMargins(0, 0, 0, 0)
         
-        self.ui = loader.load(ui_file, self)
-        ui_file.close()
+        # Main content area widget
+        self.mainContentArea = QWidget()
+        self.mainContentArea.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
+        self.mainContentArea.layout = QVBoxLayout(self.mainContentArea)
+        self.mainContentArea.layout.setSpacing(0)
+        self.mainContentArea.layout.setContentsMargins(0, 0, 0, 0)
+        self.layout.addWidget(self.mainContentArea)
+        self.setCentralWidget(self.mainContentArea)
         
-        if self.ui is None:
-            raise RuntimeError(f"Failed to load UI from: {ui_file_path}")
-        
-        # Set the loaded widget as central widget
-        self.setCentralWidget(self.ui)
-        
-        # Set window properties
-        self.setWindowTitle("Main Application")
-        self.resize(1200, 800)
-        
-        # Find the main content area container from UI
-        main_content_container = self.ui.findChild(QtWidgets.QWidget, "mainContentArea")
-        if not main_content_container:
-            raise RuntimeError("Could not find 'mainContentArea' widget in UI file")
-        
-        # Create and add main content area
-        self.main_content = MainContentArea(main_content_container)
-        main_content_layout = QtWidgets.QVBoxLayout(main_content_container)
-        main_content_layout.setContentsMargins(0, 0, 0, 0)
-        main_content_layout.addWidget(self.main_content)
-        
-        # Create and add right sidebar (on top of everything)
-        # Sidebar needs to be a child of the UI widget
-        self.sidebar = RightOffCanvas(self.ui, width=280)
+        # company logo
+        self.company_logo = QLabel(self)
+        self.company_logo.setScaledContents(True)
+        self.company_logo.setFixedSize(140, 44)
+        logo_path = os.path.join("imgs", "Logo-Tidalis.jpg")
+        if os.path.exists(logo_path):
+           self.company_logo.setPixmap(QPixmap(logo_path))
+           self.company_logo.show()
+        else:
+           print(f"Warning: Logo not found at {logo_path}")
+           self.company_logo = None
+                
+        # sidebar
+        self.sidebar = RightOffCanvas(self, width=280)
         self.sidebar.raise_()
         
-        # Camera and model references
-        self.cameraL = None
-        self.cameraR = None
-        self.aimodel = None
+        # Create tear off tab manager
+        self.tab_manager = TearOffTabManager(self.mainContentArea)
         
-        # Timer for updating map with detected objects
-        self.map_update_timer = QtCore.QTimer(self)
-        self.map_update_timer.timeout.connect(self._update_map_from_detections)
-        
-        # Object tracking data
-        self._object_id_map = {}  # Maps (xL, yL) to object_id
-        self._next_object_id = 1
-        self.tracks = {} # Centralized tracking state: id -> {id, label, current_pos, history}
-
-        # Install event filter to handle resize events
-        self.ui.installEventFilter(self)
-
-        #alarm state (single source of truth)
-        self.alarm_muted = False
-        self.alarm_active = False          # derived from detections
-
-        self.alarm_should_sound = False    # derived from alarm_active and alarm_muted
-        self._prev_alarm_should_sound = False
-
-        #keyboard shortcuts(m)
-        self.toggle_alarm_action = QAction("Toggle alarm mute", self)
-        self.toggle_alarm_action.setShortcut("M")
-        self.toggle_alarm_action.triggered.connect(self.toggle_alarm_mute)
-        
-        self.addAction(self.toggle_alarm_action)
-
-        if self.sidebar and self.sidebar.btn_alarm:
-            self.sidebar.btn_alarm.clicked.connect(self.on_alarm_button_clicked)
-
-        self.filter_state = {
-            "drones": True,
-            "ships": True,
-            "unknown": True,
-            "trails": True,
-        }
-
-        sb = self.sidebar
-        if sb:
-            sb.cb_drones.toggled.connect(
-                lambda v: self.on_filter_toggled("drones", v)
-            )
-            sb.cb_ships.toggled.connect(
-                lambda v: self.on_filter_toggled("ships", v)
-            )
-            sb.cb_unknown.toggled.connect(
-                lambda v: self.on_filter_toggled("unknown", v)
-            )
-            sb.cb_trails.toggled.connect(
-                lambda v: self.on_filter_toggled("trails", v)
-            )
-
-
-        self.ALARM_CLASSES = {"drone", "ship", "person", "chair"}
-        
-        self.alarm_sound = QSoundEffect(self)
-
-        sound_path = os.path.join(os.path.dirname(__file__), "imgs", "alarm.wav")
-        self.alarm_sound.setSource(QUrl.fromLocalFile(sound_path))
-
-        if not self.alarm_sound.source().isValid():
-            print("Warning: alarm sound file not found or invalid")
-
-        self.alarm_sound.setLoopCount(QSoundEffect.Infinite.value)
-        self.alarm_sound.setVolume(0.5)
-
-
-
-    def on_filter_toggled(self, key: str, enabled: bool):
-        self.filter_state[key] = enabled
+        # Create camera and map views
+        self.camera_view = CameraView()
+        self.map_view = MapView()
     
+        self.tab_manager.add_view("Camera", self.camera_view)
+        self.tab_manager.add_view("Map", self.map_view)
+        self.mainContentArea.layout.addWidget(self.tab_manager)
+        
+        # AI model
+        self.model = AIModel(self.config)
+        
+        # setup stereo camera
+        cameraName = self.config['cameraName']
+        cameraIDs = getCameraId(cameraName)
+        
+        if len(cameraIDs) < 2:
+            print("Error: Less than two cameras found with the specified name.")
+            sys.exit(1)
+        
+        self.cameraL = StereoCamera(cameraIDs[0], self.config, mapType='left')
+        self.cameraR = StereoCamera(cameraIDs[1], self.config, mapType='right')
+        
+        # timer for capture updates
+        self.timer = QtCore.QTimer(self)
+        self.timer.timeout.connect(self.start_capture)
+        self.timer.start(self.config['UiRefreshRate'])  # Update every X ms
+        
+
+    def start_capture(self):
+        time_start = time.time()
+        frameL = self.cameraL.get_frame()
+        frameR = self.cameraR.get_frame()
+
+        captureL, captureR, boundObjectData = self.model.predict([frameL, frameR])
+
+        self.camera_view.update_camera_feed(captureL, captureR)
+        self.map_view.update_map(boundObjectData)
+        
+        time_end = time.time()
+
+        self.update_metrics(time_start, time_end)
     
-    def on_alarm_button_clicked(self):
-        self.toggle_alarm_mute()
-
-    def toggle_alarm_mute(self):
-        self.alarm_muted = not self.alarm_muted
-
+    def update_metrics(self, start, end):
+        pass
+    
+    def resizeEvent(self, event):
+        super().resizeEvent(event)
+        if self.company_logo:
+            self.company_logo.move(self.width() - self.company_logo.width() - 10, 0)
+            self.company_logo.raise_()
         if self.sidebar:
-            self.sidebar.set_alarm_muted(self.alarm_muted)
-
-        self._update_alarm_sound()
-
-
-    def _update_alarm_sound(self):
-        # derive should-sound
-        self.alarm_should_sound = self.alarm_active and not self.alarm_muted
-
-        # edge detection
-        if self.alarm_should_sound and not self._prev_alarm_should_sound:
-            # ENTER sound state
-            self.alarm_sound.play()
-
-        elif not self.alarm_should_sound and self._prev_alarm_should_sound:
-            # EXIT sound state
-            self.alarm_sound.stop()
-
-        # update memory ONCE
-        self._prev_alarm_should_sound = self.alarm_should_sound
-
-        if self.sidebar:
-            if self.alarm_active:
-                self.sidebar.start_alarm_pulse()
-            else:
-                self.sidebar.stop_alarm_pulse()
-
-    
-    def setup_cameras(self, cameraL, cameraR, aimodel):
-        """Setup cameras and AI model. Delegates camera setup to CameraView."""
-        self.cameraL = cameraL
-        self.cameraR = cameraR
-        self.aimodel = aimodel
-        
-        # Delegate camera view setup to the CameraView widget
-        if self.main_content and hasattr(self.main_content, 'camera_view'):
-            self.main_content.camera_view.setup_cameras(cameraL, cameraR, aimodel)
-        
-        # Start map update timer 
-        self.map_update_timer.start(100)  # Update map every 100ms
-    
-    def _are_cameras_available(self):
-        
-        if not (self.cameraL and self.cameraR):
-            return False
-        
-        if not (hasattr(self.cameraL, 'cam') and hasattr(self.cameraR, 'cam')):
-            return False
-        
-        if not (self.cameraL.cam and self.cameraR.cam):
-            return False
-        
-        return self.cameraL.cam.isOpened() and self.cameraR.cam.isOpened()
-    
-    # Helper for coordinate conversion
-    def _pixel_to_meter(self, x, depth):
-        """Convert pixel x-coordinate and depth to lateral meters."""
-        if depth <= 0 or depth == float('inf'):
-            return 0
-            
-        camera_resolution = (1280, 720)
-        fov_deg = 60
-        cam_center_x = camera_resolution[0] / 2
-        
-        fov_rad = math.radians(fov_deg)
-        focal_length = camera_resolution[0] / (2 * math.tan(fov_rad / 2))
-        
-        pixel_offset_x = x - cam_center_x
-        lateral_angle = math.atan2(pixel_offset_x, focal_length)
-        lateral = depth * math.sin(lateral_angle)
-        return lateral
-
-    
-    def _update_map_from_detections(self):
-        """Update map with detected objects from AI model."""
-
-        
-        """#Testing with fake object
-        if self.aimodel is None:
-            # Create/Update fake object track
-            fake_id = 999
-            
-            # Simple circular motion for testing trails
-            import time
-            t = time.time()
-            fake_x_meter = 2.0 * math.sin(t)
-            fake_depth = 5.0 + 1.0 * math.cos(t)
-            
-            if fake_id not in self.tracks:
-                self.tracks[fake_id] = {
-                    'id': fake_id,
-                    'label': 'drone',
-                    'history': []
-                }
-            
-            # Add to history
-            track = self.tracks[fake_id]
-            track['current_pos'] = (fake_x_meter, fake_depth)
-            track['history'].append((fake_x_meter, fake_depth, 'drone', fake_depth))
-            if len(track['history']) > 20:
-                track['history'].pop(0)
-
-            # Apply filtering logic (same as real camera path)
-            visible_tracks = []
-            for track in self.tracks.values():
-                label = track["label"]
-                if label == "drone" and not self.filter_state["drones"]:
-                    continue
-                if label == "ship" and not self.filter_state["ships"]:
-                    continue
-                if label not in ("drone", "ship") and not self.filter_state["unknown"]:
-                    continue
-                visible_tracks.append(track)
-
-            # Send tracks to map view
-            if self.main_content and hasattr(self.main_content, 'map_view'):
-                self.main_content.map_view.update_object_positions(visible_tracks)
-                
-                # Apply trails filter
-                if hasattr(self.main_content.map_view, "set_trails_enabled"):
-                    self.main_content.map_view.set_trails_enabled(
-                        self.filter_state["trails"]
-                    )
-
-            # Update alarm state
-            self.alarm_active = track['label'] in self.ALARM_CLASSES
-            self._update_alarm_sound()
-            return """
-        # Check if cameras are available
-        if not self._are_cameras_available() or not self.aimodel:
-            return
-               
-        try:
-            # Get frames
-            frameL = self.cameraL.get_frame() 
-            frameR = self.cameraR.get_frame() 
-            
-            if frameL is None or frameR is None:
-                return
-            
-            # Use AIModel's get_detections method
-            detections = self.aimodel.get_detections(frameL, frameR)
-            
-            # Match new detections to existing tracks or create new ones
-            bound_pairs = detections['bound_pairs']
-            current_track_ids = set()
-            match_threshold = 50  # pixels (matching logic still uses pixels for now)
-            
-            for pair in bound_pairs:
-                (xL, yL), (xR, yR), cls_id, class_name, confidence, distance = pair
-                
-                if distance == float('inf') or distance <= 0:
-                    continue
-                
-                # Convert to meters
-                lateral = self._pixel_to_meter(xL, distance)
-                forward = distance
-                
-                # Find or create object ID
-                obj_id = self._get_or_create_object_id((xL, yL), match_threshold)
-                current_track_ids.add(obj_id)
-                
-                # Create track if not exists
-                if obj_id not in self.tracks:
-                    self.tracks[obj_id] = {
-                        'id': obj_id,
-                        'label': class_name,
-                        'history': []
-                    }
-                
-                # Update track data
-                track = self.tracks[obj_id]
-                # Always update label from source of truth
-                track['label'] = class_name 
-                track['current_pos'] = (lateral, forward)
-                track['history'].append((lateral, forward, class_name, distance))
-                
-                # Limit history
-                if len(track['history']) > 20:
-                    track['history'].pop(0)
-
-            # 2. Cleanup stale tracks
-            start_ids = list(self.tracks.keys())
-            stale_ids = [tid for tid in start_ids if tid not in current_track_ids]
-            
-            for tid in stale_ids:
-                del self.tracks[tid]
-            
-            # 3. Cleanup pixel-based tracking map
-            self._cleanup_stale_objects(bound_pairs, match_threshold)
-
-            # 4. Update map view
-            if self.main_content and hasattr(self.main_content, 'map_view'):
-                
-                visible_tracks = []
-                for track in self.tracks.values():
-                    label = track["label"]
-
-                    if label == "drone" and not self.filter_state["drones"]:
-                        continue
-                    if label == "ship" and not self.filter_state["ships"]:
-                        continue
-                    if label not in ("drone", "ship") and not self.filter_state["unknown"]:
-                        continue
-
-                    visible_tracks.append(track)
-
-                self.main_content.map_view.update_object_positions(visible_tracks)
-
-            if hasattr(self.main_content.map_view, "set_trails_enabled"):
-                self.main_content.map_view.set_trails_enabled(
-                    self.filter_state["trails"]
-                )
-
-
-            
-            # Update alarm state
-            self.alarm_active = any(
-                track['label'] in self.ALARM_CLASSES
-                for track in self.tracks.values()
-            )
-
-            self._update_alarm_sound()
-                
-        except Exception as e:
-            # Silently handle errors to avoid spam
-            pass
-
-
-    def _get_or_create_object_id(self, position, match_threshold):
-        """Get existing object ID or create new one based on position matching."""
-        xL, yL = position
-        
-        # Try to match with existing object
-        for (prev_x, prev_y), prev_id in self._object_id_map.items():
-            if abs(prev_x - xL) < match_threshold and abs(prev_y - yL) < match_threshold:
-                # Update position and return existing ID
-                del self._object_id_map[(prev_x, prev_y)]
-                self._object_id_map[(xL, yL)] = prev_id
-                return prev_id
-        
-        # Create new ID
-        new_id = self._next_object_id
-        self._next_object_id += 1
-        self._object_id_map[(xL, yL)] = new_id
-        return new_id
-      
-    def _cleanup_stale_objects(self, bound_pairs, match_threshold):
-        """Remove object IDs for positions that are no longer detected."""
-        current_positions = {(pair[0][0], pair[0][1]) for pair in bound_pairs}
-        
-        if not current_positions:
-            return
-        
-        # Find positions to remove
-        positions_to_remove = []
-        for pos in self._object_id_map.keys():
-            is_close = any(
-                abs(pos[0] - xL) < match_threshold and abs(pos[1] - yL) < match_threshold
-                for (xL, yL) in current_positions
-            )
-            if not is_close:
-                positions_to_remove.append(pos)
-        
-        # Remove stale positions
-        for pos in positions_to_remove:
-            del self._object_id_map[pos]
-
-    def eventFilter(self, obj, event):
-        """Handle resize events to update sidebar position."""
-        if obj == self.ui and event.type() == event.Type.Resize:
             self.sidebar.reposition()
-        return super().eventFilter(obj, event)
+            self.sidebar.raise_()
+
 
 # stereo camera class
 class StereoCamera:
-    def __init__(self, index, resolution):
+    def __init__(self, index, config=None, mapType=None):
         self.cam = cv2.VideoCapture(index, cv2.CAP_V4L2)
         if not self.cam.isOpened():
             print(f"Camera {index} failed to open")
             return None
-        self.cam.set(cv2.CAP_PROP_FRAME_WIDTH, resolution[0])
-        self.cam.set(cv2.CAP_PROP_FRAME_HEIGHT, resolution[1])
+        self.cam.set(cv2.CAP_PROP_FRAME_WIDTH, config['cameraResolution']['width'])
+        self.cam.set(cv2.CAP_PROP_FRAME_HEIGHT, config['cameraResolution']['height'])
         self.cam.set(cv2.CAP_PROP_FOURCC, cv2.VideoWriter_fourcc(*'MJPG'))
-        self.cam.set(cv2.CAP_PROP_FPS, 10.0)
-        self.cam.set(cv2.CAP_PROP_AUTOFOCUS, 0)
+        self.cam.set(cv2.CAP_PROP_FPS, config['cameraFPS'])
+        self.cam.set(cv2.CAP_PROP_AUTOFOCUS, config['cameraAutoFocus'])
+        # ---------------------------------------------------------------
+        self.cameraResolution = (config['cameraResolution']['width'], config['cameraResolution']['height'])
+        self.mapType = mapType
+        self.config = config
+        self.init_rectification()
+        # ------------------------------^^^------------------------------
         print(f"Stereo Camera {index} initialized.")
         
     def get_frame(self):
@@ -544,210 +166,184 @@ class StereoCamera:
         if not ret:
             print("Failed to grab frame")
             return None
-        # cv2.initUndistortRectifyMap(frame, None, None, None, (frame.shape[1], frame.shape[0]), cv2.CV_32FC1)
-        # cv2.remap(frame, None, None, cv2.INTER_LINEAR)
-        # frame = cv2.resize(frame, (1920, 1080), interpolation=cv2.INTER_LINEAR)
+        # ---------------------------------------------------------------
+        if self.mapType == 'left':
+            frame = cv2.remap(frame, self.map0x, self.map0y, cv2.INTER_LINEAR)
+        else:
+            frame = cv2.remap(frame, self.map1x, self.map1y, cv2.INTER_LINEAR)
+        # ------------------------------^^^------------------------------
         return frame
     
+    # ---------------------------------------------------------------
+    def init_rectification(self):
+        # === Intrinsics ===
+        self.K0 = np.array(self.config['K0'])
+
+        self.D0 = np.array(self.config['D0'])
+
+        self.K1 = np.array(self.config['K1'])
+
+        self.D1 = np.array(self.config['D1'])
+
+        # === Extrinsics ===
+        R = np.array(self.config['R'])
+
+        T = np.array(self.config['T']) / 100.0  # cm → meters
+
+        self.baseline = np.linalg.norm(T)
+
+        # === Stereo rectification ===
+        image_size = self.cameraResolution
+
+        R1, R2, P1, P2, Q, _, _ = cv2.stereoRectify(
+            self.K0, self.D0,
+            self.K1, self.D1,
+            image_size,
+            R, T,
+            flags=cv2.CALIB_ZERO_DISPARITY,
+            alpha=0
+        )
+
+        self.fxL = P1[0, 0]
+        self.fxR = P2[0, 0]
+        
+        self.Q = Q
+
+        self.map0x, self.map0y = cv2.initUndistortRectifyMap(
+            self.K0, self.D0, R1, P1, image_size, cv2.CV_32FC1
+        )
+
+        self.map1x, self.map1y = cv2.initUndistortRectifyMap(
+            self.K1, self.D1, R2, P2, image_size, cv2.CV_32FC1
+        )
+        
+        # write self.fx to config.yaml file
+        self.config['fxL'] = self.fxL
+        self.config['fxR'] = self.fxR
+        
+
+
+        print("Stereo rectification initialized.")
+        # ------------------------------^^^------------------------------
+    
+def getCameraId(cameraName):
+    cameraIDs = []
+    
+    for camera_info in enumerate_cameras():
+        if cameraName.lower() in camera_info.name.lower():
+            if int(str(camera_info.index)[-1]) not in cameraIDs:
+                cameraIDs.append(int(str(camera_info.index)[-1]))
+        else:
+            print(f"Camera '{camera_info.name}' does not match the specified name '{cameraName}'.")
+        
+    return cameraIDs
    
     
 class AIModel:
-    def __init__(self, screen_resolution):
-        # self.model = YOLO(model="./yolo11n.pt", task="detect")  # load a model
-        #self.model.to('cuda')  # force to use GPU
-        # self.model.to('cpu')  # force to use GPU
+    def __init__(self, config=None):
+        # self.convertToOnnx()
+        # try catch block toevoegen
+        self.model = YOLO(model="./yolo11n.pt", task="detect")  # load a model
+        self.model.to("cuda")
         self.confidence_threshold = 0.8
-        self.distance_threshold = 200  # in pixels
-        self.screen_resolution = screen_resolution
-
-    def get_detections(self, frameL, frameR):
-
-        # Run YOLO detection on both frames
-            results = [
-                self.model(frameL, verbose=False, conf=self.confidence_threshold),
-                self.model(frameR, verbose=False, conf=self.confidence_threshold)
-            ]
-            
-            # Extract objects from both cameras
-            objects_left = self._extract_objects(results[0], include_metadata=True)
-            objects_right = self._extract_objects(results[1], include_metadata=False)
-            
-            # Bind objects between cameras
-            positions_left = [(x, y) for (x, y, *_) in objects_left]
-            positions_right = [(x, y) for (x, y, *_) in objects_right]
-            bound_pairs_positions = self.bind_objects(positions_left, positions_right)
-            
-            # Enrich bound pairs with metadata and distance
-            bound_pairs = []
-            for pair in bound_pairs_positions:
-                (xL, yL), (xR, yR) = pair[0], pair[1]
-                
-                # Find metadata from objects_left
-                metadata = next(
-                    ((cls_id, class_name, confidence, bbox)
-                    for (x, y, cls_id, class_name, confidence, bbox) in objects_left
-                    if x == xL and y == yL),
-                    (0, 'unknown', 0.5, None)
-                )
-                cls_id, class_name, confidence, bbox = metadata
-                
-                # Calculate distance
-                distance = self.get_distance(xL, xR)
-                
-                bound_pairs.append(((xL, yL), (xR, yR), cls_id, class_name, confidence, distance))
-            
-            return {
-                'objects_left': objects_left,
-                'objects_right': objects_right,
-                'bound_pairs': bound_pairs,
-                'results': results
-            }
-    def _extract_objects(self, results, include_metadata=True):
-     
-        objects = []
+        self.distance_threshold = config['matchingThreshold']  # in pixels
+        self.config = config
         
-        for r in results:
-            boxes = r.boxes
-            for box in boxes:
-                x1, y1, x2, y2 = box.xyxy[0].cpu().numpy()
-                cx = int((x1 + x2) / 2)
-                cy = int((y1 + y2) / 2)
-                bbox = (int(x1), int(y1), int(x2), int(y2))
-                
-                if include_metadata:
-                    cls_id = int(box.cls[0].cpu().numpy())
-                    class_name = r.names[cls_id] if hasattr(r, 'names') else 'unknown'
-                    confidence = float(box.conf[0].cpu().numpy())
-                    objects.append((cx, cy, cls_id, class_name, confidence, bbox))
-                else:
-                    objects.append((cx, cy, bbox))
-        
-        return objects
-   
+    def convertToOnnx(self):
+        if not os.path.exists("./yolo11n.onnx"):
+            print("exporting YOLO model to ONNX format...")
+            os.system("yolo export model=./yolo11n.pt format=onnx simplify=True")
+            print("ONNX model done")
+        print("ONNX model already exists.")
+
     # veranderen zodat het de middelpunten van die boxes pakt van beide cameras
     # kijken of we de frames kunnen overlappen en daar een vast object uit kunnen halen
     def predict(self, captures):
-        # Get detections without modifying frames
-        detections = self.get_detections(captures[0], captures[1])
+        results = [self.model(captures[0], verbose=False, conf=self.confidence_threshold), self.model(captures[1], verbose=False, conf=self.confidence_threshold)]
+        objects = [[], []]
+        boundObjectData = {
+            'objectName': [],
+            'objectDistance': [],
+            'objectPosition': []
+        }
         
-        # Draw visualizations on frames
-        self._draw_detections(captures[0], detections['objects_left'], is_left=True)
-        self._draw_detections(captures[1], detections['objects_right'], is_left=False)
-        self._draw_bound_pairs(captures, detections['bound_pairs'])
-        
-        return captures[0], captures[1]
-    def _draw_detections(self, frame, objects, is_left=True):
-        color = (0, 255, 0) if is_left else (0, 0, 255)
-        
-        for obj in objects:
-            cx, cy = obj[0], obj[1]
-            bbox = obj[-1]  # Last element is always bbox
+        for result in results:
+            for r in result:
+                capture = captures[0] if result == results[0] else captures[1]
+                boxes = r.boxes
+                for box in boxes:
+                    x1, y1, x2, y2 = box.xyxy[0].cpu().numpy()
+                    cx = ((x1 + x2) / 2)
+                    cy = ((y1 + y2) / 2)
+                    
+                    class_id = int(box.cls[0].cpu().numpy())
+                    class_name = self.model.names[class_id]
+                    
+                    objects[0 if result == results[0] else 1].append((cx, cy, class_name))
+                    
+                    # tekent vierkant om object
+                    cv2.rectangle(capture, (int(x1), int(y1)), (int(x2), int(y2)), (255, 0, 0), 1)
+                    
+                    # tekent midden punt en afstand
+                    if capture is captures[0]:
+                        cv2.circle(capture, (int(cx), int(cy)), 4, (0, 255, 0), -1)
+                    else:
+                        cv2.circle(capture, (int(cx), int(cy)), 4, (0, 0, 255), -1)        
+                
+                capture = r.plot()
+                
+        detectedObjects = self.bind_objects(objects[0], objects[1])
+          
+        for ((xL, yL), (xR, yR), class_name) in detectedObjects:
+            distance = self.get_distance(xL, xR)
+            absoluteCenterX = ((xL + xR) / 2)
+            absoluteCenterY = ((yL + yR) / 2)
+            cv2.line(captures[0], (int(xL), int(yL)), (int(xR), int(yR)), (255, 255, 0), 1)
+            cv2.line(captures[1], (int(xL), int(yL)), (int(xR), int(yR)), (255, 255, 0), 1)
+            cv2.putText(captures[1], f"{distance:.2f}m", (int(xL), int(yL) - 10), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 255), 2)
             
-            if bbox:
-                x1, y1, x2, y2 = bbox
-                # Draw bounding box
-                cv2.rectangle(frame, (x1, y1), (x2, y2), (255, 0, 0), 1)
-                # Draw center point
-                cv2.circle(frame, (cx, cy), 4, color, -1)
-    
-    def _draw_bound_pairs(self, captures, bound_pairs):
-        for pair in bound_pairs:
-            (xL, yL), (xR, yR), cls_id, class_name, confidence, distance = pair
-            
-            # Draw connection lines on both frames
-            cv2.line(captures[0], (xL, yL), (xR, yR), (255, 255, 0), 1)
-            cv2.line(captures[1], (xL, yL), (xR, yR), (255, 255, 0), 1)
-            
-            # Draw distance text on right frame
-            if distance != float('inf'):
-                cv2.putText(
-                    captures[1], 
-                    f"{distance:.2f}m", 
-                    (xL, yL - 10), 
-                    cv2.FONT_HERSHEY_SIMPLEX, 
-                    1, 
-                    (0, 255, 255), 
-                    2
-                )
+            boundObjectData['objectName'].append(class_name)
+            boundObjectData['objectDistance'].append(distance)
+            boundObjectData['objectPosition'].append((absoluteCenterX, absoluteCenterY))
+          
+        return captures[0], captures[1], boundObjectData
     
     def bind_objects(self, objectsL, objectsR):
         #! ergens een buffer plaatsen voor als er geen object in 1 van de cameras is
         
         detectedObjects = []
         
-        for (x1, y1) in objectsL:
+        for (x1, y1, class_nameL) in objectsL:
                 closest_obj = None
                 closest_dist = float('inf')
-                for (x2, y2) in objectsR:
+                for (x2, y2, class_nameR) in objectsR:
                     dist = math.sqrt((x1 - x2) ** 2 + (y1 - y2) ** 2)
                     if dist < closest_dist and dist < self.distance_threshold:
                         closest_dist = dist
                         closest_obj = (x2, y2)
                 if closest_obj is not None:
-                    detectedObjects.append([(x1, y1), closest_obj])
+                    detectedObjects.append([(x1, y1), closest_obj, class_nameL])
                     
         return detectedObjects
     
 
     def get_distance(self, x_left, x_right):
-        fx = 1052.42              # uit camera 0 intrinsic
-        baseline = 0.1026         # meters, uit ||T||
+        fx = self.config['fxL']            # uit camera 0 intrinsic
+        baseline = self.config['baseline']         # meters, uit ||T||
 
         disparity = x_left - x_right
-        if abs(disparity) < 1.0:
+        if abs(disparity) < 0.5:
             return float('inf')
-        
-        # EEN DISPARITY CHECK
-        print(f"disparity == {disparity}, x_left == {x_left}, x_right == {x_right}")
 
         distance = (fx * baseline) / disparity
         return abs(distance)
 
-    # werkt blijkbaar
-    # def get_distance(self, x1, x2):
-    #     baseline = 0.099    # distance between the two cameras in meters
-    #     # fx = 1063.9      # focal length in pixels
-    #     width_px = self.screen_resolution[0]    # camera resolution width in pixels
-    #     fov_deg = 60        # camera field of view in degrees
-
-    #     theta_rad = math.radians(fov_deg)
-    #     # f = (width_px / 2) / math.tan(theta_rad / 2)
-    #     f = width_px / (2 * math.tan(theta_rad / 2))
-
-    #     disparity = x1 - x2
-    #     if abs(disparity) < 0.001:
-    #         return float('inf')
-        
-    #     distance = (f * baseline) / disparity
-    #     return abs(distance) 
-
     
     
-
+    
 if __name__ == "__main__":
     app = QtWidgets.QApplication(sys.argv)
-    #window = DebugWindow()
-    main_window = MainApp()
-
-    # Initialize cameras and AI model
-    cameraL = None
-    cameraR = None
-    aimodel = None
-    
-    try:
-        camera_resolution = (1280, 720)
-        cam_ids = (0, 2)  # raspberry pi
-        #cam_ids = (4, 2)  # laptop
-       
-        
-        aimodel = AIModel(camera_resolution)
-        cameraL = StereoCamera(cam_ids[1], camera_resolution)
-        cameraR = StereoCamera(cam_ids[0], camera_resolution)
-        
-        print("Het Systeem werkt goed")
-    except Exception as e:
-        print(f"Warning: Kan camera's niet initialiseren {e}")
-
-    main_window.setup_cameras(cameraL, cameraR, aimodel)
-    main_window.show()
+    window = MainApp()
+    window.show()
     sys.exit(app.exec())
+    pass

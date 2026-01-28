@@ -321,9 +321,8 @@ class TearOffTabManager(QWidget):
         
         self.tab_names[index] = name
         self.views[index] = widget
-        
         # Add to tab bar (mark last tab with rounded corner)
-        is_last = (index == self.next_index - 1)
+        is_last = (True if index > 0 else False)
         self.tab_bar.addTab(name, index, is_last=is_last)
         
         # Show first view
@@ -341,6 +340,10 @@ class TearOffTabManager(QWidget):
         self._showMainView(index)
     
     def _showMainView(self, index):
+        # Don't show a view that's floating
+        if self.floating_pane and self.floating_pane.tab_index == index:
+            return
+        
         # Clear current view
         while self.view_layout.count():
             item = self.view_layout.takeAt(0)
@@ -349,11 +352,18 @@ class TearOffTabManager(QWidget):
         
         # Add new view
         view = self.views[index]
-        view.setParent(self.view_container)
+        if view.parent() != self.view_container:
+            view.setParent(self.view_container)
         self.view_layout.addWidget(view)
     
     def tearOffTab(self, index):
         view = self.views[index]
+        
+        # Remove view from current layout before tearing off
+        for i in range(self.view_layout.count() - 1, -1, -1):
+            item = self.view_layout.itemAt(i)
+            if item and item.widget() == view:
+                self.view_layout.removeItem(item)
         
         # Create floating pane
         self.floating_pane = FloatingPane(view, index, self.tab_names[index], self)
