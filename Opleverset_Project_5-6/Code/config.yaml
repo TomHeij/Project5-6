@@ -10,7 +10,6 @@ cameraAutoFocus: 0
 fxL: 1052.4219536166813
 fxR: 1067.5229248013413
 baseline: 0.1026
-disparity: 0.0
 
 K0: [
   [1052.4219536166813, 0.0, 681.9634335914714],
@@ -33,13 +32,24 @@ R: [
 ]
 T: [[0.09989935331835486],[-0.00020611071609860532],[0.023616168280136174]]
 
+# Rectification parameters
+minDisparity: 0
+numDisparities: 128 # must be divisible by 16
+blockSize: 5
+disp12MaxDiff: 1
+uniquenessRatio: 10
+speckleWindowSize: 100
+speckleRange: 32
+preFilterCap: 63
+calculatedDisparity: 0.0
+
 # UI settings
 UiResolution:
   width: 1200
   height: 800
-UiRefreshRate: 100
+UiRefreshRate: 10
 
-MapScale: 20  # meters per grid square
+MapScale: 10  # meters per grid square
 
 # AI settings
 modelPath: ./yolov8n.onnx

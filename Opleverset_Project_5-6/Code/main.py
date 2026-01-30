@@ -1,25 +1,3 @@
-# TODO:
-# multi-threading (?)
-# diepte kaart
-#? stereo camera support 
-# 2d punt krijgen
-# 2d punt op "map" projecteren
-# GUI
-# verschil tussen cpu en gpu verwerking meten (?, de AI draait op cpu dus :shrug:)
-#? kijken naar resoluties,fps waardes en compressie
-# configuratie bestand voor instellingen (kan handig zijn gezien we 2 windows gaan hebben) 
-# niet real-time iets tekenen/zien maar per aantal frames updaten (zien dat de vierkant over een soort 2de layer gaat ipv direct op de camera feed)
-# error handling
-# code opschonen en documenteren
-# first time install script
-# toggle debug cameras on/off
-
-# ncnn
-# vulkan
-# yolo model door ncnn converteren
-# onnx
-# yolo11n
-
 from cv2_enumerate_cameras import enumerate_cameras
 from ultralytics import YOLO
 import numpy as np
@@ -43,12 +21,18 @@ from elements.CameraView import CameraView
 from elements.MapView import MapView
 
 # main application class
-
 class MainApp(QtWidgets.QMainWindow):
     def __init__(self):
-        # load yaml config
-        with open("config.yaml", 'r') as file:
-            self.config = yaml.safe_load(file)
+        # load yaml config. exit if not found
+        try:
+            with open("config.yaml", 'r') as file:
+                    self.config = yaml.safe_load(file)
+        except Exception as e:
+            print(f"Error loading config.yaml: {e}")
+            sys.exit(1)
+            
+        # initialize stereo matcher
+        self.stereoMatcher = self.init_stereo_matcher()
         
         # initialize main window
         super(MainApp, self).__init__()
@@ -90,6 +74,7 @@ class MainApp(QtWidgets.QMainWindow):
         self.camera_view = CameraView()
         self.map_view = MapView()
     
+        # Add views to tab manager
         self.tab_manager.add_view("Camera", self.camera_view)
         self.tab_manager.add_view("Map", self.map_view)
         self.mainContentArea.layout.addWidget(self.tab_manager)
@@ -113,11 +98,13 @@ class MainApp(QtWidgets.QMainWindow):
         self.timer.timeout.connect(self.start_capture)
         self.timer.start(self.config['UiRefreshRate'])  # Update every X ms
         
-
+    # start capture function
     def start_capture(self):
         time_start = time.time()
         frameL = self.cameraL.get_frame()
         frameR = self.cameraR.get_frame()
+        
+        # getDisparityMap(frameL, frameR, self.stereoMatcher, self.config)
 
         captureL, captureR, boundObjectData = self.model.predict([frameL, frameR])
 
@@ -127,10 +114,14 @@ class MainApp(QtWidgets.QMainWindow):
         time_end = time.time()
 
         self.update_metrics(time_start, time_end)
-    
+
+    # shows fps, processing time and disparity in console
     def update_metrics(self, start, end):
-        pass
+        processing_time = end - start
+        fps = 1.0 / processing_time if processing_time > 0 else 0.0    
+        print(f"FPS: {fps:.2f}, Processing Time: {processing_time:.4f} seconds")
     
+    # resize event to reposition logo and sidebar
     def resizeEvent(self, event):
         super().resizeEvent(event)
         if self.company_logo:
@@ -139,6 +130,24 @@ class MainApp(QtWidgets.QMainWindow):
         if self.sidebar:
             self.sidebar.reposition()
             self.sidebar.raise_()
+            
+    # initialize stereo matcher
+    def init_stereo_matcher(self):
+        stereoMatcher = cv2.StereoSGBM_create(
+            minDisparity=self.config['minDisparity'],
+            numDisparities=self.config['numDisparities'],
+            blockSize=self.config['blockSize'],
+            P1=8 * 3 * self.config['blockSize'] ** 2,
+            P2=32 * 3 * self.config['blockSize'] ** 2,
+            disp12MaxDiff=self.config['disp12MaxDiff'],
+            uniquenessRatio=self.config['uniquenessRatio'],
+            speckleWindowSize=self.config['speckleWindowSize'],
+            speckleRange=self.config['speckleRange'],
+            preFilterCap=self.config['preFilterCap'],
+            mode=cv2.STEREO_SGBM_MODE_SGBM_3WAY
+        )
+        
+        return stereoMatcher
 
 
 # stereo camera class
@@ -153,12 +162,10 @@ class StereoCamera:
         self.cam.set(cv2.CAP_PROP_FOURCC, cv2.VideoWriter_fourcc(*'MJPG'))
         self.cam.set(cv2.CAP_PROP_FPS, config['cameraFPS'])
         self.cam.set(cv2.CAP_PROP_AUTOFOCUS, config['cameraAutoFocus'])
-        # ---------------------------------------------------------------
         self.cameraResolution = (config['cameraResolution']['width'], config['cameraResolution']['height'])
         self.mapType = mapType
         self.config = config
         self.init_rectification()
-        # ------------------------------^^^------------------------------
         print(f"Stereo Camera {index} initialized.")
         
     def get_frame(self):
@@ -166,15 +173,12 @@ class StereoCamera:
         if not ret:
             print("Failed to grab frame")
             return None
-        # ---------------------------------------------------------------
         if self.mapType == 'left':
             frame = cv2.remap(frame, self.map0x, self.map0y, cv2.INTER_LINEAR)
         else:
             frame = cv2.remap(frame, self.map1x, self.map1y, cv2.INTER_LINEAR)
-        # ------------------------------^^^------------------------------
         return frame
     
-    # ---------------------------------------------------------------
     def init_rectification(self):
         # === Intrinsics ===
         self.K0 = np.array(self.config['K0'])
@@ -224,7 +228,20 @@ class StereoCamera:
 
 
         print("Stereo rectification initialized.")
-        # ------------------------------^^^------------------------------
+        
+def getDisparityMap(frameL, frameR, stereoMatcher, config=None):
+    time_start = time.time()
+    
+    grayL = cv2.cvtColor(frameL, cv2.COLOR_BGR2GRAY)
+    grayR = cv2.cvtColor(frameR, cv2.COLOR_BGR2GRAY)
+    
+    disparity = stereoMatcher.compute(grayL, grayR)
+    
+    # put disparity in config file
+    config['calculatedDisparity'] = disparity.mean()
+    
+    time_end = time.time()
+    return None
     
 def getCameraId(cameraName):
     cameraIDs = []
@@ -241,24 +258,20 @@ def getCameraId(cameraName):
     
 class AIModel:
     def __init__(self, config=None):
-        # self.convertToOnnx()
         # try catch block toevoegen
-        self.model = YOLO(model="./yolo11n.pt", task="detect")  # load a model
-        self.model.to("cuda")
-        self.confidence_threshold = 0.8
-        self.distance_threshold = config['matchingThreshold']  # in pixels
-        self.config = config
-        
-    def convertToOnnx(self):
-        if not os.path.exists("./yolo11n.onnx"):
-            print("exporting YOLO model to ONNX format...")
-            os.system("yolo export model=./yolo11n.pt format=onnx simplify=True")
-            print("ONNX model done")
-        print("ONNX model already exists.")
+        try:
+            self.model = YOLO(model="./yolo11n.pt", task="detect")  # load a model
+            self.model.to("cuda")
+            self.confidence_threshold = 0.8
+            self.distance_threshold = config['matchingThreshold']  # in pixels
+            self.config = config
+        except Exception as e:
+            print(f"Error loading AI model: {e}")
+            sys.exit(1)
 
-    # veranderen zodat het de middelpunten van die boxes pakt van beide cameras
-    # kijken of we de frames kunnen overlappen en daar een vast object uit kunnen halen
+    # predict function
     def predict(self, captures):
+        # gets detections from both cameras
         results = [self.model(captures[0], verbose=False, conf=self.confidence_threshold), self.model(captures[1], verbose=False, conf=self.confidence_threshold)]
         objects = [[], []]
         boundObjectData = {
@@ -267,33 +280,43 @@ class AIModel:
             'objectPosition': []
         }
         
+        # for each camera result
         for result in results:
+            # for each detection in camera result
             for r in result:
+                # check which camera the result is from
                 capture = captures[0] if result == results[0] else captures[1]
                 boxes = r.boxes
+                # for each box in detection
                 for box in boxes:
+                    # get box coordinates
                     x1, y1, x2, y2 = box.xyxy[0].cpu().numpy()
+                    # calculate center point
                     cx = ((x1 + x2) / 2)
                     cy = ((y1 + y2) / 2)
                     
+                    # get class name
                     class_id = int(box.cls[0].cpu().numpy())
                     class_name = self.model.names[class_id]
                     
+                    # store object data
                     objects[0 if result == results[0] else 1].append((cx, cy, class_name))
                     
-                    # tekent vierkant om object
+                    # draw rectangle around object
                     cv2.rectangle(capture, (int(x1), int(y1)), (int(x2), int(y2)), (255, 0, 0), 1)
                     
-                    # tekent midden punt en afstand
+                    # draw center point and distance
                     if capture is captures[0]:
                         cv2.circle(capture, (int(cx), int(cy)), 4, (0, 255, 0), -1)
                     else:
                         cv2.circle(capture, (int(cx), int(cy)), 4, (0, 0, 255), -1)        
                 
                 capture = r.plot()
-                
+        
+        # bind objects from both cameras together based on proximity
         detectedObjects = self.bind_objects(objects[0], objects[1])
-          
+        
+        # for each bound object, calculate distance and draw line between cameras
         for ((xL, yL), (xR, yR), class_name) in detectedObjects:
             distance = self.get_distance(xL, xR)
             absoluteCenterX = ((xL + xR) / 2)
@@ -301,6 +324,7 @@ class AIModel:
             cv2.line(captures[0], (int(xL), int(yL)), (int(xR), int(yR)), (255, 255, 0), 1)
             cv2.line(captures[1], (int(xL), int(yL)), (int(xR), int(yR)), (255, 255, 0), 1)
             cv2.putText(captures[1], f"{distance:.2f}m", (int(xL), int(yL) - 10), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 255), 2)
+            cv2.putText(captures[0], f"{distance:.2f}m", (int(xL), int(yL) - 10), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 255), 2)
             
             boundObjectData['objectName'].append(class_name)
             boundObjectData['objectDistance'].append(distance)
@@ -308,14 +332,14 @@ class AIModel:
           
         return captures[0], captures[1], boundObjectData
     
-    def bind_objects(self, objectsL, objectsR):
-        #! ergens een buffer plaatsen voor als er geen object in 1 van de cameras is
-        
+    def bind_objects(self, objectsL, objectsR):        
         detectedObjects = []
         
+        # for each object in left camera
         for (x1, y1, class_nameL) in objectsL:
                 closest_obj = None
                 closest_dist = float('inf')
+                # find closest object in right camera within threshold and bind them
                 for (x2, y2, class_nameR) in objectsR:
                     dist = math.sqrt((x1 - x2) ** 2 + (y1 - y2) ** 2)
                     if dist < closest_dist and dist < self.distance_threshold:
@@ -326,12 +350,15 @@ class AIModel:
                     
         return detectedObjects
     
-
+    # calculate distance from disparity
     def get_distance(self, x_left, x_right):
-        fx = self.config['fxL']            # uit camera 0 intrinsic
-        baseline = self.config['baseline']         # meters, uit ||T||
+        fx = self.config['fxL']
+        baseline = self.config['baseline']
 
-        disparity = x_left - x_right
+        # calculate disparity and distance
+        disparity = x_left - x_right  # pixels
+        disparity = disparity / 1.75
+        # print(f"Disparity: {abs(disparity)}")
         if abs(disparity) < 0.5:
             return float('inf')
 
