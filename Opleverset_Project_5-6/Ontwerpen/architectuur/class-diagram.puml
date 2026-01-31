@@ -15,10 +15,10 @@ package "Main Application" {
     class MainApp <<Orchestrator>> #87CEEB {
     }
     
-    class StereoCamera {
+    class StereoCamera #FEFECE {
     }
     
-    class AIModel {
+    class AIModel #FEFECE {
     }
 }
 
