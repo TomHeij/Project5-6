@@ -1,5 +1,5 @@
 ## Architecture Diagram
-<img src="./ArchitectuurOntwerp.svg" alt="System Architecture" width="500"/>
+<img src="./ArchitectureDiagram_final.svg" alt="System Architecture" width="500"/>
 
 ## Class Diagram
 ![UML](https://img.plantuml.biz/plantuml/svg/dLHDRzim3Bq7o7yWt5k15aaF-m22e8bhRm5gT6YptHcRTOGgaY4h7RAb_trKvAQEjGLBVR6jzqW-yL6whYqQkrv9Y2NMzOt0qk2gtxF2Il9hi5_iz-edeIha7vWxGggLVR0RPYwqBFuEYry4LuC0csB-L1gzLaMifJPmTYlAfOqtg0xhIA5elga8jB5BtKPo9svYhH6BjQLPhjMkrY3Wx6KCXssiOWLOajTlABUeIackUh_NO11bA1HCgagA7AtGAeBV_HxmiyiC3cOKHgCxao-fjWQjDkCnd7tw62V9z9Nzub_jq0TBXdICAp9uX3QPPReWsMAyT2H--Jw3HDAAbAqxydps7u9-iaBcEM5f6d_uV7EaOeRLYH7tphgxnySOrJFM9mJ6ItesMdr5LR07_nyt9pHSRuwBTmLDqRmhBaF57JybDfMQnqQLtr0TsrzZwUiqdLzSG3ICEdqDyK1PI7cRW11hZ0w1PkOwm5LqCBDESCVuVT6shOuNjZ3S0floJ-BWyfAvxMOUPdM6xeZdxOo-gP9AKWLONO5nSbtJj-0ldIraX8fJmjOlZvfpE-Rlzeb-mxrt3dVdRkSorIquIPCuSV1qNVFLnJDmgqkHCy6fy6Ayi6l-uelt3m00)
