@@ -10,9 +10,13 @@
 
 
 
-## References:
+## References
 # Stereo vision
 1. Revised_Thesis_RvG_v021.pdf (Tidalis)
 2. Stereo Vision and depth estimation: https://www.geeksforgeeks.org/computer-vision/stereo-vision-and-depth-estimation/
 3. Camera Calibration and 3D Reconstruction: https://docs.opencv.org/4.x/d9/d0c/group__calib3d.html
 4. stereo vision: https://visionbook.mit.edu/3d_scene_understanding_stereo.html
+
+
+## Important Notes
+The Architecture and the Class Diagrams underwent core changes because the previous versions were over detailed, making them difficult to maintain as the Project requirements and the codebase evolved. The current versions above are minimal and adapt easily for changes.
