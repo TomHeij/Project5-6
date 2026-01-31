@@ -1,0 +1,99 @@
+@startuml packageDiagram
+title Getting 2D Point from Stereo Camera   
+'left to right direction
+
+
+skinparam TitleFontStyle bold
+skinparam linetype ortho
+skinparam TitleFontSize 18
+'skinparam TitleBackgroundColor #LightBlue
+
+skinparam packageStyle rectangle
+skinparam packageFontSize 11
+skinparam packageBackgroundColor #LightCyan
+
+' Main components
+package "Stereo Camera Capture" as Capture <<Hardware>> #LightGreen {
+}
+
+
+package Rectification {
+      
+}
+package "Calibration Data" as Calibration <<Configuration>> {
+    
+}
+
+rectangle "Stereo Processing Pipeline" as Pipeline <<Core>> #white {
+
+    package "Object Detection (YOLO11n)" as Detection <<AI Model>>{
+   
+    }
+    
+    package "Detection Matching\n(sparse Correspondence)" as Matching {
+        
+    }
+
+    package "Disparity Computation" as Disparity {
+ 
+    }
+    
+    package "Depth Estimation\n(Triangulation)" as DepthCalc {
+        
+    }
+    
+    package "3D Reprojection" as Reprojection {
+        
+    }
+    
+}
+
+package "Map Projection" as MapProj {
+    
+}
+
+package "Map" as MainApp <<GUI>> #FFC69D {
+  
+}
+
+' Data flow connections
+' run only once for efficiency
+Capture --> Rectification: "L,R frames"
+Rectification ---> Detection: "rectified frames\n L,R"
+
+Detection ---> Matching: " detection left\n(xL, yL, bbox)"
+
+'fx 
+Calibration ..> DepthCalc : <b>f,B</b> 
+Calibration ..> Rectification: "K,D,R,T\nR1,R2,P1,P2"
+'fx,fy
+Calibration ..> Reprojection : <b> f,cx,cy</b> 
+
+Matching ---> Disparity : "matched right\n(xL, xR)"
+
+Disparity ---> DepthCalc: "disparity\nxL-xR"
+
+DepthCalc --> Reprojection : "depth Z"
+
+Reprojection ---> MapProj : "(X,Y,Z)"
+
+MapProj --> MainApp : "(map_x, map_y)"
+
+
+
+
+Legend right
+    Data flow: 
+    <color:#0000FF>Frames Capture → Rectification → Object Detection → Matching → Disparity → Depth → 3D → Map → UI</color>
+    ----
+    Formulas: 
+       disparity: d = xL − xR
+       Depth: Z = (f × B) / d
+       Reprojection:
+       X = (x - cx) × Z / f
+       Y = (y - cy) × Z / f 
+    ----
+    //Note: This version is written during research, the final implementation can differ or not be exactly the same.//
+end Legend
+
+@enduml
