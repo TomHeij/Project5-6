@@ -1,10 +1,9 @@
 @startuml ClassDiagram
-title Software Diagram
+title Class Diagram
 
 skinparam TitleFontStyle bold
 skinparam TitleFontSize 20
 skinparam TitleBackgroundColor #LightCyan
-
 
 skinparam lineType ortho
 skinparam classAttributeIconSize 0
@@ -12,101 +11,65 @@ skinparam classFontSize 11
 skinparam packageStyle rectangle
 
 
-package "PyQt6.QtWidgets" <<Framework>> {
-    class QWidget {
+package "Main Application" {
+    class MainApp <<Orchestrator>> #87CEEB {
     }
     
-    class QMainWindow <<UI>>  {
+    class StereoCamera {
     }
     
-    class QApplication {
+    class AIModel {
     }
 }
 
-package "PyQt6.QtCore" <<Framework>> {
-    class QTimer {
-        +timeout: Signal
-        +start(int): void
-    }
-}
 
-package "External Libraries" <<Framework>> {
-    class Picamera2 {
-        +__init__(index: int)
-        +create_preview_configuration(main: dict): Config
-        +configure(config: Config): void
-        +start(): void
-        +capture_array(): ndarray
+package "GUI Elements" {
+    class CameraView <<GUI>> #FFC69D {
     }
     
-    class YOLO {
-        +__init__(model_path: str)
-        +__call__(frame: ndarray, stream: bool): Results
+    class MapView <<GUI>> #FFC69D {
+    }
+    
+    class RightOffCanvas <<GUI>> #FFC69D {
+    }
+    
+    class ChevronHandle <<GUI>> #FFC69D {
+    }
+    
+    class TearOffTab <<GUI>> #FFC69D {
+    }
+    
+    class TearOffTabBar <<GUI>> #FFC69D {
+    }
+    
+    class TearOffTabManager <<GUI>> #FFC69D {
+    }
+    
+    class FloatingPane <<GUI>> #FFC69D {
     }
 }
 
-class DebugWindow <<UI>> #FFC69D {
-    - cameraDisplaySize: float
-    - cameraResolution: tuple
-    - camIds: tuple
-    - camL: QLabel
-    - camR: QLabel
-    - camera1: StereoCamera
-    - camera2: StereoCamera
-    - timer: QTimer
-    - fpsLabel: QLabel
-    - frameTimeLabel: QLabel
-    __
-    + __init__()
-    + start_capture(): void
-    + update_metrics(time_start: float, time_end: float): void
-    + cv2_to_qt(cv_img: ndarray): QPixmap
-}
 
-class MainApp <<UI>> #FFC69D  {
-    + __init__()
-}
+MainApp *-- "1" RightOffCanvas
+MainApp *-- "1" TearOffTabManager
+MainApp *-- "1" CameraView
+MainApp *-- "1" MapView
+MainApp *-- "1" AIModel
+MainApp *-- "2" StereoCamera
 
-class StereoCamera  {
-    - index: int
-    - camera: Picamera2
-    - model: YOLO
-    - config: Config
-    __
-    + __init__(index: int, resolution: tuple)
-    + get_frame(): ndarray
-}
+RightOffCanvas *-- "1" ChevronHandle
 
-' Inheritance relationships
-QWidget <|-- DebugWindow
-QMainWindow <|-- MainApp
+TearOffTabManager *-- "1" TearOffTabBar
+TearOffTabManager *-- "0..1" FloatingPane
 
-
-' Composition relationships
-DebugWindow *-- "1" QTimer : timer
-DebugWindow *--- "2" StereoCamera : camera1, camera2
-StereoCamera *-- "1" Picamera2 : camera
-StereoCamera *-- "1" YOLO : model
-
-' Dependencies
-DebugWindow .up.> QApplication : runs in
-DebugWindow .down.> cv2 : uses
-DebugWindow .down.> time : uses
-StereoCamera ..> cv2 : uses
-StereoCamera ..> numpy : uses
-
-
-
-note left of MainApp #ffff18ff
-  (nog niet gemplementeerd).
-  zal de Map met de punten weergeven
-end note
+TearOffTabBar *-- "*" TearOffTab
 
 
 legend top right
   | Color | Meaning |
-  | <#FFC69D> | UI classes |
-  | <#ffff18ff> | Notes |
+  | <#87CEEB> | Orchestrator |
+  | <#FFC69D> | GUI classes |
+  | <#FEFECE> | Business Logic|
 end legend
 
 
