@@ -84,7 +84,7 @@ MapProj --> MainApp : "(map_x, map_y)"
 
 Legend right
     Data flow: 
-    <color:#0000FF>Frames Capture → Rectification → Object Detection → Matching → Disparity → Depth → 3D → Map → UI</color>
+    <color:#0000FF>Frames Capture → Rectification → Object Detection → Matching → Disparity → Depth → 3D → Map → GUI</color>
     ----
     Formulas: 
        disparity: d = xL − xR
