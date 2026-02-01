@@ -158,4 +158,4 @@ In de beginfase van het project lag de focus op het detecteren en lokaliseren va
 | 4.0 | Sprint planning 4 aangemaakt  | 18-11-2025 |
 | 5.0 | Sprint planning 5 aangemaakt  | 2-12-2025 |
 | 6.0 | Sprint planning 6 aangemaakt  | 16-12-2025 |
-| 6.0 | Sprint planning 7 aangemaakt  | 13-1-2026 |
+| 7.0 | Sprint planning 7 aangemaakt  | 13-1-2026 |
